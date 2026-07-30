@@ -453,7 +453,7 @@ export default function OwnerClient({ token }: { token: string }) {
             <div className="demo">
               {stats?.pending?.length
                 ? stats.pending.slice(0, 10).map((p) => (
-                    <div key={p.code}><code>{p.code}</code> — {p.grade}상 {p.name}</div>
+                    <div key={p.code}><code>{p.code}</code> — {p.grade} {p.name}</div>
                   ))
                 : <div>아직 없습니다.</div>}
             </div>
@@ -588,7 +588,7 @@ function PrizeTab({
             const next = [...GRADES].find((g) => !used.has(g));
             if (!next) return;
             setRows((r) => [...r, {
-              grade: next, name: `${next}상 상품`, qty: 0, left: 0, useWhen: 'later', validDays: 7,
+              grade: next, name: `${next} 상품`, qty: 0, left: 0, useWhen: 'later', validDays: 7,
             }]);
           }}>+ 등급 추가 ({rows.length}/8)</button>
         )}
@@ -844,7 +844,7 @@ function UseTab({
       if (r.ok) {
         setVd({
           k: 'ok', ic: 'check',
-          h: `${r.grade}상 — ${r.name}`,
+          h: `${r.grade} — ${r.name}`,
           s: r.isLastOne && r.lastOneName
             // 이름표는 사장님이 정한 문구를 쓴다 (기본 "막차 보너스")
             ? `사용 처리되었습니다.\n${lastLabel} 「${r.lastOneName}」도 함께 지급해주세요.`

@@ -501,7 +501,7 @@ function NewStore({
                 <td style={{ width: 44 }}>
                   <div className="gg" style={{ background: COLORS[p.grade] }}>{p.grade}</div>
                 </td>
-                <td><input value={p.name} placeholder={`${p.grade}상 상품`}
+                <td><input value={p.name} placeholder={`${p.grade} 상품`}
                            onChange={(e) => patch(i, { name: e.target.value })} /></td>
                 <td style={{ width: 104 }}>
                   <input type="number" min={0} value={p.qty}
@@ -592,7 +592,7 @@ function Coupons({ rows }: { rows: Coupon[] }) {
               {rows.map((c) => (
                 <tr key={c.code + c.store} className={c.expired ? 'warn' : ''}>
                   <td>{c.store}{c.branch ? ` · ${c.branch}` : ''}</td>
-                  <td>{c.grade}상</td>
+                  <td>{c.grade}</td>
                   <td>{c.prize}</td>
                   <td><code>{c.code}</code></td>
                   <td>

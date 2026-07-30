@@ -818,7 +818,7 @@ function ResultView({
               <div className="tx">
                 <div className="k">함께 지급됩니다</div>
                 <div className="v">
-                  <b style={{ color: gradeColor(r.grade) }}>{r.grade}상</b> {r.name}
+                  <b style={{ color: gradeColor(r.grade) }}>{r.grade}</b> {r.name}
                 </div>
               </div>
             </div>
@@ -830,7 +830,7 @@ function ResultView({
                 ? <img src={r.image} alt="" />
                 : <div className="noimg">{r.grade}</div>}
             </div>
-            <div className="gtag" style={{ background: gradeColor(r.grade) }}>{r.grade}상</div>
+            <div className="gtag" style={{ background: gradeColor(r.grade) }}>{r.grade}</div>
             <h1>{r.name}</h1>
           </>
         )}

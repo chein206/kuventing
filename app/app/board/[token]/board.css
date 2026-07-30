@@ -273,10 +273,9 @@
   text-shadow:0 2px 6px rgba(0,0,0,.55)
 }
 .bd .tk2.used{font-size:34px;opacity:.92}
-/* 개봉된 칸은 등급 뒤에 작은 "상" */
-.bd .tk2.used span::after{
-  content:"상";font-size:.42em;font-weight:700;opacity:.6;margin-left:2px;vertical-align:.35em
-}
+/* 등급 뒤에 "상"을 붙이지 않는다.
+   "A상/B상"은 이치방쿠지의 표기 체계다. 라스트원을 막차 보너스로 바꾼 것과 같은 이유로
+   그대로 쓰지 않는다(법률조사.md §3). 등급은 글자와 색으로만 보여준다. */
 .bd .tk2.sel{transform:translateY(-5px) scale(1.04)}
 .bd .tk2.sel .art{filter:drop-shadow(0 0 0 var(--accent)) drop-shadow(0 6px 14px rgba(0,0,0,.6))}
 .bd .tk2.sel::after{
