@@ -42,12 +42,16 @@
 }
 @keyframes madDark{from{opacity:var(--d0)}to{opacity:var(--d1)}}
 
-/* 글자가 읽히도록 위아래로 깔아 두는 고정 그라데이션 */
+/* 글자가 읽히도록 위아래로 깔아 두는 고정 그라데이션.
+   시안은 어두운 배경 사진을 전제로 52%부터 내려왔지만,
+   규격(아래 30% 비우기)에 맞지 않는 사진이 오면 메뉴명이 접시 위에 걸린다.
+   광고가 안 읽히면 광고로서 실패이므로 자막 자리(64%)를 확실히 덮는다. */
 .mad .madlegib{
   position:absolute;inset:0;
   background:linear-gradient(to bottom,
     rgba(11,11,12,.72) 0%, rgba(11,11,12,0) 26%,
-    rgba(11,11,12,0) 52%, rgba(11,11,12,.88) 100%)
+    rgba(11,11,12,0) 44%, rgba(11,11,12,.34) 58%,
+    rgba(11,11,12,.74) 76%, rgba(11,11,12,.93) 100%)
 }
 .mad .madvig{
   position:absolute;inset:0;

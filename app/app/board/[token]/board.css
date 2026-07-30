@@ -87,9 +87,9 @@
 /* 잔여 현황 전체가 뽑기 시작 버튼이다 */
 .bd .statuszone{cursor:pointer;border-radius:var(--radius);transition:transform .12s}
 .bd .statuszone:active{transform:scale(.985)}
-/* 등급별 잔여 — 등급 글자와 수량만. 한 줄에 다 들어와야 훑어진다.
-   상품명은 위 광고와 다음 화면이 크게 보여준다 */
-.gchips{display:flex;gap:8px;margin-bottom:13px}
+/* 등급별 잔여 — 결과 화면에서만 쓴다.
+   초기화면에서는 뺐다: 위 칸(24/50)과 티켓 판이 같은 말을 하고 있어 셋이 겹쳤다 */
+.gchips{display:flex;gap:8px}
 .gchip{
   flex:1;min-width:0;
   display:flex;flex-direction:column;align-items:center;gap:5px;

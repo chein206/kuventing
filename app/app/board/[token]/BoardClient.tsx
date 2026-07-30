@@ -403,16 +403,8 @@ export default function BoardClient({ token }: { token: string }) {
           <div className="foot">
             {/* 잔여 현황을 눌러도 뽑기가 시작된다 */}
             <div className="statuszone" onClick={start} role="button">
-              {/* 등급과 남은 수만. 상품명은 위 광고와 다음 화면에서 크게 보여주므로
-                  여기서 또 쓰면 글자만 많아지고 한 줄에 안 들어간다 */}
-              <div className="gchips">
-                {(board?.prizes ?? []).map((p) => (
-                  <div key={p.grade} className={`gchip ${p.left === 0 ? 'zero' : ''} ${p.left > 0 && p.left <= 2 ? 'hot' : ''}`}>
-                    <div className="d" style={{ background: gradeColor(p.grade) }}>{p.grade}</div>
-                    <div className="n">{p.left}</div>
-                  </div>
-                ))}
-              </div>
+              {/* 등급별 잔여 칩은 뺐다. 위 칸(24/50)과 아래 티켓 판이 이미 같은 것을
+                  말하고 있어서 셋이 겹쳤다. 등급별 수량은 다음 화면 상품 카드에 있다 */}
               <Mini board={board} pops={pops} />
             </div>
             <button className="touch" onClick={start}>화면을 눌러 뽑기 시작</button>
