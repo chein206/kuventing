@@ -49,6 +49,13 @@ const TEAR_SPARKS = Array.from({ length: 18 }, (_, i) => ({
 
 type Step = 'attract' | 'pin' | 'list' | 'grid' | 'open' | 'result';
 
+/**
+ * 사진이 아니라 그림(할인권 SVG 같은 것)인지.
+ * 그림은 자르면 안 된다 — 안에 이미 글자와 테두리가 들어 있다.
+ * 광고 사진을 자르지 않는 것과 같은 이유다.
+ */
+const isFlat = (src: string) => /\.svg($|\?)/i.test(src);
+
 const GRADES = 'ABCDEFGH';
 const gradeColor = (g: string) => {
   const i = GRADES.indexOf(g.toUpperCase());
@@ -458,18 +465,15 @@ export default function BoardClient({ token }: { token: string }) {
                 className={`pcard ${p.left === 0 ? 'out' : ''} ${p.image ? 'shot' : 'nopic'}`}
                 style={{ ['--gc' as string]: gradeColor(p.grade) }}
               >
-                {/* 사진이 카드를 채우고 글자가 그 위에 얹힌다.
+                {/* 사진이 카드를 채우고 이름은 아래 띠에만 얹는다.
                     카드를 위아래로 나누면 사진이 남는 높이만큼 눌려 작아진다. */}
                 {p.image
-                  ? <img className="pshot" src={p.image} alt="" />
+                  ? <img className={`pshot ${isFlat(p.image) ? 'flat' : ''}`} src={p.image} alt="" />
                   : <span className="pbig">{p.grade}</span>}
-                <div className="ptop">
-                  <div className="phead">
-                    <span className="pgrade">{p.grade}상</span>
-                    <span className="pleft">{p.left === 0 ? '소진' : `${p.left}개 남음`}</span>
-                  </div>
-                  <h3>{p.name}</h3>
-                  <p>{p.useWhen === 'now' ? '그 자리에서 바로' : '다음 방문 때 쓰는 쿠폰'}</p>
+                <span className="pgrade">{p.grade}</span>
+                <div className="pbar">
+                  <b>{p.name}</b>
+                  <span>{p.left === 0 ? '소진' : `${p.left}개`}</span>
                 </div>
               </div>
             ))}
@@ -477,15 +481,12 @@ export default function BoardClient({ token }: { token: string }) {
             {cfg.lastOneName && (
               <div className={`pcard last ${cfg.lastOneImage ? 'shot' : 'nopic'}`}>
                 {cfg.lastOneImage
-                  ? <img className="pshot" src={cfg.lastOneImage} alt="" />
+                  ? <img className={`pshot ${isFlat(cfg.lastOneImage) ? 'flat' : ''}`} src={cfg.lastOneImage} alt="" />
                   : <span className="pbig"><Icon name="star" /></span>}
-                <div className="ptop">
-                  <div className="phead">
-                    <span className="pgrade">{cfg.lastOneLabel ?? '마지막 보상'}</span>
-                    <span className="pleft">1개</span>
-                  </div>
-                  <h3>{cfg.lastOneName}</h3>
-                  <p>마지막 티켓을 뽑으면 등급 상품과 함께 드립니다</p>
+                <span className="pgrade wide">{cfg.lastOneLabel ?? '마지막 보상'}</span>
+                <div className="pbar">
+                  <b>{cfg.lastOneName}</b>
+                  <span>1개</span>
                 </div>
               </div>
             )}
