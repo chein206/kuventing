@@ -6,8 +6,12 @@
   width:100%;max-width:none;min-height:100dvh;flex:1;
   display:flex;flex-direction:column;padding:0;overflow:hidden;position:relative
 }
+/* 세로 배분 — 광고 70% · 티켓 판 17% · 상단 바 6% · 뽑기 버튼 4%.
+   광고가 1순위라 나머지를 먼저 정하고 남은 것을 광고에 준다(.stage 가 flex:1).
+   clamp 는 작은 화면에서 숫자와 글자가 눌리지 않게 두는 바닥·천장이다. */
 .bd .bar{
-  display:flex;align-items:center;gap:12px;padding:22px 26px 14px
+  height:clamp(58px,6dvh,96px);flex:none;
+  display:flex;align-items:center;gap:12px;padding:0 26px
 }
 .bd .bar .home{
   width:44px;height:44px;flex:none;border-radius:99px;
@@ -83,7 +87,7 @@
 .bd .stage{touch-action:pan-y;user-select:none}
 
 /* ---------- 아래 고정: 등급 + 미니 그리드 ---------- */
-.bd .foot{padding:0 26px 22px;flex:none}
+.bd .foot{padding:0 26px 14px;flex:none;display:flex;flex-direction:column}
 /* 잔여 현황 전체가 뽑기 시작 버튼이다 */
 .bd .statuszone{cursor:pointer;border-radius:var(--radius);transition:transform .12s}
 .bd .statuszone:active{transform:scale(.985)}
@@ -108,9 +112,14 @@
 }
 .gchip.hot .n{color:var(--accent)}
 
-.mini{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+/* 티켓 판 — 높이를 먼저 정하고 칸이 그 안을 나눈다.
+   칸 비율을 고정하면(aspect-ratio) 티켓 수에 따라 높이가 튀어 광고를 밀어낸다 */
+.mini{
+  display:grid;grid-template-columns:repeat(10,1fr);grid-auto-rows:1fr;gap:5px;
+  height:clamp(120px,17dvh,250px)
+}
 .mini i{
-  aspect-ratio:2/1;position:relative;display:grid;place-items:center;font-style:normal
+  position:relative;display:grid;place-items:center;font-style:normal;min-height:0
 }
 .mini i .art{position:absolute;inset:0;width:100%;height:100%}
 .mini i b{
@@ -120,10 +129,11 @@
 @keyframes pp{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
 
 .touch{
-  display:block;width:100%;
-  text-align:center;font-size:21px;font-weight:900;letter-spacing:-.02em;
-  padding:22px;border-radius:var(--radius);background:var(--accent);color:var(--accent-ink);
-  margin-top:16px;animation:br 2.4s ease-in-out infinite;box-shadow:var(--shadow),var(--glow)
+  width:100%;height:clamp(44px,4dvh,68px);flex:none;
+  display:grid;place-items:center;
+  font-size:clamp(16px,1.6dvh,21px);font-weight:900;letter-spacing:-.02em;
+  border-radius:var(--radius);background:var(--accent);color:var(--accent-ink);
+  margin-top:12px;animation:br 2.4s ease-in-out infinite;box-shadow:var(--shadow),var(--glow)
 }
 .touch:active{transform:scale(.99)}
 @keyframes br{0%,100%{opacity:1}50%{opacity:.72}}

@@ -98,8 +98,9 @@ export function buildScenes(
     cam: SIGN_CAM,
     store: store.name + (store.branch ? ` · ${store.branch}` : ''),
     tagline: total > 0 ? `${total}장 중 ${left}장 남았습니다` : '꽝 없는 뽑기',
-    info: '주문하시면 한 장 뽑습니다\n모든 티켓에 상품이 들어있습니다',
-    top: 980,
+    // 2.5초짜리 컷이다. 한 줄만 남긴다 — 세 줄이면 아무것도 안 읽힌다
+    info: '주문하시면 한 장 뽑습니다',
+    top: 880,
   });
 
   return scenes;
@@ -183,7 +184,11 @@ export default function MotionAd({ scenes }: { scenes: MotionScene[] }) {
               style={{ top: vh(s.top), left: px(96), right: px(96), gap: px(30) }}
             >
               <div className="madrule" style={{ height: px(2) }} />
-              <div className="madstore" style={{ fontSize: px(96) }}>{s.store}</div>
+              {/* 긴 매장명(지점까지 붙으면 12자 넘는다)은 두 줄로 밀려 컷을 다 먹는다.
+                  글자 수에 따라 크기를 낮춘다 */}
+              <div className="madstore" style={{ fontSize: px(s.store.length > 10 ? 66 : 88) }}>
+                {s.store}
+              </div>
               <div className="madbody" style={{ fontSize: px(36) }}>{s.tagline}</div>
             </div>
 
