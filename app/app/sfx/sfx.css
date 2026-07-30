@@ -1,0 +1,47 @@
+/* 소리 미리듣기 — 내부용이라 꾸미지 않는다. 누르기 쉽게만 만든다 */
+.sx{
+  --bg:#0E0E10; --surf:#18181B; --surf2:#202024;
+  --ink:#FAFAFA; --dim:#8B8B93; --line:#2B2B31; --pri:#D7FF3E;
+  width:100%;max-width:520px;min-height:100dvh;
+  background:var(--bg);color:var(--ink);padding:22px 18px 60px
+}
+.sx *{color:inherit}
+.sx header h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.sx header p{font-size:13px;color:var(--dim);margin-top:7px;line-height:1.6}
+
+.sx section{margin-top:26px}
+.sx section h2{
+  font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--dim);
+  margin-bottom:10px;display:flex;gap:8px;align-items:baseline
+}
+.sx section h2 em{font-style:normal;font-weight:600;letter-spacing:0;font-size:11px;opacity:.7}
+.sx .n{font-size:12px;color:var(--dim);margin-top:9px;line-height:1.6}
+
+.sx .seg{display:flex;gap:8px}
+.sx .seg button{
+  flex:1;padding:13px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surf);font-size:14px;font-weight:700;color:var(--dim)
+}
+.sx .seg button[aria-pressed="true"]{background:var(--pri);color:#121212;border-color:var(--pri)}
+
+.sx .row{
+  width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  padding:15px 16px;margin-bottom:8px;border-radius:12px;
+  border:1px solid var(--line);background:var(--surf);text-align:left
+}
+.sx .row:active{background:var(--surf2)}
+.sx .row:disabled{opacity:.45}
+.sx .row b{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.sx .row span{font-size:11px;color:var(--dim)}
+.sx .row.big{padding:19px 16px;border-color:var(--pri)}
+.sx .row.big b{color:var(--pri)}
+
+.sx .grades{display:flex;gap:8px;flex-wrap:wrap}
+.sx .grades button{
+  width:52px;height:52px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surf);font-size:18px;font-weight:900
+}
+.sx .grades button.last{
+  width:auto;padding:0 16px;font-size:13px;font-weight:800;
+  border-color:#B8892F;color:#E6C77A
+}

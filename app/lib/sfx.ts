@@ -14,7 +14,8 @@
 
 export type SoundMode = 'off' | 'soft' | 'loud';
 
-const GAIN: Record<SoundMode, number> = { off: 0, soft: 0.22, loud: 0.6 };
+// 매장에서 들어 보니 낮았다. 주방 소리·손님 대화를 넘어야 한다.
+const GAIN: Record<SoundMode, number> = { off: 0, soft: 0.38, loud: 0.9 };
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -107,38 +108,103 @@ export function grindStop() {
   setTimeout(() => { try { src.stop(); } catch { /* 이미 멈춤 */ } }, 220);
 }
 
-/* ---------- 다 열릴 때: 짜악 ---------- */
+/* ---------- 다 열릴 때: 확정음 ----------
+   "티켓이 확정됐다"를 알리는 한 방. 성격이 다른 다섯 가지를 두고 골라 쓴다.
+   여는 소리(지익-)가 노이즈라, 확정음은 그와 결이 달라야 끝이 분명해진다. */
 
-export function snap() {
-  if (!on() || !ctx || !master) return;
-  const t = ctx.currentTime;
+export type SnapKind = 'thud' | 'clang' | 'latch' | 'pop' | 'shatter';
 
-  // 짧은 노이즈 버스트 — 종이가 찢어지는 순간
+export const SNAP_LABEL: Record<SnapKind, string> = {
+  thud: '뚝 — 둔탁하게 끊김',
+  clang: '챠앙 — 금속 울림',
+  latch: '철컥 — 자물쇠 열림',
+  pop: '팡 — 코르크 터짐',
+  shatter: '쨍 — 유리 깨짐',
+};
+
+/** 짧은 노이즈 한 방. 여러 확정음이 공통으로 쓴다 */
+function burst(t: number, from: number, to: number, dur: number, vol: number, q = 0.9) {
+  if (!ctx || !master) return;
   const src = noise();
-  if (src) {
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.setValueAtTime(3200, t);
-    bp.frequency.exponentialRampToValueAtTime(600, t + 0.22);
-    bp.Q.value = 0.9;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.75, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
-    src.connect(bp); bp.connect(g); g.connect(master);
-    src.start(t); src.stop(t + 0.3);
-  }
-
-  // 아래로 떨어지는 톤 — 무게를 준다
-  const o = ctx.createOscillator();
-  o.type = 'triangle';
-  o.frequency.setValueAtTime(520, t);
-  o.frequency.exponentialRampToValueAtTime(120, t + 0.2);
-  const og = ctx.createGain();
-  og.gain.setValueAtTime(0.3, t);
-  og.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
-  o.connect(og); og.connect(master);
-  o.start(t); o.stop(t + 0.26);
+  if (!src) return;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.setValueAtTime(from, t);
+  bp.frequency.exponentialRampToValueAtTime(Math.max(60, to), t + dur);
+  bp.Q.value = q;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(bp); bp.connect(g); g.connect(master);
+  src.start(t); src.stop(t + dur + 0.02);
 }
+
+/** 떨어지거나 울리는 톤 */
+function tone(
+  t: number, from: number, to: number, dur: number, vol: number,
+  type: OscillatorType = 'triangle',
+) {
+  if (!ctx || !master) return;
+  const o = ctx.createOscillator();
+  o.type = type;
+  o.frequency.setValueAtTime(from, t);
+  if (to !== from) o.frequency.exponentialRampToValueAtTime(Math.max(20, to), t + dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+
+export function snapOf(kind: SnapKind) {
+  if (!on() || !ctx) return;
+  const t = ctx.currentTime + 0.01;
+
+  switch (kind) {
+    // 지금 쓰던 것. 종이가 끊기는 둔탁한 맛
+    case 'thud':
+      burst(t, 3200, 600, 0.24, 0.8);
+      tone(t, 520, 120, 0.22, 0.34);
+      break;
+
+    // 금속을 때린 울림. 여는 소리가 그라인더라 결이 이어진다
+    case 'clang':
+      burst(t, 6000, 2200, 0.05, 0.5, 1.6);
+      // 배음이 딱 맞지 않게 흩어 두면 쇳소리가 된다
+      [1850, 2790, 4130, 5600].forEach((f, i) =>
+        tone(t + i * 0.004, f, f * 0.985, 0.85 - i * 0.13, 0.2 - i * 0.035, 'sine'));
+      tone(t, 320, 210, 0.3, 0.22);
+      break;
+
+    // 자물쇠가 풀리는 두 단 클릭. 기계적이고 끝이 분명하다
+    case 'latch':
+      burst(t, 2600, 900, 0.035, 0.65, 1.4);
+      burst(t + 0.055, 4200, 1400, 0.05, 0.8, 1.2);
+      tone(t + 0.055, 180, 90, 0.16, 0.34);
+      break;
+
+    // 코르크가 빠지는 소리. 축하 쪽으로 기운다
+    case 'pop':
+      tone(t, 700, 90, 0.09, 0.55, 'sine');
+      burst(t + 0.01, 1500, 420, 0.07, 0.45, 0.7);
+      burst(t + 0.06, 5200, 3000, 0.22, 0.14, 0.8);   // 뒤에 남는 공기음
+      break;
+
+    // 유리가 깨지며 조각이 튄다. 가장 화려하고 날카롭다
+    case 'shatter':
+      burst(t, 7000, 3000, 0.07, 0.6, 1.1);
+      [3300, 4700, 5900, 7300, 2600].forEach((f, i) =>
+        tone(t + 0.02 + i * 0.028, f, f * 0.94, 0.3 - i * 0.04, 0.16, 'sine'));
+      tone(t, 260, 150, 0.2, 0.2);
+      break;
+  }
+}
+
+/** 화면에서 부르는 확정음. 기본값은 아래 DEFAULT_SNAP */
+let snapKind: SnapKind = 'latch';
+export const setSnap = (k: SnapKind) => { snapKind = k; };
+export function snap() { snapOf(snapKind); }
 
 /* ---------- 결과: 등급에 따라 ---------- */
 
