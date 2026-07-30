@@ -15,7 +15,8 @@
 export type SoundMode = 'off' | 'soft' | 'loud';
 
 // 매장에서 들어 보니 낮았다. 주방 소리·손님 대화를 넘어야 한다.
-const GAIN: Record<SoundMode, number> = { off: 0, soft: 0.38, loud: 0.9 };
+// 1을 넘겨도 되는 이유는 뒤에 리미터를 달았기 때문이다 (아래 unlock 참고).
+const GAIN: Record<SoundMode, number> = { off: 0, soft: 0.62, loud: 1.45 };
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -31,7 +32,18 @@ export function unlock(next: SoundMode) {
     if (!AC) return;
     ctx = new AC();
     master = ctx.createGain();
-    master.connect(ctx.destination);
+
+    // 리미터. 팡파레처럼 소리가 여럿 겹칠 때 볼륨을 올리면 찢어진다.
+    // 넘치는 부분만 눌러 주면 같은 볼륨에서도 더 크게 들리고 깨지지 않는다.
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -9;
+    limiter.knee.value = 3;
+    limiter.ratio.value = 14;
+    limiter.attack.value = 0.002;
+    limiter.release.value = 0.16;
+
+    master.connect(limiter);
+    limiter.connect(ctx.destination);
   }
   master!.gain.value = GAIN[next];
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
@@ -202,7 +214,7 @@ export function snapOf(kind: SnapKind) {
 }
 
 /** 화면에서 부르는 확정음. 기본값은 아래 DEFAULT_SNAP */
-let snapKind: SnapKind = 'latch';
+let snapKind: SnapKind = 'pop';
 export const setSnap = (k: SnapKind) => { snapKind = k; };
 export function snap() { snapOf(snapKind); }
 

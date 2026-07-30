@@ -77,7 +77,7 @@ export default function SfxClient() {
           </button>
         ))}
         <p className="n">
-          지금 화면에 들어가 있는 것은 <b>철컥</b>입니다. 다른 걸 고르면 바꿔 드립니다.
+          지금 화면에 들어가 있는 것은 <b>팡</b>입니다. 다른 걸 고르면 바꿔 드립니다.
         </p>
       </section>
 
