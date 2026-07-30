@@ -1,0 +1,30 @@
+# 의존성 / 빌드 산출물
+node_modules/
+.next/
+out/
+build/
+.turbo/
+
+# 환경변수 — 서비스 롤 키가 들어있으므로 절대 커밋하지 않는다
+.env
+.env.*
+!.env.local.example
+
+# 로그·캐시
+*.log
+npm-debug.log*
+.eslintcache
+*.tsbuildinfo
+next-env.d.ts
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 에디터
+.vscode/
+.idea/
+
+# Vercel
+.vercel/

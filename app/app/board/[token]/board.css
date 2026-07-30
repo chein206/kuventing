@@ -1,0 +1,527 @@
+/* ============================================================
+   카운터 옆 상시 화면 (세로 태블릿 전용)
+   글자를 크게 — 유리창 밖에서도 읽혀야 한다.
+   ============================================================ */
+.bd{
+  width:100%;max-width:none;min-height:100dvh;flex:1;
+  display:flex;flex-direction:column;padding:0;overflow:hidden;position:relative
+}
+.bd .bar{
+  display:flex;align-items:center;gap:12px;padding:22px 26px 14px
+}
+.bd .bar .home{
+  width:44px;height:44px;flex:none;border-radius:99px;
+  background:var(--surf);border:1px solid var(--line);color:var(--ink-dim);
+  font-size:19px;font-weight:800;display:grid;place-items:center;box-shadow:var(--shadow)
+}
+.bd .bar .home:active{transform:scale(.94)}
+.bd .bar .nm{font-size:15px;font-weight:700;letter-spacing:.06em;color:var(--ink-dim)}
+.bd .bar .rt{margin-left:auto;text-align:right}
+.bd .bar .rt b{font-size:34px;font-weight:900;letter-spacing:-.04em;line-height:1}
+.bd .bar .rt i{font-style:normal;font-size:16px;color:var(--ink-dim);font-weight:700}
+.bd .bar .rt small{display:block;font-size:11px;color:var(--ink-dim);letter-spacing:.1em;margin-top:3px}
+
+/* ---------- 초기화면 (어트랙트) ---------- */
+.bd .stage{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding:20px 26px;position:relative;min-height:0;overflow:hidden
+}
+.slide{animation:sIn .6s cubic-bezier(.2,.8,.3,1)}
+@keyframes sIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+.slide.kuji .eyebrow{font-size:16px;font-weight:800;letter-spacing:.24em;color:var(--accent)}
+.slide.kuji h1{font-size:62px;font-weight:900;letter-spacing:-.05em;line-height:1.02;margin-top:10px}
+.slide.kuji h1 em{font-style:normal;color:var(--accent)}
+.slide.kuji .lead{font-size:19px;color:var(--ink-dim);font-weight:600;margin-top:14px;line-height:1.5}
+.hero{display:flex;align-items:baseline;gap:10px;margin-top:26px}
+.hero b{font-size:96px;font-weight:900;letter-spacing:-.06em;line-height:.9}
+.hero span{font-size:22px;font-weight:700;color:var(--ink-dim)}
+
+/* 광고 — 사진이 있으면 위쪽 영역을 통째로 채운다 (세로 화면에서 가장 크게 보이는 형태) */
+.slide.ad .kind{font-size:14px;font-weight:800;letter-spacing:.22em;color:var(--ink-dim)}
+.slide.ad h1{font-size:56px;font-weight:900;letter-spacing:-.045em;line-height:1.05;margin-top:12px}
+.slide.ad .sub{font-size:20px;color:var(--ink-dim);margin-top:14px;line-height:1.5;font-weight:500}
+.slide.ad .price{font-size:30px;font-weight:900;margin-top:20px;color:var(--accent);letter-spacing:-.03em}
+
+.slide.ad.full{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0;overflow:hidden
+}
+.slide.ad.full .shot{position:absolute;inset:0;overflow:hidden}
+/* 뒤: 화면을 채우는 흐린 배경 */
+.slide.ad.full .shot .blur{
+  position:absolute;inset:-6%;width:112%;height:112%;
+  object-fit:cover;filter:blur(34px) saturate(1.25) brightness(.62);transform:scale(1.06)
+}
+/* 앞: 잘리지 않은 원본 */
+.slide.ad.full .shot .main{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;display:block
+}
+/* 글자가 읽히도록 아래쪽에 그늘 */
+.slide.ad.full .shot::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.86) 0%,rgba(0,0,0,.48) 30%,transparent 56%)
+}
+.slide.ad.full .cap{position:relative;padding:0 30px 32px;color:#fff}
+.slide.ad.full .kind{color:rgba(255,255,255,.72)}
+.slide.ad.full h1{color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.5)}
+.slide.ad.full .sub{color:rgba(255,255,255,.82)}
+.slide.ad.full .price{color:#fff}
+
+/* 슬라이드 표시 — 오른쪽 아래 */
+.dots{
+  position:absolute;right:30px;bottom:24px;z-index:3;
+  display:flex;gap:8px;padding:9px 13px;border-radius:99px;
+  background:rgba(0,0,0,.34);backdrop-filter:blur(6px)
+}
+.dots i{
+  width:8px;height:8px;border-radius:99px;background:rgba(255,255,255,.45);transition:.3s;
+  cursor:pointer
+}
+.dots i.on{width:28px;background:#fff}
+.bd .stage{touch-action:pan-y;user-select:none}
+
+/* ---------- 아래 고정: 등급 + 미니 그리드 ---------- */
+.bd .foot{padding:0 26px 22px;flex:none}
+/* 잔여 현황 전체가 뽑기 시작 버튼이다 */
+.bd .statuszone{cursor:pointer;border-radius:var(--radius);transition:transform .12s}
+.bd .statuszone:active{transform:scale(.985)}
+.gchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.gchip{
+  display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:99px;
+  background:var(--surf);border:1px solid var(--line);box-shadow:var(--shadow)
+}
+.gchip .d{width:22px;height:22px;border-radius:99px;color:#fff;font-size:11px;font-weight:900;
+  display:grid;place-items:center}
+.gchip .t{font-size:14px;font-weight:700;letter-spacing:-.02em}
+.gchip .n{font-size:14px;font-weight:900}
+.gchip.zero{opacity:.32;filter:saturate(.2)}
+.gchip.hot{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent)}
+
+.mini{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.mini i{
+  aspect-ratio:2/1;position:relative;display:grid;place-items:center;font-style:normal
+}
+.mini i .art{position:absolute;inset:0;width:100%;height:100%}
+.mini i b{
+  position:relative;z-index:1;font-size:15px;font-weight:900;letter-spacing:-.02em
+}
+.mini i.pop{animation:pp .6s cubic-bezier(.3,1.3,.4,1)}
+@keyframes pp{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+
+.touch{
+  display:block;width:100%;
+  text-align:center;font-size:21px;font-weight:900;letter-spacing:-.02em;
+  padding:22px;border-radius:var(--radius);background:var(--accent);color:var(--accent-ink);
+  margin-top:16px;animation:br 2.4s ease-in-out infinite;box-shadow:var(--shadow),var(--glow)
+}
+.touch:active{transform:scale(.99)}
+@keyframes br{0%,100%{opacity:1}50%{opacity:.72}}
+
+/* ---------- 뽑기 화면 (세로 큰 화면용) ---------- */
+.bd .page{flex:1;display:flex;flex-direction:column;padding:0 26px 24px;min-height:0}
+.bd h2.ttl{font-size:30px;font-weight:900;letter-spacing:-.035em;padding:8px 0 16px}
+.bd h2.ttl small{display:block;font-size:15px;font-weight:600;color:var(--ink-dim);margin-top:6px}
+
+/* ---------- 상품 소개 카드 ----------
+   뽑기만 보여주는 게 아니라 매장 메뉴를 크게 선보이는 자리다.  */
+.bd .pgrid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
+  overflow:auto;padding-bottom:4px;align-content:start
+}
+.bd .pcard{
+  --gc:var(--accent);
+  display:flex;flex-direction:column;overflow:hidden;
+  border-radius:22px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--gc) 13%,var(--surf));
+  box-shadow:var(--shadow);transition:.25s
+}
+.bd .pcard.out{opacity:.35;filter:saturate(.15)}
+
+.bd .pcard .ptop{padding:20px 20px 16px}
+.bd .pcard .phead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bd .pcard .pgrade{
+  font-size:13px;font-weight:900;letter-spacing:.04em;color:#fff;
+  background:var(--gc);padding:5px 11px;border-radius:99px
+}
+.bd .pcard .pleft{
+  margin-left:auto;font-size:13px;font-weight:800;color:var(--ink-dim)
+}
+.bd .pcard h3{
+  font-size:27px;font-weight:900;letter-spacing:-.035em;line-height:1.25;
+  word-break:keep-all
+}
+.bd .pcard p{font-size:15px;color:var(--ink-dim);margin-top:8px;line-height:1.45;font-weight:500}
+
+.bd .pcard .pimg{
+  margin-top:auto;aspect-ratio:16/10;background:var(--surf-2);position:relative;overflow:hidden
+}
+.bd .pcard .pimg img{width:100%;height:100%;object-fit:cover;display:block}
+.bd .pcard .pbig{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-size:88px;font-weight:900;color:var(--gc);opacity:.5;letter-spacing:-.05em
+}
+
+/* 라스트 보상은 두 칸을 다 쓴다 */
+.bd .pcard.last{
+  grid-column:1 / -1;--gc:var(--gold);
+  background:color-mix(in srgb,var(--gold) 18%,var(--surf));
+  border-color:color-mix(in srgb,var(--gold) 45%,var(--line))
+}
+.bd .pcard.last .pgrade{color:#2A1B00;background:var(--gold)}
+.bd .pcard.last .pimg{aspect-ratio:21/9}
+
+/* 화면이 좁으면 한 줄에 하나 */
+@media (max-width:620px){
+  .bd .pgrid{grid-template-columns:1fr;gap:12px}
+  .bd .pcard h3{font-size:23px}
+  .bd .pcard .pimg{aspect-ratio:16/9}
+}
+
+.bd .tgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;overflow:auto;padding:2px}
+.bd .tk2{
+  aspect-ratio:2/1;position:relative;display:grid;place-items:center;
+  color:#EFE0B8;font-size:27px;font-weight:900;letter-spacing:-.03em;transition:transform .12s
+}
+.bd .tk2 .art{position:absolute;inset:0;width:100%;height:100%}
+/* 왼쪽 엠블럼과 오른쪽 바코드 사이 빈 곳에 맞춘다 */
+.bd .tk2 span{
+  position:relative;z-index:1;padding-right:7%;
+  text-shadow:0 2px 6px rgba(0,0,0,.55)
+}
+.bd .tk2.used{font-size:34px;opacity:.92}
+/* 개봉된 칸은 등급 뒤에 작은 "상" */
+.bd .tk2.used span::after{
+  content:"상";font-size:.42em;font-weight:700;opacity:.6;margin-left:2px;vertical-align:.35em
+}
+.bd .tk2.sel{transform:translateY(-5px) scale(1.04)}
+.bd .tk2.sel .art{filter:drop-shadow(0 0 0 var(--accent)) drop-shadow(0 6px 14px rgba(0,0,0,.6))}
+.bd .tk2.sel::after{
+  content:"";position:absolute;inset:-7px;border:3px solid var(--accent);border-radius:12px
+}
+
+.bd .big{
+  width:100%;padding:22px;border-radius:var(--radius);background:var(--accent);color:var(--accent-ink);
+  font-size:21px;font-weight:900;letter-spacing:-.02em;margin-top:16px;
+  box-shadow:var(--shadow),var(--glow)
+}
+.bd .big[disabled]{opacity:.32}
+.bd .big.ghost{background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
+.bd .rowbtn{display:flex;gap:10px}
+
+/* PIN */
+.bd .pin{display:flex;flex-direction:column;align-items:center;gap:18px;padding:30px 0}
+.bd .pindots{display:flex;gap:14px}
+.bd .pindots i{width:18px;height:18px;border-radius:99px;background:var(--line)}
+.bd .pindots i.f{background:var(--accent)}
+.bd .keys{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:420px}
+.bd .keys button{
+  padding:24px;border-radius:16px;background:var(--surf);border:1px solid var(--line);
+  font-size:28px;font-weight:800;box-shadow:var(--shadow)
+}
+.bd .keys button:active{transform:scale(.96)}
+
+/* ---------- 오픈 ----------
+   위층(cover)이 미는 만큼 왼쪽부터 벗겨지고 아래층(under=결과)이 드러난다.
+   손잡이는 손가락보다 덜 움직여서(DRAG_RATIO) 무겁게 느껴진다.            */
+.bd .openstage{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;
+  position:relative;isolation:isolate
+}
+/* 카드 뒤 후광 — 천천히 맥동한다 */
+.bd .openstage::before{
+  content:"";position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  width:min(140vw,1100px);aspect-ratio:1;z-index:-2;pointer-events:none;
+  background:radial-gradient(circle,
+    color-mix(in srgb,var(--gold) 26%,transparent) 0%,
+    color-mix(in srgb,var(--accent) 12%,transparent) 34%,
+    transparent 62%);
+  animation:halo 3.4s ease-in-out infinite
+}
+@keyframes halo{
+  0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(.94)}
+  50%    {opacity:.9;transform:translate(-50%,-50%) scale(1.06)}
+}
+
+/* 배경 반짝임 */
+.bd .twinkles{position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.bd .twinkles i{
+  position:absolute;border-radius:99px;background:#fff;
+  box-shadow:0 0 10px 2px color-mix(in srgb,var(--gold) 75%,transparent);
+  animation:twinkle linear infinite;opacity:0
+}
+@keyframes twinkle{
+  0%,100%{opacity:0;transform:scale(.5)}
+  40%    {opacity:.95;transform:scale(1.25)}
+  60%    {opacity:.35;transform:scale(.9)}
+}
+
+/* 열리는 순간 화면이 한 번 번쩍 */
+.bd .openstage.firing::after{
+  content:"";position:absolute;inset:-40%;z-index:3;pointer-events:none;
+  background:radial-gradient(circle at 50% 46%,rgba(255,255,255,.92),transparent 46%);
+  animation:flash .55s ease-out forwards
+}
+@keyframes flash{0%{opacity:0}18%{opacity:.85}100%{opacity:0}}
+
+/* 미는 방향 안내 화살표 — 손잡이 오른쪽에서 흘러간다 */
+.bd .peel .guide{
+  position:absolute;left:calc(var(--px) + 104px);top:50%;transform:translateY(-50%);
+  display:flex;gap:6px;pointer-events:none;z-index:2
+}
+.bd .peel .guide span{
+  font-size:40px;font-weight:900;line-height:1;color:var(--tkt-line);
+  text-shadow:0 0 14px color-mix(in srgb,var(--gold) 80%,transparent);
+  animation:flow 1.5s ease-in-out infinite
+}
+.bd .peel .guide span:nth-child(2){animation-delay:.16s}
+.bd .peel .guide span:nth-child(3){animation-delay:.32s}
+@keyframes flow{0%,100%{opacity:.18;transform:translateX(-6px)}45%{opacity:.95;transform:translateX(4px)}}
+.bd .peel.go .guide{opacity:0;transition:opacity .2s}
+
+/* ---- 찢기는 경계 ---- */
+.bd .peel .tear{
+  position:absolute;top:-10%;bottom:-10%;left:var(--px);width:0;
+  pointer-events:none;z-index:2;
+  opacity:calc(var(--sh,0) / 5.2);
+  transition:left .05s linear
+}
+/* 새어 나오는 빛기둥 */
+.bd .peel .tear .beam{
+  position:absolute;top:0;bottom:0;left:-24px;width:48px;
+  background:
+    linear-gradient(90deg,transparent,rgba(255,255,255,.98) 45%,rgba(255,241,204,.9) 55%,transparent),
+    linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 80%,transparent),transparent);
+  filter:blur(6px);
+  animation:beamPulse .34s ease-in-out infinite alternate
+}
+@keyframes beamPulse{from{opacity:.65;transform:scaleX(.85)}to{opacity:1;transform:scaleX(1.15)}}
+
+/* 튀는 불티 */
+.bd .peel .tear i{
+  position:absolute;left:-3px;border-radius:99px;background:#FFF6DF;
+  box-shadow:0 0 10px 3px color-mix(in srgb,var(--gold) 85%,transparent);
+  animation-name:sparkOut;animation-iteration-count:infinite;animation-timing-function:ease-out
+}
+@keyframes sparkOut{
+  0%  {opacity:0;   transform:translate(0,0) scale(.4)}
+  15% {opacity:1;   transform:translate(6px,calc(var(--dy) * .15)) scale(1.15)}
+  100%{opacity:0;   transform:translate(var(--dx),var(--dy)) scale(.25)}
+}
+
+/* 다 열릴 때는 빛이 최대로 */
+.bd .peel.go .tear{
+  opacity:1;
+  transition:left .85s cubic-bezier(.4,0,.15,1),opacity .9s ease
+}
+.bd .peel.go .tear .beam{animation-duration:.18s}
+/* 티켓 색 — 세 화면(오픈 카드·그리드·미니)이 같은 값을 쓴다 */
+.bd{
+  --tkt-bg:#1E2E52; --tkt-line:#C9A24B;
+  --tkt-used-bg:#15171E; --tkt-used-line:#3B4150;
+}
+
+.bd .peel{
+  --px:0px;
+  position:relative;width:min(560px,92vw);aspect-ratio:2/1;
+  overflow:visible
+}
+/* 아래층 — 결과 */
+.bd .peel .under{
+  position:absolute;inset:0;background:var(--surf);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  border:1px solid var(--line);border-radius:16px
+}
+.bd .peel .under .ug{
+  width:96px;height:96px;border-radius:99px;display:grid;place-items:center;overflow:hidden;
+  color:#fff;font-size:42px;font-weight:900;
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.3)
+}
+.bd .peel .under .ug img{width:100%;height:100%;object-fit:cover}
+.bd .peel .under .un{font-size:22px;font-weight:900;letter-spacing:-.03em;padding:0 20px;text-align:center}
+
+/* 위층 — 티켓 표면. 왼쪽부터 잘려 나간다.
+   ticket.png 가 있으면 그 아트를, 없으면 기존 그라데이션을 쓴다. */
+.bd .peel .cover{
+  position:absolute;inset:0;
+  clip-path:inset(0 0 0 var(--px));
+  transition:clip-path .05s linear;
+  filter:drop-shadow(0 20px 40px rgba(0,0,0,.75))
+}
+.bd .peel .cover .art{position:absolute;inset:0;width:100%;height:100%}
+/* 오른쪽 스텁(뜯는 부분)을 피해 왼쪽 큰 면에 글자를 놓는다 */
+/* 왼쪽은 손잡이가 지나가는 자리라 비워둔다 */
+.bd .peel .cover .lbl{
+  position:absolute;inset:0 24% 0 22%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  padding:0 14px;text-align:center
+}
+.bd .peel .cover .lbl b{
+  font-size:34px;font-weight:900;letter-spacing:-.03em;line-height:1.15;
+  color:#F5E9CC;text-shadow:0 2px 10px rgba(0,0,0,.5)
+}
+.bd .peel .cover .lbl span{
+  font-size:17px;font-weight:700;letter-spacing:.02em;color:var(--tkt-line);opacity:.95
+}
+/* 찢긴 단면 */
+.bd .peel .cover::after{
+  content:"";position:absolute;top:0;bottom:0;left:var(--px);width:6px;
+  background:linear-gradient(90deg,rgba(0,0,0,.35),transparent)
+}
+
+.bd .peel .knob{
+  position:absolute;top:50%;left:var(--px);margin-left:12px;transform:translateY(-50%);
+  width:84px;height:84px;border-radius:99px;
+  background:linear-gradient(150deg,#F0D389,#C9A24B 55%,#9C7A2E);
+  display:grid;place-items:center;color:#241A05;font-size:62px;font-weight:900;line-height:0;
+  padding-left:6px;   /* 화살표 시각 중심 보정 */
+  box-shadow:0 0 0 9px rgba(201,162,75,.24),0 6px 16px rgba(0,0,0,.45),
+             inset 0 2px 0 rgba(255,255,255,.5);
+  transition:left .05s linear;animation:nudge2 2.4s ease-in-out infinite;touch-action:none;z-index:3
+}
+@keyframes nudge2{0%,100%{transform:translate(0,-50%)}50%{transform:translate(10px,-50%)}}
+
+/* 끝까지 밀렸을 때 — 무겁게 밀려나간다 */
+.bd .peel.go .cover,
+.bd .peel.go .knob{transition-duration:.85s;transition-timing-function:cubic-bezier(.4,0,.15,1)}
+.bd .peel.go.slow .cover,
+.bd .peel.go.slow .knob{transition-duration:1.3s}
+.bd .peel.go .knob{animation:none;opacity:0;transition-property:left,opacity}
+.bd .peel.go .under .ug{animation:pop .8s cubic-bezier(.2,1.3,.4,1) .45s both}
+
+/* ---------- 두근두근 ----------
+   손잡이를 잡고 있는 동안 카드가 떨린다. 많이 밀수록 --sh 가 커져 크게 흔들린다. */
+.bd .peel{animation:heart 1.9s ease-in-out infinite}
+@keyframes heart{
+  0%,100%{transform:scale(1)}
+  10%{transform:scale(1.014)}
+  20%{transform:scale(1)}
+  30%{transform:scale(1.009)}
+  42%{transform:scale(1)}
+}
+.bd .peel.grip{--sh:0;animation:tremble .08s linear infinite}
+@keyframes tremble{
+  0%  {transform:translate(calc(var(--sh) * -1px), calc(var(--sh) *  .4px)) rotate(calc(var(--sh) * -.14deg))}
+  25% {transform:translate(calc(var(--sh) *  1px), calc(var(--sh) * -.5px)) rotate(calc(var(--sh) *  .12deg))}
+  50% {transform:translate(calc(var(--sh) * -.8px),calc(var(--sh) *  .3px)) rotate(calc(var(--sh) * -.10deg))}
+  75% {transform:translate(calc(var(--sh) *  .9px),calc(var(--sh) *  .6px)) rotate(calc(var(--sh) *  .14deg))}
+  100%{transform:translate(calc(var(--sh) * -1px), calc(var(--sh) *  .4px)) rotate(calc(var(--sh) * -.14deg))}
+}
+.bd .peel.go{animation:none}
+
+/* ---------- 폭죽 ---------- */
+/* 색종이 비 — 무한 반복이라 끊기지 않는다 */
+.bd .res .spark.rain i{
+  top:-40px;border-radius:2px;opacity:1;
+  animation-name:confetti;animation-iteration-count:infinite;animation-timing-function:linear
+}
+.bd .res .spark.rain i.r{border-radius:99px}
+@keyframes confetti{
+  0%  {transform:translateY(-40px) rotate(0deg)   scale(1);   opacity:0}
+  8%  {opacity:1}
+  92% {opacity:1}
+  100%{transform:translateY(105vh) rotate(760deg) scale(.85); opacity:0}
+}
+
+/* 주기적으로 터지는 폭죽 */
+.bd .burst{position:absolute;pointer-events:none;z-index:1}
+.bd .burst i{
+  position:absolute;left:0;top:0;width:9px;height:9px;border-radius:2px;
+  animation:blast 1s cubic-bezier(.15,.7,.3,1) forwards
+}
+@keyframes blast{
+  0%  {transform:translate(0,0) scale(1.15) rotate(0deg);           opacity:1}
+  70% {opacity:.9}
+  100%{transform:translate(var(--tx),var(--ty)) scale(.25) rotate(220deg); opacity:0}
+}
+
+/* ---------- 결과 ----------
+   상품을 크게 보여주는 것이 핵심. 작은 원 배지 대신 큰 사진.  */
+.bd .res{flex:1;min-height:0;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;text-align:center;position:relative;padding:8px 0}
+.bd .res > *:not(.spark):not(.burst){position:relative;z-index:2}
+.bd .res .spark{z-index:0}
+
+.bd .congratsbar{
+  position:relative;width:100%;padding:14px 20px;border-radius:12px;
+  background:linear-gradient(90deg,var(--gold),color-mix(in srgb,var(--gold) 45%,#fff),var(--gold));
+  color:#2A1B00;font-size:26px;font-weight:900;letter-spacing:.06em;
+  box-shadow:0 10px 30px -14px rgba(0,0,0,.6);
+  animation:sIn .5s cubic-bezier(.2,.8,.3,1) both
+}
+.bd .congratsbar .lastbadge{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:12px;font-weight:900;letter-spacing:.1em;padding:6px 12px;border-radius:99px;
+  background:var(--accent);color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.5)
+}
+
+.bd .res .shotbox{
+  width:min(78vw,520px);aspect-ratio:1;border-radius:26px;overflow:hidden;position:relative;
+  background:var(--surf-2);
+  box-shadow:0 0 0 5px var(--gc),0 28px 60px -22px rgba(0,0,0,.85);
+  animation:pop .7s cubic-bezier(.2,1.35,.35,1) .15s both
+}
+.bd .res .shotbox img{width:100%;height:100%;object-fit:cover;display:block}
+.bd .res .shotbox .noimg{
+  width:100%;height:100%;display:grid;place-items:center;
+  font-size:170px;font-weight:900;color:var(--gc);letter-spacing:-.05em
+}
+
+/* 라스트 보상 — 금테 + 은은한 빛 */
+.bd .res .shotbox.gold{
+  box-shadow:0 0 0 6px var(--gold),0 0 46px -6px color-mix(in srgb,var(--gold) 70%,transparent),
+             0 28px 60px -22px rgba(0,0,0,.85)
+}
+.bd .res .shotbox.gold .noimg{color:var(--gold);font-size:150px}
+.bd .res .gtag.gold{
+  background:linear-gradient(90deg,var(--gold),color-mix(in srgb,var(--gold) 40%,#fff),var(--gold));
+  color:#2A1B00
+}
+
+/* 함께 지급되는 등급 상품 */
+.bd .res .alsobar{
+  display:flex;align-items:center;gap:14px;width:min(78vw,520px);
+  background:var(--surf);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px 16px;box-shadow:var(--shadow);
+  animation:sIn .45s ease .7s both
+}
+.bd .res .alsobar .thumb{
+  width:52px;height:52px;border-radius:12px;flex:none;overflow:hidden;
+  display:grid;place-items:center;color:#fff;font-size:22px;font-weight:900
+}
+.bd .res .alsobar .thumb img{width:100%;height:100%;object-fit:cover}
+.bd .res .alsobar .tx{text-align:left;min-width:0}
+.bd .res .alsobar .tx .k{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--ink-dim)}
+.bd .res .alsobar .tx .v{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-top:3px}
+
+.bd .res .gtag{
+  font-size:22px;font-weight:900;letter-spacing:.04em;color:#fff;
+  padding:8px 22px;border-radius:99px;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.3);
+  animation:sIn .45s ease .5s both
+}
+.bd .res h1{
+  font-size:46px;font-weight:900;letter-spacing:-.04em;line-height:1.12;padding:0 20px;
+  animation:sIn .45s ease .58s both
+}
+.bd .res .now{
+  font-size:20px;font-weight:800;padding:16px 24px;border-radius:var(--radius);
+  background:var(--surf);border:1px solid var(--line);box-shadow:var(--shadow)
+}
+.bd .cpn{
+  background:var(--surf);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:18px
+}
+.bd .cpn img{width:150px;height:150px;image-rendering:pixelated}
+.bd .cpn .cc{text-align:left}
+.bd .cpn .cc .l{font-size:12px;color:var(--ink-dim);font-weight:700;letter-spacing:.12em}
+.bd .cpn .cc .v{font-size:30px;font-weight:900;letter-spacing:.1em;margin:4px 0 6px;
+  font-family:ui-monospace,Menlo,monospace}
+.bd .cpn .cc .x{font-size:13px;color:var(--ink-dim);line-height:1.5}
+
+.bd .idle{
+  position:absolute;top:10px;right:14px;font-size:11px;color:var(--ink-dim);
+  font-weight:700;letter-spacing:.08em;opacity:.55
+}
