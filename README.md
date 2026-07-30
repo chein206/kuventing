@@ -37,6 +37,7 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 | `010_rate_limit.sql` | 뽑기 빈도 제한 + PIN 대입 차단 |
 | `011_rotate_tokens.sql` | 주소 재발급 |
 | `012_admin.sql` | 운영자용 매장 생성·목록·삭제 |
+| `013_admin_auth.sql` | 운영자 계정 명단 + 대시보드·쿠폰 집계 |
 
 선택
 - `seed_cafe.sql` + `seed_cafe_images.sql` — 데모 매장 2 (카페)
@@ -54,11 +55,22 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 | `NEXT_PUBLIC_SUPABASE_URL` | 이미 채워져 있음 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Settings > API > Publishable / anon |
 | `SUPABASE_SERVICE_ROLE_KEY` | Settings > API > Secret / service_role (**공개 금지**) |
-| `ADMIN_SECRET` | 운영자 화면 시크릿. 32자 이상 랜덤 (**공개 금지**) |
 | `NEXT_PUBLIC_SITE_URL` | 선택. 루트(`/`)로 온 사람을 회사 홈페이지로 보낸다 |
 
-> `NEXT_PUBLIC_CAMPAIGN_ID` 와 `OWNER_PIN` 은 더 이상 쓰지 않는다.
-> 매장·PIN은 전부 DB에서 온다.
+> `NEXT_PUBLIC_CAMPAIGN_ID` · `OWNER_PIN` · `ADMIN_SECRET` 은 더 이상 쓰지 않는다.
+> 매장·PIN은 전부 DB에서 오고, 운영자는 Supabase Auth 로그인으로 들어온다.
+
+### 1-2-1. 운영자 계정 만들기
+`013_admin_auth.sql` 을 돌린 뒤 한 번만 실행한다.
+
+```bash
+npm run admin -- 이메일주소
+```
+
+Supabase Auth 사용자를 만들고 `kuji.admins` 명단에 넣는다.
+임시 비밀번호는 화면에 찍지 않고 `app/admin-임시비번.txt` 로만 쓴다(깃 제외).
+확인하고 파일을 지운 뒤, 첫 로그인 후 Supabase 대시보드에서 비밀번호를 바꾼다.
+계정을 더 추가할 때도 같은 명령을 쓴다. 이미 있는 이메일이면 비밀번호만 재설정된다.
 
 ### 1-3. 실행
 ```bash
@@ -79,7 +91,7 @@ npm run dev
 | Root Directory | `app` |
 | Build / Install | 기본값 그대로 |
 | 도메인 | `kuvt.scpadlab.com` |
-| 환경변수 | 위 1-2의 키 3~4개 (Production + Preview 모두) |
+| 환경변수 | 위 1-2의 키 3개 (Production + Preview 모두) |
 
 CLI로 할 경우
 ```bash
@@ -95,7 +107,8 @@ npx vercel --prod
 - `npm run stores https://kuvt.scpadlab.com` 으로 매장 주소를 다시 뽑아 전달
 
 > 개발용 `allowedDevOrigins` 는 배포에 영향이 없다.
-> Supabase는 Auth를 쓰지 않으므로 도메인 화이트리스트 설정이 필요 없다.
+> 손님·사장님 화면은 Auth를 쓰지 않는다. 운영자 화면만 Supabase Auth를 쓰는데
+> 이메일+비밀번호 로그인은 리다이렉트가 없어서 도메인 화이트리스트 설정이 필요 없다.
 
 ---
 
@@ -114,19 +127,42 @@ npm run stores http://192.168.0.131:3000        # 태블릿에서 열 주소 기
 | `/board/<보드토큰>` | 카운터 태블릿 |
 | `/owner/<사장님토큰>` | 사장님 (PIN 로그인) |
 | `/c/<캠페인>/<코드>` | 손님 쿠폰 (결과 QR) |
-| `/admin/<ADMIN_SECRET>` | **우리 (운영자)** — 매장 생성·목록·삭제 |
+| `/admin` | **우리 (운영자)** — 이메일+비밀번호 로그인 |
 
-### 운영자 화면 — 신규 매장 온보딩
-SQL 없이 매장을 만든다. 업종 프리셋을 고르면 상품 구성·테마·막차 상품이 채워지고,
-저장하면 매장 → 이벤트 → 상품 → 1회차 박스까지 한 번에 만들어진다(실패 시 전부 롤백).
+### 운영자 화면
+주소는 `/admin` 하나다. 주소에 비밀이 없으므로 링크를 흘려도 위험하지 않다.
+
+**들어가는 순서**
+1. Supabase Auth 이메일+비밀번호 로그인 → `access_token`
+2. 모든 `/api/admin/*` 요청에 `Authorization: Bearer <access_token>`
+3. 서버가 토큰을 검증하고(`auth.getUser`) `kuji.admins` 명단을 확인(`is_admin`)
+
+| 상황 | 응답 |
+|---|---|
+| 헤더 없음 | `401 NO_TOKEN` |
+| 토큰이 가짜/만료 | `401 BAD_TOKEN` |
+| 로그인은 됐지만 명단에 없음 | `403 NOT_ADMIN` |
+
+Supabase에 가입된 다른 계정으로는 못 들어온다. 운영자 추가는 `npm run admin` 뿐이다.
+
+**화면 4개**
+
+| 메뉴 | 내용 |
+|---|---|
+| 대시보드 | 매장 수·오늘 뽑기·쿠폰 사용률·미사용 쿠폰 + 박스 소진 임박(5장 이하) + 확인 필요 매장 |
+| 매장 목록 | 카드형. 소진 진행바, 경고 배지, 주소·PIN은 접어두고 클릭해서 펼침 |
+| 매장 추가 | 업종 프리셋 → 기본정보 + 상품구성 |
+| 쿠폰 현황 | 전 매장 미사용 쿠폰, 만료 임박 순 |
+
+**신규 매장 온보딩** — SQL 없이 매장을 만든다. 업종 프리셋을 고르면 상품 구성·테마·막차
+상품이 채워지고, 저장하면 매장 → 이벤트 → 상품 → 1회차 박스까지 한 번에 만들어진다
+(실패 시 전부 롤백).
 
 - PIN 2개 자동 생성 (서로 다르게. 같으면 서버가 거부)
+- 수량 합계가 총 티켓 수와 다르면 서버가 거부
 - 생성 직후 **사장님 전달용 안내문 복사** 버튼 — 카톡에 그대로 붙여넣는다
 - 목록에 경고 배지: `상시 개방`, `PIN 중복`
 - 삭제는 뽑힌 기록이 있으면 거부. 강제 삭제는 한 번 더 확인
-
-**주소의 시크릿과 요청 헤더의 시크릿이 둘 다 `ADMIN_SECRET` 과 같아야** 통과한다.
-주소만 알아도, 헤더만 알아도 들어오지 못한다.
 
 ---
 

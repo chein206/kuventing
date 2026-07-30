@@ -1,34 +1,45 @@
 import 'server-only';
+import { getAdmin } from './admin';
 
 /**
- * 운영자 화면 인증.
- * 매장별 PIN(4자리)과 달리 여기는 긴 시크릿 하나로 막는다.
- * 주소의 시크릿과 헤더의 시크릿이 모두 환경변수와 같아야 통과한다.
+ * 운영자 인증.
+ *
+ * 이전에는 주소에 시크릿을 박아 썼다. URL·화면 공유·히스토리에 비밀이 남고
+ * 비번을 바꾸려면 환경변수를 고쳐 재배포해야 했다.
+ *
+ * 지금은 Supabase Auth 로그인 토큰을 검증하고, 운영자 명단(kuji.admins)에
+ * 있는지 확인한다. byd-quo 어드민과 같은 방식이다.
  */
-export function checkAdmin(secretFromUrl: string, req: Request): Response | null {
-  const expected = process.env.ADMIN_SECRET;
+export type AdminCtx = { userId: string; email: string };
 
-  if (!expected || expected.length < 16) {
-    return Response.json(
-      { error: 'ADMIN_NOT_CONFIGURED', message: 'ADMIN_SECRET 환경변수가 없습니다' },
-      { status: 503 }
-    );
+export async function requireAdmin(
+  req: Request
+): Promise<{ ctx: AdminCtx } | { error: Response }> {
+  const auth = req.headers.get('authorization') ?? '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+
+  if (!token) {
+    return { error: Response.json({ error: 'NO_TOKEN' }, { status: 401 }) };
   }
 
-  const header = req.headers.get('x-admin-secret') ?? '';
+  const db = getAdmin();
 
-  // 주소만 알아도, 헤더만 알아도 통과하지 못한다
-  if (!safeEqual(secretFromUrl, expected) || !safeEqual(header, expected)) {
-    return Response.json({ error: 'UNAUTHORIZED' }, { status: 401 });
+  // 토큰이 유효한 로그인인지 확인
+  const { data: userData, error: userErr } = await db.auth.getUser(token);
+  if (userErr || !userData?.user) {
+    return { error: Response.json({ error: 'BAD_TOKEN' }, { status: 401 }) };
   }
 
-  return null;
-}
+  const user = userData.user;
 
-/** 길이·내용 비교 시간 차이로 값을 유추하지 못하게 한다 */
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
+  // 로그인했더라도 운영자 명단에 없으면 거부한다
+  const { data: isAdmin, error: adminErr } = await db.rpc('is_admin', { p_user: user.id });
+  if (adminErr) {
+    return { error: Response.json({ error: adminErr.message }, { status: 500 }) };
+  }
+  if (!isAdmin) {
+    return { error: Response.json({ error: 'NOT_ADMIN' }, { status: 403 }) };
+  }
+
+  return { ctx: { userId: user.id, email: user.email ?? '' } };
 }

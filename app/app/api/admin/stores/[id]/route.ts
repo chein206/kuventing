@@ -1,18 +1,15 @@
 import { getAdmin } from '@/lib/admin';
-import { checkAdmin } from '@/lib/adminAuth';
+import { requireAdmin } from '@/lib/adminAuth';
 
 /**
  * 매장 삭제. 뽑힌 기록이 있으면 거부한다.
- * 정말 지워야 하면 ?force=1 을 붙인다 (데모 정리용).
+ * 정말 지워야 하면 ?force=1 (데모 정리용).
  */
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ secret: string; id: string }> }
-) {
-  const { secret, id } = await params;
-  const deny = checkAdmin(secret, req);
-  if (deny) return deny;
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requireAdmin(req);
+  if ('error' in gate) return gate.error;
 
+  const { id } = await params;
   const force = new URL(req.url).searchParams.get('force') === '1';
 
   const { data, error } = await getAdmin()

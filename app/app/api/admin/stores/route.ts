@@ -1,5 +1,5 @@
 import { getAdmin } from '@/lib/admin';
-import { checkAdmin } from '@/lib/adminAuth';
+import { requireAdmin } from '@/lib/adminAuth';
 
 type PrizeIn = {
   grade: string; name?: string; qty: number;
@@ -7,10 +7,9 @@ type PrizeIn = {
 };
 
 /** 매장 목록 — 주소·PIN·박스 상태 */
-export async function GET(req: Request, { params }: { params: Promise<{ secret: string }> }) {
-  const { secret } = await params;
-  const deny = checkAdmin(secret, req);
-  if (deny) return deny;
+export async function GET(req: Request) {
+  const gate = await requireAdmin(req);
+  if ('error' in gate) return gate.error;
 
   const { data, error } = await getAdmin().rpc('admin_list_stores');
   if (error) return Response.json({ error: error.message }, { status: 500 });
@@ -18,10 +17,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ secret: 
 }
 
 /** 매장 생성 — 매장 → 캠페인 → 상품 → 1회차 박스까지 한 번에 */
-export async function POST(req: Request, { params }: { params: Promise<{ secret: string }> }) {
-  const { secret } = await params;
-  const deny = checkAdmin(secret, req);
-  if (deny) return deny;
+export async function POST(req: Request) {
+  const gate = await requireAdmin(req);
+  if ('error' in gate) return gate.error;
 
   const body = (await req.json()) as {
     store?: { name?: string; branch?: string; owner_pin?: string; board_pin?: string };

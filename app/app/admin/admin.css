@@ -1,0 +1,167 @@
+/* ============================================================
+   쿠벤팅 운영자 — byd-quo 어드민과 같은 골격
+   다크 사이드바 + 밝은 본문. 내부용이라 밀도 높게.
+   ============================================================ */
+.ad{
+  --bg:#F4F5F7; --surf:#FFFFFF; --surf2:#F8F9FB;
+  --ink:#16181D; --dim:#6B7280; --line:#E3E6EB;
+  --side:#111114; --side-ink:#E9EAEE; --side-dim:#8B8B93;
+  --pri:#1F6FEB; --ok:#0F9D58; --warn:#D9822B; --bad:#D93025;
+  width:100%;min-height:100dvh;background:var(--bg);color:var(--ink)
+}
+.ad *{color:inherit}
+
+/* ---------- 로그인 ---------- */
+.ad .login{min-height:100dvh;display:grid;place-items:center;background:var(--side);padding:24px}
+.ad .loginbox{
+  width:100%;max-width:380px;background:#18181C;border:1px solid #26262C;border-radius:16px;
+  padding:34px 30px;color:var(--side-ink)
+}
+.ad .loginbox h1{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.ad .loginbox p{font-size:13px;color:var(--side-dim);margin-top:5px;margin-bottom:22px}
+.ad .loginbox input{
+  width:100%;padding:13px 14px;margin-bottom:10px;border-radius:10px;
+  border:1px solid #2E2E36;background:#101014;color:var(--side-ink);font-size:14px;font-weight:600
+}
+.ad .loginbox input:focus{outline:none;border-color:var(--pri)}
+.ad .loginbox .remember{
+  display:flex;align-items:center;gap:7px;font-size:12px;color:var(--side-dim);margin:2px 0 14px
+}
+.ad .loginbox button{
+  width:100%;padding:14px;border-radius:10px;background:var(--pri);color:#fff;
+  font-size:15px;font-weight:800
+}
+.ad .loginbox button:disabled{opacity:.4}
+.ad .loginbox .err{font-size:13px;color:#F2665A;font-weight:700;margin-top:12px;white-space:pre-line}
+
+/* ---------- 레이아웃 ---------- */
+.ad .layout{display:flex;min-height:100dvh}
+.ad .side{
+  width:216px;flex:none;background:var(--side);color:var(--side-ink);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100dvh
+}
+.ad .brand{padding:22px 20px 18px}
+.ad .brand h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.ad .brand p{font-size:11px;color:var(--side-dim);margin-top:2px;letter-spacing:.1em}
+.ad .nav{flex:1;overflow:auto;padding:0 10px}
+.ad .navlabel{
+  font-size:10px;font-weight:800;letter-spacing:.14em;color:#5C5C66;
+  padding:14px 10px 7px
+}
+.ad .navitem{
+  width:100%;display:flex;align-items:center;gap:9px;padding:10px 10px;border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--side-dim);text-align:left
+}
+.ad .navitem:hover{background:rgba(255,255,255,.05);color:var(--side-ink)}
+.ad .navitem[aria-current="true"]{background:rgba(255,255,255,.10);color:#fff;font-weight:700}
+.ad .navitem i{width:5px;height:5px;border-radius:99px;background:#3A3A44;flex:none}
+.ad .navitem[aria-current="true"] i{background:var(--pri)}
+.ad .sidefoot{padding:14px 16px;border-top:1px solid #24242A;font-size:11px;color:var(--side-dim)}
+.ad .sidefoot button{margin-top:8px;font-size:11px;font-weight:700;color:var(--side-dim);text-decoration:underline}
+
+.ad .main{flex:1;min-width:0;padding:26px 28px 70px}
+.ad .head{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px}
+.ad .head h1{font-size:22px;font-weight:800;letter-spacing:-.025em}
+.ad .head p{font-size:13px;color:var(--dim);margin-top:4px}
+.ad .head .sp{flex:1}
+.ad .head button{
+  padding:10px 15px;border-radius:9px;border:1px solid var(--line);background:var(--surf);
+  font-size:13px;font-weight:700
+}
+
+/* ---------- 공통 ---------- */
+.ad .card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.ad .card h2{font-size:14px;font-weight:800;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+.ad .card h2 span{font-size:11px;font-weight:600;color:var(--dim)}
+.ad .msg{font-size:13px;font-weight:700;margin-top:12px}
+.ad .msg.bad{color:var(--bad)}
+.ad .msg.ok{color:var(--ok)}
+.ad .hint{font-size:12px;color:var(--dim);line-height:1.7;margin-top:8px}
+.ad .empty{font-size:13px;color:var(--dim);padding:8px 0}
+
+/* KPI */
+.ad .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.ad .kpi{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:16px}
+.ad .kpi .l{font-size:11px;color:var(--dim);font-weight:700}
+.ad .kpi .v{font-size:28px;font-weight:800;letter-spacing:-.04em;margin-top:5px;line-height:1}
+.ad .kpi .v small{font-size:13px;color:var(--dim);font-weight:700;margin-left:2px}
+.ad .kpi .d{font-size:11px;color:var(--dim);margin-top:6px}
+
+/* 폼 */
+.ad .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ad label.f > span{display:block;font-size:11px;font-weight:700;color:var(--dim);margin-bottom:6px}
+.ad input, .ad select{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;
+  background:var(--surf2);font-size:14px;font-weight:600
+}
+.ad input:focus, .ad select:focus{outline:none;border-color:var(--pri);background:#fff}
+.ad .go{
+  width:100%;margin-top:16px;padding:15px;border-radius:11px;background:var(--pri);color:#fff;
+  font-size:15px;font-weight:800
+}
+.ad .go:disabled{opacity:.35}
+
+/* 표 */
+.ad .tbl{width:100%;border-collapse:collapse;font-size:13px}
+.ad .tbl th{font-size:11px;color:var(--dim);text-align:left;font-weight:700;padding:8px 10px}
+.ad .tbl td{padding:7px 10px;border-top:1px solid var(--line)}
+.ad .tbl tr.warn td{background:#FEF6EC}
+.ad .gg{width:28px;height:28px;border-radius:99px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:900}
+.ad .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.ad .seg button{padding:7px 9px;font-size:11px;font-weight:700;color:var(--dim);flex:1}
+.ad .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.ad .del{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--surf2);color:var(--dim)}
+.ad .add{
+  margin-top:10px;width:100%;padding:11px;border-radius:9px;border:1px dashed var(--line);
+  background:transparent;color:var(--pri);font-size:13px;font-weight:700
+}
+.ad .sum{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:13px;font-weight:700}
+.ad .sum b{font-size:19px}
+.ad .sum.err b{color:var(--bad)}
+
+/* 매장 카드 */
+.ad .store{
+  border:1px solid var(--line);border-radius:13px;padding:15px;margin-bottom:10px;background:var(--surf)
+}
+.ad .store .row1{display:flex;align-items:center;gap:9px}
+.ad .store .row1 b{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.ad .store .row1 .sp{flex:1}
+.ad .store .row1 .cnt{font-size:19px;font-weight:800;letter-spacing:-.03em}
+.ad .store .row1 .cnt em{font-style:normal;font-size:12px;color:var(--dim);font-weight:700}
+.ad .store .meta{font-size:12px;color:var(--dim);margin-top:5px}
+.ad .store .bar{height:6px;border-radius:99px;background:var(--surf2);border:1px solid var(--line);margin-top:10px;overflow:hidden}
+.ad .store .bar i{display:block;height:100%;background:var(--pri)}
+.ad .store .detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;line-height:2}
+.ad .store .detail code{
+  background:var(--surf2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;
+  font-size:11px;word-break:break-all
+}
+.ad .store .acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.ad .store .acts button{
+  padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surf2);
+  font-size:12px;font-weight:700
+}
+.ad .store .acts button.danger{color:var(--bad);border-color:#F3C7C3;background:#FDF1F0}
+.ad .pill{
+  font-size:10px;font-weight:800;padding:4px 9px;border-radius:99px;border:1px solid var(--line);color:var(--dim)
+}
+.ad .pill.warn{color:var(--warn);border-color:#EFCB9A;background:#FEF6EC}
+.ad .pill.ok{color:var(--ok);border-color:#BFE3CD;background:#EDF8F1}
+
+/* 결과 안내 */
+.ad .done{border-color:#BFE3CD;background:#F2FAF5}
+.ad .done h2{color:#0B6B3A}
+.ad .kv{display:grid;grid-template-columns:104px 1fr;gap:7px 12px;font-size:13px}
+.ad .kv b{color:var(--dim);font-weight:700}
+.ad .kv code{background:#fff;border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-size:12px;word-break:break-all}
+
+@media (max-width:820px){
+  .ad .layout{flex-direction:column}
+  .ad .side{width:100%;height:auto;position:static;flex-direction:row;align-items:center;overflow:auto}
+  .ad .brand{padding:14px 16px}
+  .ad .nav{display:flex;gap:6px;padding:0 10px}
+  .ad .navlabel{display:none}
+  .ad .navitem{white-space:nowrap}
+  .ad .sidefoot{display:none}
+  .ad .main{padding:18px 16px 60px}
+}

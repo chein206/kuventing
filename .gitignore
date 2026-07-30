@@ -10,6 +10,9 @@ build/
 .env.*
 !.env.local.example
 
+# 임시 비밀번호 파일 (create-admin 스크립트 출력)
+admin-임시비번.txt
+
 # 로그·캐시
 *.log
 npm-debug.log*
