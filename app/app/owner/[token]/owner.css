@@ -216,3 +216,8 @@
   gap:14px;padding:60px 24px;text-align:center}
 .ow .gate h2{font-size:20px;font-weight:800}
 .ow .gate p{font-size:13px;color:var(--dim)}
+
+/* 뽑기 소리 — 기본은 끔. 매장에서 들어 보고 켠다 */
+.ow .soundset{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.ow .soundset > label{font-size:13px;font-weight:800;display:block;margin-bottom:9px}
+.ow .soundset .modes{margin-top:0}

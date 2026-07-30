@@ -15,6 +15,7 @@ type BoardInfo = {
   ads?: { title?: string; sub?: string; price?: string; image?: string | null; pos?: string | null }[];
   board_token?: string;
   board_mode?: 'pin' | 'open';
+  sound?: 'off' | 'soft' | 'loud';
   idle_seconds?: number;
   slide_seconds?: number;
   result_seconds?: number;
@@ -351,6 +352,26 @@ export default function OwnerClient({ token }: { token: string }) {
                     ? '손님이 화면을 누르면 PIN 입력창이 뜹니다. 직원이 PIN을 눌러야 뽑을 수 있습니다.'
                     : '누구나 화면을 눌러 바로 뽑을 수 있습니다. 주문 확인 없이 뽑히니 주의하세요.'}
                 </p>
+
+                <div className="soundset">
+                  <label>뽑기 소리</label>
+                  <div className="modes">
+                    {([['off', '끔'], ['soft', '작게'], ['loud', '크게']] as const).map(([v, l]) => (
+                      <button
+                        key={v}
+                        aria-pressed={(bd.sound ?? 'off') === v}
+                        onClick={async () => {
+                          await call(api('board'), { method: 'POST', body: JSON.stringify({ sound: v }) });
+                          load();
+                        }}
+                      >{l}</button>
+                    ))}
+                  </div>
+                  <p className="demo" style={{ marginTop: 8 }}>
+                    손님이 카드를 열 때만 소리가 납니다. 광고 화면은 항상 조용합니다.
+                    <br />주방 소리가 큰 자리면 <b>끔</b>으로 두세요.
+                  </p>
+                </div>
 
                 <div className="timings">
                   <label>화면 시간 (초) · 뽑기 제한</label>

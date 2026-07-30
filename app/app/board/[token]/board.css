@@ -260,7 +260,9 @@
    50장이면 10줄이 되어 세로 화면에 딱 맞는다. */
 .bd .tgrid{
   display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
-  flex:1;min-height:0;align-content:center;overflow:auto;padding:2px
+  flex:1;min-height:0;align-content:center;overflow:auto;
+  /* 고른 칸이 떠오르고 테두리가 둘리므로 그만큼 여유를 둔다. 없으면 잘린다 */
+  padding:10px 8px
 }
 .bd .tk2{
   aspect-ratio:2/1;position:relative;display:grid;place-items:center;
@@ -290,11 +292,21 @@
 /* 등급 뒤에 "상"을 붙이지 않는다.
    "A상/B상"은 이치방쿠지의 표기 체계다. 라스트원을 막차 보너스로 바꾼 것과 같은 이유로
    그대로 쓰지 않는다(법률조사.md §3). 등급은 글자와 색으로만 보여준다. */
-.bd .tk2.sel{transform:translateY(-5px) scale(1.04)}
-.bd .tk2.sel .art{filter:drop-shadow(0 0 0 var(--accent)) drop-shadow(0 6px 14px rgba(0,0,0,.6))}
-.bd .tk2.sel::after{
-  content:"";position:absolute;inset:-7px;border:3px solid var(--accent);border-radius:12px
+/* 고른 칸 — 테두리를 ::after 로 그리면 칸의 overflow:hidden 에 잘린다.
+   box-shadow 는 자기 overflow 에 잘리지 않으므로 그걸로 두른다. */
+.bd .tk2.sel{
+  transform:translateY(-6px) scale(1.07);
+  z-index:2;
+  /* --glow 를 목록에 섞으면 안 된다. 테마에 따라 값이 none 이고
+     box-shadow 목록 안의 none 은 문법 오류라 선언 전체가 버려진다. */
+  box-shadow:0 0 0 3px var(--accent),
+             0 0 0 7px color-mix(in srgb,var(--accent) 26%,transparent),
+             0 0 18px 2px color-mix(in srgb,var(--accent) 45%,transparent),
+             0 10px 20px -8px rgba(0,0,0,.7)
 }
+/* 고른 칸은 숫자도 포인트색으로 바뀐다 — 테두리만으로는 멀리서 안 보인다 */
+.bd .tk2.sel span{color:var(--accent);text-shadow:0 2px 8px rgba(0,0,0,.7)}
+.bd .tk2.sel .art{filter:brightness(1.18) saturate(1.15)}
 
 /* ---------- 뽑은 티켓이 돌아 나오는 연출 ----------
    칸의 실제 위치(--dx,--dy)와 크기 비율(--s)을 자바스크립트가 넘겨주고

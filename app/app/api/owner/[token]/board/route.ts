@@ -2,7 +2,7 @@ import { getAdmin, resolveOwner } from '@/lib/admin';
 
 // 문자열 리터럴이어야 supabase-js 가 반환 타입을 추론한다
 const FIELDS =
-  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, last_one_label, last_one_name, last_one_image, ads';
+  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, last_one_label, last_one_name, last_one_image, ads, sound';
 
 // 초 단위 값과 허용 범위
 const RANGES: Record<string, [number, number]> = {
@@ -43,6 +43,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
 
   const body = (await req.json()) as Record<string, unknown>;
   const patch: Record<string, unknown> = {};
+
+  // 뽑기 소리. 기본은 꺼져 있고 사장님이 매장에서 들어 보고 켠다
+  if (body.sound !== undefined) {
+    if (!['off', 'soft', 'loud'].includes(String(body.sound))) {
+      return Response.json({ error: 'BAD_SOUND' }, { status: 400 });
+    }
+    patch.sound = body.sound;
+  }
 
   if (body.mode !== undefined) {
     if (body.mode !== 'pin' && body.mode !== 'open') {

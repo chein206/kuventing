@@ -6,6 +6,7 @@ import { sb, getBoard, draw, type Board, type DrawResult, type Prize } from '@/l
 import Ticket from './Ticket';
 import { Icon } from '@/lib/Icon';
 import MotionAd, { buildScenes, scenesDuration } from './MotionAd';
+import * as sfx from '@/lib/sfx';
 
 type Ad = {
   title: string; sub?: string; price?: string; image?: string | null;
@@ -18,6 +19,7 @@ type Config = {
   slideSeconds: number;      // 광고 슬라이드 넘김
   resultSeconds: number;     // 결과 화면 유지
   autoOpenSeconds: number;   // 오픈 화면 방치 시 자동 개봉
+  sound?: sfx.SoundMode;     // 뽑기 소리. 기본은 꺼둔다 (카운터 소음 환경)
   lastOneName: string | null;
   lastOneImage: string | null;
   lastOneLabel: string | null;   // "라스트원상"은 특정 브랜드 용어라 쓰지 않는다
@@ -200,6 +202,9 @@ export default function BoardClient({ token }: { token: string }) {
     return () => { window.removeEventListener('pointerdown', bump); clearInterval(t); };
   }, [cfg?.idleSeconds, goAttract]);
 
+  // 사장님이 소리 설정을 바꾸면 볼륨을 따라간다
+  useEffect(() => { sfx.setMode(cfg?.sound ?? 'off'); }, [cfg?.sound]);
+
   /* ---------- 화면 꺼짐 방지 ---------- */
   useEffect(() => {
     let lock: { release: () => Promise<void> } | null = null;
@@ -308,13 +313,17 @@ export default function BoardClient({ token }: { token: string }) {
     setGrip(false);
     setRevealing(true);
     setPx(maxX.current);
+    sfx.grindStop();
+    sfx.snap();
     setTimeout(() => {
       setResult(pending);
       setStep('result');
+      sfx.fanfare(pending.grade, !!pending.isLastOne);
     }, slow ? 1400 : 950);
   }, [pending]);
 
   const resetOpenState = useCallback(() => {
+    sfx.grindStop();
     setPending(null); setPx(0); setRevealing(false); setSlowOpen(false); setGrip(false);
     finished.current = false; dragging.current = false;
   }, []);
@@ -376,7 +385,14 @@ export default function BoardClient({ token }: { token: string }) {
   const total = board?.campaign?.total ?? 0;
 
   return (
-    <div className="bd" onPointerDown={() => { lastTouch.current = Date.now(); }}>
+    <div
+      className="bd"
+      onPointerDown={() => {
+        lastTouch.current = Date.now();
+        // 브라우저는 사용자가 만지기 전에는 소리를 못 내게 막는다. 여기서만 깨울 수 있다
+        sfx.unlock(cfg.sound ?? 'off');
+      }}
+    >
       <div className="bar">
         {/* 오픈 화면에서는 뒤로 가면 이미 확정된 상품을 잃으므로 내보내지 않는다 */}
         {step !== 'attract' && step !== 'open' && (
@@ -619,6 +635,7 @@ export default function BoardClient({ token }: { token: string }) {
                   if (!pending || finished.current) return;
                   dragging.current = true;
                   setGrip(true);
+                  sfx.grindStart();
                   startX.current = e.clientX - px;
                   maxX.current = (cardRef.current?.clientWidth ?? 400) - KNOB - 20;
                   (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -628,12 +645,14 @@ export default function BoardClient({ token }: { token: string }) {
                   const raw = (e.clientX - startX.current) * DRAG_RATIO;
                   const v = Math.max(0, Math.min(maxX.current, raw));
                   setPx(v);
+                  sfx.grindSet(v / Math.max(1, maxX.current));
                   if (v > maxX.current * THRESHOLD) { dragging.current = false; finish(false); }
                 }}
                 onPointerUp={() => {
                   if (!dragging.current) return;
                   dragging.current = false;
                   setGrip(false);
+                  sfx.grindStop();
                   if (!finished.current) { setRevealing(false); setPx(0); }
                 }}
               >›</div>
