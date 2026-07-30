@@ -168,10 +168,10 @@ export default function AdminMedia({
         {!ads.length && <p className="empty">슬라이드가 없습니다.</p>}
 
         {ads.map((a, i) => (
-          <div className="adminad" key={i}>
+          <div className="slitem" key={i}>
             <PhotoDot
               url={a.image} label={String(i + 1)} bg="#4E7C8C" mode="ad"
-              query={`target=ad&index=${i}`}
+              query={`target=slide&index=${i}`}
               upload={upload} removeImage={removeImage} onChange={() => load()}
             />
             <div className="fields">

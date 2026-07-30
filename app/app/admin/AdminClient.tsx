@@ -121,11 +121,11 @@ export default function AdminClient() {
   }
 
   /* ---------- 로그인 화면 ---------- */
-  if (!ready) return <div className="ad" />;
+  if (!ready) return <div className="oc" />;
 
   if (!signedIn) {
     return (
-      <div className="ad">
+      <div className="oc">
         <div className="login">
           <div className="loginbox">
             <h1>쿠벤팅 Admin</h1>
@@ -162,7 +162,7 @@ export default function AdminClient() {
   ];
 
   return (
-    <div className="ad">
+    <div className="oc">
       <div className="layout">
         <aside className="side">
           <div className="brand">

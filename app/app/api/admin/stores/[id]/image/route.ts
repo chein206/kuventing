@@ -14,7 +14,7 @@ import { storagePath, publicUrl, putImage, dropImage } from '@/lib/storage';
  * 검증·저장·옛 파일 정리는 사장님 라우트와 같은 부품을 쓴다.
  * 다른 것은 진입 인증(운영자 JWT)과 대상 찾기(매장 id)뿐이다.
  *
- *   target=prize&grade=A / target=last / target=ad&index=0
+ *   target=prize&grade=A / target=last / target=slide&index=0
  */
 
 type Target = { kind: 'prize' | 'ad'; slug: string };
@@ -27,10 +27,10 @@ function parseTarget(sp: URLSearchParams): Target | { error: string } {
     return { kind: 'prize', slug: `prize-${grade}` };
   }
   if (target === 'last') return { kind: 'prize', slug: 'last' };
-  if (target === 'ad') {
+  if (target === 'ad' || target === 'slide') {
     const i = Number(sp.get('index'));
     if (!Number.isInteger(i) || i < 0 || i > 19) return { error: '슬라이드 자리가 잘못됐습니다' };
-    return { kind: 'ad', slug: `ad-${i}` };
+    return { kind: 'ad', slug: `menu-${i}` };
   }
   return { error: '알 수 없는 요청입니다' };
 }
@@ -41,7 +41,7 @@ async function saveUrl(campaignId: string, sp: URLSearchParams, url: string) {
   if (target === 'last') {
     return db.rpc('set_last_one_image', { p_campaign: campaignId, p_url: url });
   }
-  if (target === 'ad') {
+  if (target === 'ad' || target === 'slide') {
     return db.rpc('set_ad_image', {
       p_campaign: campaignId, p_index: Number(sp.get('index')), p_url: url,
     });

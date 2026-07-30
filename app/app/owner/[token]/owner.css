@@ -112,29 +112,29 @@
 .ow .lastphoto span{font-size:13px;font-weight:700;color:var(--dim)}
 
 /* 광고 슬라이드 편집 */
-.ow .adrow{padding:13px 0;border-bottom:1px solid var(--line)}
-.ow .adrow:last-of-type{border-bottom:none}
-.ow .adhead{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.ow .adhead .sp{flex:1}
-.ow .adord{display:flex;flex-direction:column;gap:3px}
-.ow .adord button{
+.ow .slrow{padding:13px 0;border-bottom:1px solid var(--line)}
+.ow .slrow:last-of-type{border-bottom:none}
+.ow .slhead{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ow .slhead .sp{flex:1}
+.ow .slord{display:flex;flex-direction:column;gap:3px}
+.ow .slord button{
   width:26px;height:19px;border:1px solid var(--line);border-radius:6px;background:var(--surf2);
   color:var(--dim);font-size:10px;font-weight:800;line-height:1
 }
-.ow .adord button:disabled{opacity:.3}
-.ow .adhead .del{
+.ow .slord button:disabled{opacity:.3}
+.ow .slhead .del{
   width:32px;height:32px;flex:none;border-radius:8px;border:1px solid var(--line);
   color:var(--dim);font-size:13px;font-weight:800;background:var(--surf2)
 }
-.ow .adhead .del:disabled{opacity:.3}
-.ow .adrow input{
+.ow .slhead .del:disabled{opacity:.3}
+.ow .slrow input{
   width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surf2);
   padding:10px 11px;margin-top:6px;font-size:14px;font-weight:600
 }
-.ow .adrow input:focus{outline:none;border-color:var(--pri);background:#fff}
-.ow .adrow .adtitle{font-size:15px;font-weight:800;letter-spacing:-.02em;margin-top:0}
-.ow .adrow .adprice{max-width:150px;margin-top:0}
-.ow .adrow2{display:flex;align-items:flex-end;gap:12px;margin-top:6px}
+.ow .slrow input:focus{outline:none;border-color:var(--pri);background:#fff}
+.ow .slrow .sltitle{font-size:15px;font-weight:800;letter-spacing:-.02em;margin-top:0}
+.ow .slrow .slprice{max-width:150px;margin-top:0}
+.ow .slrow2{display:flex;align-items:flex-end;gap:12px;margin-top:6px}
 .ow .posseg{margin-left:auto;text-align:right}
 .ow .posseg label{display:block;font-size:11px;font-weight:700;color:var(--dim);margin-bottom:5px}
 /* 화면에 놓이는 자리 그대로 2열 3행. 누르면 어디로 가는지 보고 안다 */

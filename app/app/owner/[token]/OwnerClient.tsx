@@ -790,7 +790,7 @@ function AdTab({
     const next: AdRow[] = [...rows, { title: '새 메뉴', sub: '', price: '', image: null, pos: 'bl' }];
     commit(next, '슬라이드를 추가했습니다').then(() => {
       requestAnimationFrame(() => {
-        const all = document.querySelectorAll('.ow .adrow');
+        const all = document.querySelectorAll('.ow .slrow');
         all[all.length - 1]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     });
@@ -834,15 +834,15 @@ function AdTab({
         {!rows.length && <p className="demo">슬라이드가 없습니다. 아래에서 추가하세요.</p>}
 
         {rows.map((a, i) => (
-          <div className="adrow" key={i}>
-            <div className="adhead">
+          <div className="slrow" key={i}>
+            <div className="slhead">
               <PhotoDot
                 url={a.image} label={String(i + 1)} bg="#4E7C8C" mode="ad"
-                query={`target=ad&index=${i}`}
+                query={`target=slide&index=${i}`}
                 upload={upload} removeImage={removeImage}
                 onChange={(url) => patch(i, { image: url })}
               />
-              <div className="adord">
+              <div className="slord">
                 <button disabled={i === 0 || busy} onClick={() => move(i, -1)} title="위로">
                   <Icon name="up" strokeWidth={2.2} />
                 </button>
@@ -858,16 +858,16 @@ function AdTab({
             </div>
 
             <input
-              className="adtitle" value={a.title} maxLength={30} placeholder="메뉴 이름"
+              className="sltitle" value={a.title} maxLength={30} placeholder="메뉴 이름"
               onChange={(e) => patch(i, { title: e.target.value })}
             />
             <input
-              className="adsub" value={a.sub} maxLength={60} placeholder="설명 (없어도 됩니다)"
+              className="slsub" value={a.sub} maxLength={60} placeholder="설명 (없어도 됩니다)"
               onChange={(e) => patch(i, { sub: e.target.value })}
             />
-            <div className="adrow2">
+            <div className="slrow2">
               <input
-                className="adprice" value={a.price} maxLength={20} placeholder="가격 (없어도 됩니다)"
+                className="slprice" value={a.price} maxLength={20} placeholder="가격 (없어도 됩니다)"
                 onChange={(e) => patch(i, { price: e.target.value })}
               />
               <div className="posseg">

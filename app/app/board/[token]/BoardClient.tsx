@@ -742,7 +742,7 @@ function AdSlide({ ad }: { ad: Ad }) {
   // 사진이 있으면 화면을 꽉 채우고 글자를 위에 얹는다. 없으면 글자만.
   if (!ad.image) {
     return (
-      <div className="slide ad">
+      <div className="slide promo">
         <div className="kind">오늘의 메뉴</div>
         <h1>{ad.title}</h1>
         {ad.sub && <p className="sub">{ad.sub}</p>}
@@ -751,7 +751,7 @@ function AdSlide({ ad }: { ad: Ad }) {
     );
   }
   return (
-    <div className="slide ad full" data-pos={normPos(ad.pos)}>
+    <div className="slide promo full" data-pos={normPos(ad.pos)}>
       {/* 뒤에는 흐리게 채우고 위에는 원본을 통째로 얹는다 — 어떤 비율이든 안 잘린다 */}
       <div className="shot">
         <img className="blur" src={ad.image} alt="" aria-hidden="true" />
