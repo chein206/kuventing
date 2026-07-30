@@ -34,6 +34,9 @@ const TWINKLES = Array.from({ length: 60 }, (_, i) => ({
 }));
 
 // 찢기는 자리에서 튀는 불티
+// 티켓이 돌아 나오는 시간. board.css 의 pullOut 과 같이 움직인다
+const PULL_MS = 1150;
+
 const TEAR_SPARKS = Array.from({ length: 18 }, (_, i) => ({
   top: `${(i * 100) / 18 + 2}%`,
   dx: 26 + ((i * 23) % 46),          // 오른쪽으로 튀는 거리
@@ -57,6 +60,8 @@ export default function BoardClient({ token }: { token: string }) {
   const [step, setStep] = useState<Step>('attract');
   const [pass, setPass] = useState<string | null>(null);
   const [sel, setSel] = useState<number | null>(null);
+  // 뽑은 티켓이 돌아 나오는 연출 (칸 위치 → 화면 가운데)
+  const [pull, setPull] = useState<{ dx: number; dy: number; s: number; w: number } | null>(null);
   const [result, setResult] = useState<DrawResult | null>(null);
   const [pin, setPin] = useState('');
   const [pinErr, setPinErr] = useState(false);
@@ -269,6 +274,33 @@ export default function BoardClient({ token }: { token: string }) {
   // 초기화면으로 돌아가면 오픈 상태를 비운다
   useEffect(() => { if (step === 'attract') resetOpenState(); }, [step, resetOpenState]);
 
+  /**
+   * 고른 티켓이 판에서 튀어나오며 돌아 나온다.
+   *
+   * 종이 쿠지에서 뽑은 한 장을 집어 드는 동작을 화면으로 옮긴 자리다.
+   * 50칸 중 하나를 눌렀을 뿐인데 바로 개봉 화면으로 넘어가면
+   * "내가 저걸 골랐다"는 감각이 안 남는다.
+   *
+   * 칸의 실제 위치에서 화면 가운데까지를 CSS 변수로 넘기고 애니메이션은 CSS 가 한다.
+   * (좌표를 자바스크립트로 매 프레임 계산하면 태블릿에서 끊긴다)
+   */
+  const pullOut = useCallback(() => {
+    if (sel === null) return;
+    const tile = document.querySelector<HTMLElement>(`.tk2[data-pos="${sel}"]`);
+    if (!tile) { resetOpenState(); setMsg(null); setStep('open'); return; }
+
+    const r = tile.getBoundingClientRect();
+    const targetW = Math.min(window.innerWidth * 0.72, 460);
+    setPull({
+      dx: r.left + r.width / 2 - window.innerWidth / 2,
+      dy: r.top + r.height / 2 - window.innerHeight / 2,
+      s: r.width / targetW,
+      w: targetW,
+    });
+    setMsg(null);
+    setTimeout(() => { resetOpenState(); setPull(null); setStep('open'); }, PULL_MS);
+  }, [sel, resetOpenState]);
+
   // 화면이 바뀐 것도 활동으로 친다. 이게 없으면 진입하자마자 유휴 타이머에 걸릴 수 있다
   useEffect(() => { lastTouch.current = Date.now(); }, [step]);
 
@@ -452,7 +484,7 @@ export default function BoardClient({ token }: { token: string }) {
                 <span style={{ color: gradeColor(s.grade) }}>{s.grade}</span>
               </div>
             ) : (
-              <div key={s.pos} className={`tk2 ${sel === s.pos ? 'sel' : ''}`}
+              <div key={s.pos} data-pos={s.pos} className={`tk2 ${sel === s.pos ? 'sel' : ''}`}
                    onClick={() => setSel(sel === s.pos ? null : s.pos)}>
                 <Ticket variant="tile" className="art" />
                 <span>{s.pos}</span>
@@ -464,10 +496,29 @@ export default function BoardClient({ token }: { token: string }) {
               const open = board.board.filter((s) => !s.grade);
               if (open.length) setSel(open[Math.floor(Math.random() * open.length)].pos);
             }}>랜덤</button>
-            <button className="big" style={{ flex: 2 }} disabled={sel === null}
-                    onClick={() => { resetOpenState(); setMsg(null); setStep('open'); }}>이 티켓으로 뽑기</button>
+            <button className="big" style={{ flex: 2 }} disabled={sel === null || !!pull}
+                    onClick={pullOut}>이 티켓으로 뽑기</button>
           </div>
           {msg && <p style={{ textAlign: 'center', color: 'var(--accent)', fontWeight: 700, marginTop: 10 }}>{msg}</p>}
+
+          {/* 고른 티켓이 판에서 돌면서 튀어나온다 */}
+          {pull && (
+            <div className="pullwrap" aria-hidden="true">
+              <div className="pullflash" />
+              <div
+                className="pullcard"
+                style={{
+                  ['--dx' as string]: `${pull.dx}px`,
+                  ['--dy' as string]: `${pull.dy}px`,
+                  ['--s' as string]: pull.s,
+                  ['--w' as string]: `${pull.w}px`,
+                }}
+              >
+                <Ticket variant="tile" className="art" />
+                <span>{sel}</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -200,10 +200,15 @@
   .bd .pcard h3{font-size:23px}
 }
 
-.bd .tgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;overflow:auto;padding:2px}
+/* 한 줄 5개. 6~10개로 채우면 밖에서 보이지 않고, 손가락으로 고르기도 좁다.
+   50장이면 10줄이 되어 세로 화면에 딱 맞는다. */
+.bd .tgrid{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+  flex:1;min-height:0;align-content:center;overflow:auto;padding:2px
+}
 .bd .tk2{
   aspect-ratio:2/1;position:relative;display:grid;place-items:center;
-  color:#EFE0B8;font-size:27px;font-weight:900;letter-spacing:-.03em;transition:transform .12s
+  color:#EFE0B8;font-size:31px;font-weight:900;letter-spacing:-.03em;transition:transform .12s
 }
 .bd .tk2 .art{position:absolute;inset:0;width:100%;height:100%}
 /* 왼쪽 엠블럼과 오른쪽 바코드 사이 빈 곳에 맞춘다 */
@@ -220,6 +225,44 @@
 .bd .tk2.sel .art{filter:drop-shadow(0 0 0 var(--accent)) drop-shadow(0 6px 14px rgba(0,0,0,.6))}
 .bd .tk2.sel::after{
   content:"";position:absolute;inset:-7px;border:3px solid var(--accent);border-radius:12px
+}
+
+/* ---------- 뽑은 티켓이 돌아 나오는 연출 ----------
+   칸의 실제 위치(--dx,--dy)와 크기 비율(--s)을 자바스크립트가 넘겨주고
+   움직임은 여기서 만든다. 태블릿에서 끊기지 않게 transform·opacity 만 쓴다. */
+.bd .pullwrap{position:fixed;inset:0;z-index:40;pointer-events:none}
+/* 뽑는 순간 화면이 한 번 번쩍 */
+.bd .pullflash{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.5),transparent 62%);
+  animation:pullFlash 1.15s ease-out forwards
+}
+@keyframes pullFlash{
+  0%{opacity:0}
+  16%{opacity:.9}
+  42%{opacity:.16}
+  100%{opacity:0}
+}
+.bd .pullcard{
+  position:absolute;left:50%;top:50%;width:var(--w);aspect-ratio:2/1;
+  margin-left:calc(var(--w) / -2);margin-top:calc(var(--w) / -4);
+  display:grid;place-items:center;
+  color:#EFE0B8;font-weight:900;letter-spacing:-.03em;
+  font-size:calc(var(--w) / 5.2);
+  filter:drop-shadow(0 26px 44px rgba(0,0,0,.75));
+  animation:pullOut 1.15s cubic-bezier(.16,.9,.24,1) forwards
+}
+.bd .pullcard .art{position:absolute;inset:0;width:100%;height:100%}
+.bd .pullcard span{position:relative;z-index:1;padding-right:7%;text-shadow:0 3px 10px rgba(0,0,0,.6)}
+@keyframes pullOut{
+  /* 칸에 박혀 있던 상태 */
+  0%   {transform:translate(var(--dx),var(--dy)) scale(var(--s)) rotate(0deg);opacity:0}
+  8%   {opacity:1}
+  /* 뽑혀 나오며 두 바퀴 반 돌아 가운데로 */
+  62%  {transform:translate(0,-4%) scale(1.06) rotate(880deg)}
+  /* 살짝 넘겼다가 제자리 */
+  78%  {transform:translate(0,0) scale(.98) rotate(1075deg)}
+  100% {transform:translate(0,0) scale(1) rotate(1080deg)}
 }
 
 .bd .big{
