@@ -20,6 +20,7 @@ type Config = {
   resultSeconds: number;     // 결과 화면 유지
   autoOpenSeconds: number;   // 오픈 화면 방치 시 자동 개봉
   sound?: sfx.SoundMode;     // 뽑기 소리. 기본은 꺼둔다 (카운터 소음 환경)
+  motionSeconds?: number;    // 모션 광고 컷 하나의 길이
   lastOneName: string | null;
   lastOneImage: string | null;
   lastOneLabel: string | null;   // "라스트원상"은 특정 브랜드 용어라 쓰지 않는다
@@ -28,7 +29,7 @@ type Config = {
 };
 
 // DB 값이 없을 때(마이그레이션 전) 쓰는 기본값
-const DEF = { idle: 20, slide: 6, result: 40, autoOpen: 45 };
+const DEF = { idle: 20, slide: 6, result: 40, autoOpen: 45, motion: 3 };
 
 // 오픈 화면 배경에 뿌리는 반짝임. 매 렌더 흔들리지 않게 모듈 수준에서 한 번만 만든다.
 const TWINKLES = Array.from({ length: 60 }, (_, i) => ({
@@ -162,8 +163,10 @@ export default function BoardClient({ token }: { token: string }) {
       { name: cfg?.store.name ?? '', branch: cfg?.store.branch },
       board?.left ?? 0,
       board?.campaign?.total ?? 0,
+      cfg?.motionSeconds ?? DEF.motion,
     ),
-    [cfg?.ads, cfg?.store.name, cfg?.store.branch, board?.left, board?.campaign?.total],
+    [cfg?.ads, cfg?.store.name, cfg?.store.branch, board?.left, board?.campaign?.total,
+     cfg?.motionSeconds],
   );
 
   const slideCount = 1 + (cfg?.ads?.length ?? 0);

@@ -17,6 +17,7 @@ type BoardInfo = {
   board_mode?: 'pin' | 'open';
   sound?: 'off' | 'soft' | 'loud';
   idle_seconds?: number;
+  motion_seconds?: number;
   slide_seconds?: number;
   result_seconds?: number;
   auto_open_seconds?: number;
@@ -27,6 +28,7 @@ type BoardInfo = {
 
 // 사장님이 조절하는 시간값
 const TIMINGS = [
+  { key: 'motion_seconds',    label: '첫 장 영상 컷 길이',   hint: '사진 한 장이 화면에 머무는 시간', min: 1.5, max: 10 },
   { key: 'slide_seconds',     label: '광고 슬라이드 넘김',   hint: '초기화면에서 사진이 바뀌는 간격', min: 2,  max: 60 },
   { key: 'result_seconds',    label: '결과 화면 유지',       hint: '뽑은 결과를 보여주는 시간',       min: 10, max: 180 },
   { key: 'auto_open_seconds', label: '방치 시 자동 개봉',    hint: '카드를 열다 말고 갔을 때',        min: 10, max: 300 },

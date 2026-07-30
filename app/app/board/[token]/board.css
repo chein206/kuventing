@@ -42,10 +42,30 @@
 .hero span{font-size:22px;font-weight:700;color:var(--ink-dim)}
 
 /* 광고 — 사진이 있으면 위쪽 영역을 통째로 채운다 (세로 화면에서 가장 크게 보이는 형태) */
-.slide.ad .kind{font-size:14px;font-weight:800;letter-spacing:.22em;color:var(--ink-dim)}
-.slide.ad h1{font-size:56px;font-weight:900;letter-spacing:-.045em;line-height:1.05;margin-top:12px}
-.slide.ad .sub{font-size:20px;color:var(--ink-dim);margin-top:14px;line-height:1.5;font-weight:500}
-.slide.ad .price{font-size:30px;font-weight:900;margin-top:20px;color:var(--accent);letter-spacing:-.03em}
+/* 조판을 모션 광고와 맞춘다. 같은 메뉴가 두 번 나오는데 글꼴·자간·크기가
+   다르면 다른 화면처럼 보인다.
+   모션 광고는 1080 폭 기준 값을 화면 폭에 비례시킨다. 정지 슬라이드를 고정 px 로
+   두면 화면 크기가 바뀔 때마다 둘이 어긋나므로 같은 기준(vw)으로 맞춘다.
+     100 / 1080 = 9.26vw  같은 식이다. */
+.slide.ad .kind{
+  font-size:2.78vw;font-weight:500;letter-spacing:.34em;color:var(--gold)
+}
+.slide.ad h1{
+  font-size:9.26vw;font-weight:800;letter-spacing:-.035em;line-height:1.22;
+  margin-top:2.4vw;word-break:keep-all
+}
+.slide.ad .sub{
+  font-size:3.15vw;color:var(--ink-dim);margin-top:2.4vw;line-height:1.6;font-weight:400;
+  word-break:keep-all
+}
+.slide.ad .price{
+  font-size:3.52vw;font-weight:400;margin-top:2.4vw;color:var(--ink);letter-spacing:-.01em;
+  display:flex;align-items:center;gap:2vw
+}
+/* 가격 앞의 금색 짧은 선 — 모션 광고와 같은 표시 */
+.slide.ad .price::before{
+  content:"";width:4.07vw;height:1px;background:var(--gold);opacity:.8;flex:none
+}
 
 .slide.ad.full{
   position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;

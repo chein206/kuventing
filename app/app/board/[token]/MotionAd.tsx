@@ -93,13 +93,15 @@ export function buildScenes(
   store: { name: string; branch?: string | null },
   left: number,
   total: number,
+  cut = 3,                      // 컷 하나의 길이(초). 사장님이 조절한다
 ): MotionScene[] {
   const shots = ads.filter((a) => a.image);
   if (!shots.length) return [];
 
   const scenes: MotionScene[] = shots.slice(0, 4).map((a, i) => ({
     kind: 'dish' as const,
-    dur: i === 0 ? 3.5 : 3,
+    // 첫 컷은 조금 길게 — 처음 눈이 가는 자리다
+    dur: i === 0 ? cut + 0.5 : cut,
     photo: a.image as string,
     cam: CAMS[i % CAMS.length],
     kicker: '오늘의 메뉴',
@@ -112,7 +114,8 @@ export function buildScenes(
 
   scenes.push({
     kind: 'sign',
-    dur: 2.5,
+    // 사인 컷은 매장명만 뜨므로 짧게
+    dur: Math.max(1.5, cut - 0.5),
     photo: shots[0].image as string,
     cam: SIGN_CAM,
     store: store.name + (store.branch ? ` · ${store.branch}` : ''),

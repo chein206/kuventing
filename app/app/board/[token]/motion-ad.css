@@ -14,8 +14,13 @@
 .mad{
   position:absolute;inset:0;overflow:hidden;background:#0B0B0C;
   --ivory:#F4F0E8; --gold:#C8A461; --mute:#9A948A; --hair:rgba(244,240,232,.16);
-  --serif:'Noto Serif KR','Nanum Myeongjo',serif;
-  --sans:'Noto Sans KR',system-ui,sans-serif;
+  /* 시안은 Noto Serif KR(명조)을 썼지만 웹폰트를 받아 오지 않으면
+     기기마다 다른 글꼴로 떨어진다. 실제로 모션은 명조 대체 글꼴,
+     정지 슬라이드는 고딕으로 갈려 보였다.
+     한글 웹폰트는 파일이 커서 4G 태블릿의 첫 로딩을 늘린다.
+     그래서 앱 글꼴 하나로 통일하고, 시안의 성격은 자간과 굵기로 낸다. */
+  --serif:inherit;
+  --sans:inherit;
   --ease-drift:cubic-bezier(.37,0,.63,1);
   --ease-in:cubic-bezier(.215,.61,.355,1);
   --ease-out:cubic-bezier(.55,.055,.675,.19);
@@ -107,8 +112,8 @@
   color:var(--gold);text-transform:uppercase
 }
 .mad .madtitle{
-  font-family:var(--serif);font-weight:700;line-height:1.24;
-  color:var(--ivory);letter-spacing:-.02em;white-space:pre-line;word-break:keep-all
+  font-family:var(--serif);font-weight:800;line-height:1.22;
+  color:var(--ivory);letter-spacing:-.035em;white-space:pre-line;word-break:keep-all
 }
 .mad .madbody{
   font-family:var(--sans);font-weight:400;line-height:1.6;color:var(--mute);
@@ -145,7 +150,7 @@
 }
 @keyframes madRule{from{width:0}to{width:14%}}   /* 원본 0 → 140 / 1080 */
 .mad .madstore{
-  font-family:var(--serif);font-weight:700;color:var(--ivory);letter-spacing:-.02em;
+  font-family:var(--serif);font-weight:800;color:var(--ivory);letter-spacing:-.035em;
   word-break:keep-all
 }
 .mad .madfoot{
