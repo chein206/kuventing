@@ -36,6 +36,7 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 | `009_token_defaults.sql` | 토큰 자동 발급 |
 | `010_rate_limit.sql` | 뽑기 빈도 제한 + PIN 대입 차단 |
 | `011_rotate_tokens.sql` | 주소 재발급 |
+| `012_admin.sql` | 운영자용 매장 생성·목록·삭제 |
 
 선택
 - `seed_cafe.sql` + `seed_cafe_images.sql` — 데모 매장 2 (카페)
@@ -53,6 +54,7 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 | `NEXT_PUBLIC_SUPABASE_URL` | 이미 채워져 있음 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Settings > API > Publishable / anon |
 | `SUPABASE_SERVICE_ROLE_KEY` | Settings > API > Secret / service_role (**공개 금지**) |
+| `ADMIN_SECRET` | 운영자 화면 시크릿. 32자 이상 랜덤 (**공개 금지**) |
 | `NEXT_PUBLIC_SITE_URL` | 선택. 루트(`/`)로 온 사람을 회사 홈페이지로 보낸다 |
 
 > `NEXT_PUBLIC_CAMPAIGN_ID` 와 `OWNER_PIN` 은 더 이상 쓰지 않는다.
@@ -112,6 +114,19 @@ npm run stores http://192.168.0.131:3000        # 태블릿에서 열 주소 기
 | `/board/<보드토큰>` | 카운터 태블릿 |
 | `/owner/<사장님토큰>` | 사장님 (PIN 로그인) |
 | `/c/<캠페인>/<코드>` | 손님 쿠폰 (결과 QR) |
+| `/admin/<ADMIN_SECRET>` | **우리 (운영자)** — 매장 생성·목록·삭제 |
+
+### 운영자 화면 — 신규 매장 온보딩
+SQL 없이 매장을 만든다. 업종 프리셋을 고르면 상품 구성·테마·막차 상품이 채워지고,
+저장하면 매장 → 이벤트 → 상품 → 1회차 박스까지 한 번에 만들어진다(실패 시 전부 롤백).
+
+- PIN 2개 자동 생성 (서로 다르게. 같으면 서버가 거부)
+- 생성 직후 **사장님 전달용 안내문 복사** 버튼 — 카톡에 그대로 붙여넣는다
+- 목록에 경고 배지: `상시 개방`, `PIN 중복`
+- 삭제는 뽑힌 기록이 있으면 거부. 강제 삭제는 한 번 더 확인
+
+**주소의 시크릿과 요청 헤더의 시크릿이 둘 다 `ADMIN_SECRET` 과 같아야** 통과한다.
+주소만 알아도, 헤더만 알아도 들어오지 못한다.
 
 ---
 
