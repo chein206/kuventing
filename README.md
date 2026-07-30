@@ -51,6 +51,7 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 | `NEXT_PUBLIC_SUPABASE_URL` | 이미 채워져 있음 |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Settings > API > Publishable / anon |
 | `SUPABASE_SERVICE_ROLE_KEY` | Settings > API > Secret / service_role (**공개 금지**) |
+| `NEXT_PUBLIC_SITE_URL` | 선택. 루트(`/`)로 온 사람을 회사 홈페이지로 보낸다 |
 
 > `NEXT_PUBLIC_CAMPAIGN_ID` 와 `OWNER_PIN` 은 더 이상 쓰지 않는다.
 > 매장·PIN은 전부 DB에서 온다.
@@ -60,6 +61,37 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 cd C:\Users\Nam-PC\Desktop\cld\kuventing\app
 npm run dev
 ```
+
+---
+
+## 1-4. 배포 (Vercel)
+
+저장소 루트는 `kuventing/` 이고 Next 앱은 `app/` 에 있다.
+**Vercel 프로젝트의 Root Directory 를 `app` 으로 지정해야 한다.**
+
+| 항목 | 값 |
+|---|---|
+| Framework | Next.js (자동 감지) |
+| Root Directory | `app` |
+| Build / Install | 기본값 그대로 |
+| 도메인 | `kuvt.scpadlab.com` |
+| 환경변수 | 위 1-2의 키 3~4개 (Production + Preview 모두) |
+
+CLI로 할 경우
+```bash
+cd C:\Users\Nam-PC\Desktop\cld\kuventing\app
+npx vercel        # 최초 1회 — 프로젝트 연결, Root Directory 확인
+npx vercel --prod
+```
+
+배포 후 확인
+- `kuvt.scpadlab.com/` → 안내(또는 홈페이지로 리다이렉트)
+- `/owner` · `/board` → "주소가 필요합니다" (토큰 없이는 안 열림)
+- `/robots.txt` → 전체 차단. 사장님·손님 화면이 검색에 걸리지 않는다
+- `npm run stores https://kuvt.scpadlab.com` 으로 매장 주소를 다시 뽑아 전달
+
+> 개발용 `allowedDevOrigins` 는 배포에 영향이 없다.
+> Supabase는 Auth를 쓰지 않으므로 도메인 화이트리스트 설정이 필요 없다.
 
 ---
 
