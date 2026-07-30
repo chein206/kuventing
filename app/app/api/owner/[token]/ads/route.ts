@@ -1,5 +1,6 @@
 import { getAdmin, resolveOwner } from '@/lib/admin';
 import { dropImage } from '@/lib/storage';
+import { normPos } from '@/lib/adPos';
 
 type AdIn = {
   title?: string; sub?: string | null; price?: string | null;
@@ -35,7 +36,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   }
 
   const { data, error } = await getAdmin()
-    .rpc('set_ads', { p_campaign: r.ctx.campaignId, p_ads: body.ads });
+    .rpc('set_ads', {
+      p_campaign: r.ctx.campaignId,
+      // 자리는 여기서 한 번 정리한다. 옛 화면이 옛 값을 보내도 400 이 되지 않는다
+      p_ads: body.ads.map((a) => ({ ...a, pos: normPos(a.pos) })),
+    });
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
 

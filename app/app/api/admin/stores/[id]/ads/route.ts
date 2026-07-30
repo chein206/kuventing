@@ -2,6 +2,7 @@ import { getAdmin } from '@/lib/admin';
 import { requireAdmin } from '@/lib/adminAuth';
 import { campaignOfStore } from '@/lib/adminStore';
 import { dropImage } from '@/lib/storage';
+import { normPos } from '@/lib/adPos';
 
 /** 운영자가 광고 슬라이드를 편집한다. 검증은 사장님 라우트와 같은 DB 함수가 한다 */
 
@@ -32,7 +33,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   }
 
   const { data, error } = await getAdmin()
-    .rpc('set_ads', { p_campaign: c.campaignId, p_ads: body.ads });
+    .rpc('set_ads', {
+      p_campaign: c.campaignId,
+      p_ads: body.ads.map((a) => ({ ...a, pos: normPos(a.pos) })),
+    });
 
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
