@@ -2,7 +2,7 @@ import { getAdmin, resolveOwner } from '@/lib/admin';
 
 // 문자열 리터럴이어야 supabase-js 가 반환 타입을 추론한다
 const FIELDS =
-  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, last_one_label, last_one_name';
+  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, last_one_label, last_one_name, last_one_image, ads';
 
 // 초 단위 값과 허용 범위
 const RANGES: Record<string, [number, number]> = {

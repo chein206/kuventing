@@ -9,6 +9,7 @@
     "lint": "eslint",
     "stores": "node scripts/list-stores.mjs",
     "admin": "node scripts/create-admin.mjs",
+    "storage": "node scripts/init-storage.mjs",
     "img": "node scripts/build-images.mjs",
     "icons": "node scripts/gen-icons.mjs"
   },

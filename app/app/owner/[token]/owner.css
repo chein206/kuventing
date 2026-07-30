@@ -112,6 +112,32 @@
   width:34px;height:34px;border-radius:99px;flex:none;display:grid;place-items:center;
   color:#fff;font-weight:900;font-size:14px
 }
+/* 사진 버튼 — 등급 동그라미가 곧 업로드 버튼이다 */
+.ow .pdot{position:relative;flex:none;line-height:0}
+.ow .pdot .gg{
+  position:relative;width:44px;height:44px;border-radius:99px;overflow:hidden;padding:0;
+  display:grid;place-items:center;color:#fff;font-weight:900;font-size:15px;border:none
+}
+.ow .pdot .gg img{width:100%;height:100%;object-fit:cover;display:block}
+.ow .pdot .gg:disabled{opacity:.6}
+.ow .pdot .cam{
+  position:absolute;right:-1px;bottom:-1px;width:17px;height:17px;border-radius:99px;
+  background:var(--ink);color:#fff;font-size:10px;font-style:normal;font-weight:800;
+  display:grid;place-items:center;border:2px solid var(--surf);line-height:1
+}
+.ow .pdot .rm{
+  position:absolute;top:-5px;right:-5px;width:19px;height:19px;border-radius:99px;
+  background:var(--bad);color:#fff;font-size:10px;font-weight:900;
+  display:grid;place-items:center;border:2px solid var(--surf);line-height:1;padding:0
+}
+.ow .pdot .perr{
+  position:absolute;left:0;top:100%;margin-top:5px;width:190px;z-index:2;
+  background:var(--ink);color:#fff;font-size:11px;font-weight:700;line-height:1.5;
+  padding:7px 9px;border-radius:8px
+}
+.ow .lastphoto{display:flex;align-items:center;gap:11px;margin:12px 0 4px}
+.ow .lastphoto span{font-size:13px;font-weight:700;color:var(--dim)}
+
 .ow .prow2 .pm{flex:1;min-width:0}
 .ow .prow2 .pname{
   width:100%;border:none;background:none;padding:2px 0;font-size:15px;font-weight:700;

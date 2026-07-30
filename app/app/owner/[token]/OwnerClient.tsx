@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { makePrizeImage, makeAdImage, IMAGE_ERROR } from '@/lib/clientImage';
 
 type Caller = (path: string, init?: RequestInit) => Promise<unknown>;
 
@@ -9,6 +10,8 @@ type BoardInfo = {
   id?: string;
   last_one_label?: string;
   last_one_name?: string;
+  last_one_image?: string | null;
+  ads?: { title?: string; sub?: string; price?: string; image?: string | null }[];
   board_token?: string;
   board_mode?: 'pin' | 'open';
   idle_seconds?: number;
@@ -44,7 +47,12 @@ type RedeemRes = {
 type Grade = {
   grade: string; name: string; qty: number; left: number;
   useWhen?: 'now' | 'later'; validDays?: number;
+  image?: string | null;
 };
+
+/** 사진 업로드용. JSON 이 아니라 FormData 를 보낸다 */
+type Uploader = (query: string, blob: Blob) => Promise<{ ok?: boolean; url?: string; message?: string; error?: string }>;
+type Remover = (query: string) => Promise<{ ok?: boolean; message?: string; error?: string }>;
 type Pending = { code: string; grade: string; name: string; at: string };
 type Stats = {
   box?: number;
@@ -96,6 +104,28 @@ export default function OwnerClient({ token }: { token: string }) {
     });
     if (res.status === 401) { localStorage.removeItem(pinKey); setPin(null); throw new Error('UNAUTHORIZED'); }
     return res.json();
+  }, [pin, pinKey]);
+
+  // 사진은 FormData 로 보낸다. Content-Type 을 직접 넣으면 경계값이 빠져 깨진다.
+  const upload = useCallback<Uploader>(async (query, blob) => {
+    const fd = new FormData();
+    fd.append('file', blob, 'photo.jpg');
+    const res = await fetch(`${api('image')}?${query}`, {
+      method: 'POST', body: fd, headers: { 'x-owner-pin': pin ?? '' },
+    });
+    if (res.status === 401) { localStorage.removeItem(pinKey); setPin(null); throw new Error('UNAUTHORIZED'); }
+    return res.json();
+    // api 는 token 으로만 만들어지므로 의존성에 넣지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pin, pinKey]);
+
+  const removeImage = useCallback<Remover>(async (query) => {
+    const res = await fetch(`${api('image')}?${query}`, {
+      method: 'DELETE', headers: { 'x-owner-pin': pin ?? '' },
+    });
+    if (res.status === 401) { localStorage.removeItem(pinKey); setPin(null); throw new Error('UNAUTHORIZED'); }
+    return res.json();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin, pinKey]);
 
   const load = useCallback(async () => {
@@ -433,7 +463,12 @@ export default function OwnerClient({ token }: { token: string }) {
       )}
 
       {tab === 'use' && <UseTab call={call} api={api} onDone={load} />}
-      {tab === 'prize' && <PrizeTab call={call} api={api} stats={stats} board={bd} onDone={load} />}
+      {tab === 'prize' && (
+        <PrizeTab
+          call={call} api={api} stats={stats} board={bd} onDone={load}
+          upload={upload} removeImage={removeImage}
+        />
+      )}
 
       <nav className="tabs"><div className="in">
         {([['home', '📊', '홈'], ['use', '✅', '사용처리'], ['prize', '🍜', '상품']] as const).map(([k, i, l]) => (
@@ -446,21 +481,104 @@ export default function OwnerClient({ token }: { token: string }) {
   );
 }
 
+/* ================= 사진 ================= */
+
+/**
+ * 등급 동그라미가 곧 사진 버튼이다.
+ * 사진이 없으면 등급 글자, 있으면 사진 — 태블릿 화면에 나오는 모습 그대로다.
+ * 무엇이 어디에 뜨는지 설명할 필요가 없어진다.
+ */
+function PhotoDot({
+  url, label, bg, query, mode, upload, removeImage, onChange,
+}: {
+  url?: string | null; label: string; bg: string; query: string;
+  mode: 'prize' | 'ad';
+  upload: Uploader; removeImage: Remover; onChange: (url: string | null) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function pick(file: File) {
+    setBusy(true); setErr(null);
+    try {
+      const blob = mode === 'prize' ? await makePrizeImage(file) : await makeAdImage(file);
+      const r = await upload(query, blob);
+      if (r?.ok && r.url) onChange(r.url);
+      else setErr(r?.message ?? r?.error ?? '올리지 못했습니다');
+    } catch (e) {
+      const code = e instanceof Error ? e.message : '';
+      setErr(IMAGE_ERROR[code] ?? '사진을 처리하지 못했습니다');
+    }
+    setBusy(false);
+  }
+
+  async function drop() {
+    setBusy(true); setErr(null);
+    try {
+      const r = await removeImage(query);
+      if (r?.ok) onChange(null);
+      else setErr(r?.message ?? '지우지 못했습니다');
+    } catch { setErr('지우지 못했습니다'); }
+    setBusy(false);
+  }
+
+  return (
+    <div className="pdot">
+      <button
+        className="gg" style={{ background: url ? '#000' : bg }} disabled={busy}
+        title={url ? '사진 바꾸기' : '사진 올리기'}
+        onClick={() => ref.current?.click()}
+      >
+        {url ? <img src={url} alt="" /> : <span>{label}</span>}
+        <i className="cam" aria-hidden="true">{busy ? '…' : '＋'}</i>
+      </button>
+
+      {url && !busy && (
+        <button className="rm" title="사진 떼기" onClick={drop}>✕</button>
+      )}
+
+      <input
+        ref={ref} type="file" accept="image/*" hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          e.target.value = '';         // 같은 파일을 다시 골라도 반응하도록
+          if (f) pick(f);
+        }}
+      />
+      {err && <p className="perr">{err}</p>}
+    </div>
+  );
+}
+
 /* ================= 상품 구성 ================= */
 function PrizeTab({
-  call, api, stats, board, onDone,
-}: { call: Caller; api: (p: string) => string; stats: Stats | null; board: BoardInfo | null; onDone: () => void }) {
+  call, api, stats, board, onDone, upload, removeImage,
+}: {
+  call: Caller; api: (p: string) => string; stats: Stats | null;
+  board: BoardInfo | null; onDone: () => void;
+  upload: Uploader; removeImage: Remover;
+}) {
   const [rows, setRows] = useState<Grade[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [label, setLabel] = useState('');
   const [lastName, setLastName] = useState('');
   const [lastMsg, setLastMsg] = useState<string | null>(null);
+  const [lastImage, setLastImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!label && board?.last_one_label) setLabel(board.last_one_label);
     if (!lastName && board?.last_one_name) setLastName(board.last_one_name);
   }, [board, label, lastName]);
+
+  // 사진은 화면에서 바꾸면 그 값을 유지한다. 서버 값은 처음 한 번만 받는다.
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (seeded.current || board?.last_one_image === undefined) return;
+    seeded.current = true;
+    setLastImage(board.last_one_image ?? null);
+  }, [board]);
 
   // 서버 값이 처음 들어올 때만 채운다 (편집 중에 폴링이 덮어쓰지 않도록)
   useEffect(() => {
@@ -481,7 +599,12 @@ function PrizeTab({
 
         {rows.map((p, i) => (
           <div className="prow2" key={p.grade}>
-            <div className="gg" style={{ background: color(p.grade) }}>{p.grade}</div>
+            <PhotoDot
+              url={p.image} label={p.grade} bg={color(p.grade)} mode="prize"
+              query={`target=prize&grade=${p.grade}`}
+              upload={upload} removeImage={removeImage}
+              onChange={(url) => patch(i, { image: url })}
+            />
             <div className="pm">
               <input
                 className="pname" value={p.name}
@@ -557,6 +680,15 @@ function PrizeTab({
         <div className="lastedit">
           <label>마지막 티켓 보상</label>
           <p className="demo">마지막 한 장을 뽑은 손님에게 등급 상품과 <b>함께</b> 주는 상품입니다.</p>
+          <div className="lastphoto">
+            <PhotoDot
+              url={lastImage} label="★" bg="#B8892F" mode="prize"
+              query="target=last"
+              upload={upload} removeImage={removeImage}
+              onChange={setLastImage}
+            />
+            <span>막차 보너스 사진</span>
+          </div>
           <div className="lrow">
             <input
               className="lab" value={label} maxLength={20} placeholder="막차 보너스"
@@ -583,9 +715,9 @@ function PrizeTab({
         </div>
 
         <p className="demo" style={{ marginTop: 10 }}>
-          지금 진행 중인 박스에는 반영되지 않습니다. 홈에서 <b>새 박스 열기</b>를 눌러야 적용됩니다.
-          <br />상품 사진은 아직 파일로 넣습니다 — <code>assets/prize-a.jpg</code> 처럼 두고
-          <code>npm run img</code> 를 실행하세요.
+          수량과 상품명은 지금 진행 중인 박스에 반영되지 않습니다.
+          홈에서 <b>새 박스 열기</b>를 눌러야 적용됩니다.
+          <br /><b>사진은 바로 반영됩니다.</b> 동그라미를 눌러 올리세요 — 폰으로 찍은 사진 그대로 됩니다.
         </p>
       </div>
     </div>
