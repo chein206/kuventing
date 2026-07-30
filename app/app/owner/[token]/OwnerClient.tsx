@@ -759,15 +759,24 @@ function AdTab({
   const [busy, setBusy] = useState(false);
   const seeded = useRef(false);
 
-  // 편집 중에 폴링이 덮어쓰지 않도록 처음 한 번만 받는다
+  /**
+   * 편집 중에 폴링이 덮어쓰지 않도록 처음 한 번만 받는다.
+   *
+   * 다만 화면에는 아무것도 없는데 서버에는 슬라이드가 있는 상태로 굳으면
+   * 사장님은 손쓸 방법이 없다(비어 보이는데 개수는 맞는 화면).
+   * 그래서 **화면이 비어 있고 서버에 있으면** 언제든 다시 받는다.
+   */
   useEffect(() => {
-    if (seeded.current || !board?.ads) return;
+    const ads = board?.ads;
+    if (!ads) return;
+    if (seeded.current && rows.length > 0) return;
+    if (seeded.current && ads.length === 0) return;
     seeded.current = true;
-    setRows(board.ads.map((a) => ({
+    setRows(ads.map((a) => ({
       title: a.title ?? '', sub: a.sub ?? '', price: a.price ?? '', image: a.image ?? null,
       pos: normPos(a.pos),
     })));
-  }, [board]);
+  }, [board, rows.length]);
 
   const patch = (i: number, v: Partial<AdRow>) =>
     setRows((r) => r.map((x, j) => (j === i ? { ...x, ...v } : x)));
