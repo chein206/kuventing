@@ -487,13 +487,16 @@ export default function BoardClient({ token }: { token: string }) {
               </div>
             )}
           </div>
-          <button className="big" onClick={() => setStep('grid')}>티켓 고르기</button>
+          <button className="big cd" onClick={() => setStep('grid')}>
+            티켓 고르기
+            <Cooldown seconds={cfg.idleSeconds ?? DEF.idle} lastTouch={lastTouch} />
+          </button>
         </div>
       )}
 
       {step === 'grid' && board && (
         <div className="page">
-          <h2 className="ttl">티켓을 고르세요<small>검은 칸은 이미 나간 티켓입니다. 세어보면 남은 구성을 알 수 있습니다.</small></h2>
+          <h2 className="ttl">티켓을 선택하세요<small>검은 칸은 이미 소진된 티켓입니다.</small></h2>
           <div className="tgrid">
             {board.board.map((s) => s.grade ? (
               <div key={s.pos} className="tk2 used">
@@ -513,8 +516,11 @@ export default function BoardClient({ token }: { token: string }) {
               const open = board.board.filter((s) => !s.grade);
               if (open.length) setSel(open[Math.floor(Math.random() * open.length)].pos);
             }}>랜덤</button>
-            <button className="big" style={{ flex: 2 }} disabled={sel === null || !!pull}
-                    onClick={pullOut}>이 티켓으로 뽑기</button>
+            <button className="big cd" style={{ flex: 2 }} disabled={sel === null || !!pull}
+                    onClick={pullOut}>
+              이 티켓으로 뽑기
+              <Cooldown seconds={cfg.idleSeconds ?? DEF.idle} lastTouch={lastTouch} />
+            </button>
           </div>
           {msg && <p style={{ textAlign: 'center', color: 'var(--accent)', fontWeight: 700, marginTop: 10 }}>{msg}</p>}
 
@@ -644,6 +650,39 @@ export default function BoardClient({ token }: { token: string }) {
                     seconds={cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
       )}
     </div>
+  );
+}
+
+/* ================= 남은 시간 표시 ================= */
+
+/**
+ * 버튼 안에서 줄어드는 띠 + 남은 초.
+ *
+ * 손을 놓으면 초기화면으로 돌아간다는 걸 손님이 모르면 갑자기 화면이 바뀐 것처럼 느낀다.
+ * 남은 시간을 버튼에 얹어 두면 "아직 시간이 있다"와 "곧 넘어간다"가 같이 읽힌다.
+ *
+ * 이 컴포넌트만 초당 다시 그린다. 부모(티켓 50칸이 있는 화면)를 다시 그리면
+ * 태블릿에서 눈에 보이게 버벅인다.
+ */
+function Cooldown({ seconds, lastTouch }: { seconds: number; lastTouch: React.RefObject<number> }) {
+  const [left, setLeft] = useState(seconds);
+
+  useEffect(() => {
+    const tick = () => {
+      const used = (Date.now() - (lastTouch.current ?? Date.now())) / 1000;
+      setLeft(Math.max(0, seconds - used));
+    };
+    tick();
+    const t = setInterval(tick, 250);
+    return () => clearInterval(t);
+  }, [seconds, lastTouch]);
+
+  const pct = Math.max(0, Math.min(100, (left / seconds) * 100));
+  return (
+    <>
+      <i className="cdbar" style={{ width: `${pct}%` }} aria-hidden="true" />
+      <em className="cdnum">{Math.ceil(left)}</em>
+    </>
   );
 }
 

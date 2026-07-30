@@ -272,7 +272,21 @@
   position:relative;z-index:1;padding-right:7%;
   text-shadow:0 2px 6px rgba(0,0,0,.55)
 }
-.bd .tk2.used{font-size:34px;opacity:.92}
+/* 남은 칸 vs 나간 칸 — 손가락으로 고르는 화면이라 더 확실히 갈려야 한다.
+   티켓 그림의 색만 바꾸는 것으로는 부족했다. 남은 칸은 떠 있고,
+   나간 칸은 눌러 앉아 등급 글자만 남는다. */
+.bd .tk2{border-radius:8px;overflow:hidden}
+.bd .tk2:not(.used){
+  box-shadow:0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.09)
+}
+.bd .tk2.used{
+  font-size:34px;
+  background:rgba(0,0,0,.5);
+  box-shadow:inset 0 3px 9px rgba(0,0,0,.7), inset 0 0 0 1px rgba(0,0,0,.4)
+}
+/* 그림만 죽인다. 등급 글자는 또렷하게 남겨야 뭐가 나갔는지 읽힌다 */
+.bd .tk2.used .art{opacity:.16;filter:saturate(.1) brightness(.55)}
+.bd .tk2.used span{text-shadow:0 2px 5px rgba(0,0,0,.85)}
 /* 등급 뒤에 "상"을 붙이지 않는다.
    "A상/B상"은 이치방쿠지의 표기 체계다. 라스트원을 막차 보너스로 바꾼 것과 같은 이유로
    그대로 쓰지 않는다(법률조사.md §3). 등급은 글자와 색으로만 보여준다. */
@@ -326,6 +340,25 @@
   box-shadow:var(--shadow),var(--glow)
 }
 .bd .big[disabled]{opacity:.32}
+
+/* 남은 시간 — 버튼 안에서 띠가 줄어든다.
+   손을 놓으면 초기화면으로 돌아간다는 걸 모르면 화면이 갑자기 바뀐 것처럼 느낀다. */
+/* 버튼 글자는 텍스트 노드라 z-index 를 줄 수 없다.
+   그래서 띠를 음수 층에 두고 isolation 으로 버튼 배경 아래로는 안 가게 막는다.
+   자식 전체에 position 을 주면(.cd > *) 숫자의 absolute 가 덮여 글자 옆으로 흘러간다. */
+.bd .big.cd{position:relative;overflow:hidden;isolation:isolate}
+.bd .cdbar{
+  position:absolute;left:0;top:0;bottom:0;z-index:-1;
+  background:rgba(0,0,0,.18);
+  transition:width .25s linear
+}
+.bd .cdnum{
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);z-index:1;
+  font-style:normal;font-size:14px;font-weight:800;opacity:.55;
+  font-variant-numeric:tabular-nums
+}
+/* 흰 글자 버튼(ghost)에서는 띠를 밝게 */
+.bd .big.ghost .cdbar{background:rgba(0,0,0,.07)}
 .bd .big.ghost{background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow)}
 .bd .rowbtn{display:flex;gap:10px}
 
