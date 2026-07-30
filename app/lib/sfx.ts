@@ -20,6 +20,7 @@ const GAIN: Record<SoundMode, number> = { off: 0, soft: 0.62, loud: 1.45 };
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
+let verb: GainNode | null = null;   // 잔향으로 보내는 입구
 let mode: SoundMode = 'off';
 
 /** 화면을 처음 만졌을 때 부른다. 이 시점에만 오디오를 깨울 수 있다 */
@@ -44,6 +45,23 @@ export function unlock(next: SoundMode) {
 
     master.connect(limiter);
     limiter.connect(ctx.destination);
+
+    // 잔향. 음원(IR) 없이 짧은 되울림으로 공간감만 만든다.
+    // 이게 없으면 팡파레가 폰 알림음처럼 납작하게 들린다.
+    const delay = ctx.createDelay(0.5);
+    delay.delayTime.value = 0.14;
+    const fb = ctx.createGain();
+    fb.gain.value = 0.34;
+    const damp = ctx.createBiquadFilter();   // 되울릴수록 고역이 깎여 자연스러워진다
+    damp.type = 'lowpass';
+    damp.frequency.value = 3200;
+    const send = ctx.createGain();
+    send.gain.value = 0;                     // 소리마다 필요한 만큼만 보낸다
+
+    send.connect(delay);
+    delay.connect(damp); damp.connect(fb); fb.connect(delay);
+    damp.connect(master);
+    verb = send;
   }
   master!.gain.value = GAIN[next];
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
@@ -218,47 +236,79 @@ let snapKind: SnapKind = 'pop';
 export const setSnap = (k: SnapKind) => { snapKind = k; };
 export function snap() { snapOf(snapKind); }
 
-/* ---------- 결과: 등급에 따라 ---------- */
+/* ---------- 결과: 등급에 따라 ----------
+   등급 낙차가 소리로 느껴져야 한다. A 는 화려하게 쏟아지고 E 는 툭 끝난다.
+   길이는 줄이지 않는다 — 결과 화면이 40초쯤 떠 있으므로 서두를 이유가 없다. */
 
-// 등급이 높을수록 음이 많고 길다. E 는 한 음만 짧게.
-const TUNE: Record<string, number[]> = {
-  A: [523, 659, 784, 1047, 1319],
-  B: [523, 659, 784, 1047],
-  C: [523, 659, 784],
-  D: [523, 784],
-  E: [659],
+type Fan = {
+  notes: number[];      // 차례로 오르는 음
+  chord: number[];      // 끝에 함께 울리는 화음 (없으면 빈 배열)
+  swell: boolean;       // 아래를 받치는 저음
+  verb: number;         // 잔향을 보내는 양
+  vol: number;
 };
 
-function ping(freq: number, at: number, dur: number, vol: number) {
+const FAN: Record<string, Fan> = {
+  // 도-미-솔-도-미 오르고 장3화음으로 착지 + 저음 받침 + 잔향 가득
+  A: { notes: [523, 659, 784, 1047, 1319], chord: [1047, 1319, 1568], swell: true,  verb: 0.5,  vol: 0.34 },
+  B: { notes: [523, 659, 784, 1047],       chord: [784, 1047],        swell: true,  verb: 0.38, vol: 0.32 },
+  C: { notes: [523, 659, 784],             chord: [784],              swell: false, verb: 0.26, vol: 0.3  },
+  D: { notes: [523, 784],                  chord: [],                 swell: false, verb: 0.16, vol: 0.28 },
+  // E 는 한 음, 잔향도 거의 없다. 툭.
+  E: { notes: [659],                       chord: [],                 swell: false, verb: 0.06, vol: 0.26 },
+};
+
+/**
+ * 종소리 한 음. 배음을 세 겹 쌓고 살짝 어긋나게 두면 금속 종처럼 맑아진다.
+ * 사인파 하나만 쓰면 폰 알림음처럼 들린다.
+ */
+function bell(freq: number, at: number, dur: number, vol: number, send = 0) {
   if (!ctx || !master) return;
-  const o = ctx.createOscillator();
-  o.type = 'sine';
-  o.frequency.value = freq;
-  // 배음을 하나 얹으면 종소리처럼 맑아진다
-  const o2 = ctx.createOscillator();
-  o2.type = 'sine';
-  o2.frequency.value = freq * 2.01;
   const g = ctx.createGain();
   g.gain.setValueAtTime(0, at);
-  g.gain.linearRampToValueAtTime(vol, at + 0.012);
-  g.gain.exponentialRampToValueAtTime(0.001, at + dur);
-  const g2 = ctx.createGain();
-  g2.gain.value = 0.3;
-  o.connect(g); o2.connect(g2); g2.connect(g); g.connect(master);
-  o.start(at); o.stop(at + dur + 0.02);
-  o2.start(at); o2.stop(at + dur + 0.02);
+  g.gain.linearRampToValueAtTime(vol, at + 0.014);
+  g.gain.exponentialRampToValueAtTime(0.0008, at + dur);
+  g.connect(master);
+  if (send > 0 && verb) {
+    const sg = ctx.createGain();
+    sg.gain.value = send;
+    g.connect(sg); sg.connect(verb);
+  }
+
+  // 기음 + 2배음 + 3배음. 배수를 정확히 두지 않아야 종처럼 울린다
+  ([[1, 1], [2.005, 0.34], [3.01, 0.13]] as const).forEach(([mul, amp]) => {
+    const o = ctx!.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq * mul;
+    const og = ctx!.createGain();
+    og.gain.value = amp;
+    o.connect(og); og.connect(g);
+    o.start(at); o.stop(at + dur + 0.03);
+  });
 }
 
-/** 뽑은 결과가 뜰 때. 막차 보너스면 한 옥타브 위로 한 번 더 */
+/** 뽑은 결과가 뜰 때. 막차 보너스면 금색 한 방을 더 얹는다 */
 export function fanfare(grade: string, isLastOne = false) {
   if (!on() || !ctx) return;
-  const notes = TUNE[grade.toUpperCase()] ?? TUNE.E;
+  const f = FAN[grade.toUpperCase()] ?? FAN.E;
   const t0 = ctx.currentTime + 0.02;
-  notes.forEach((f, i) => ping(f, t0 + i * 0.085, 0.5, 0.34));
+  const step = 0.09;
+
+  // 오르는 음
+  f.notes.forEach((n, i) => bell(n, t0 + i * step, 0.62, f.vol, f.verb));
+
+  // 착지 화음 — 마지막 음 바로 뒤에 함께 울린다
+  const end = t0 + f.notes.length * step;
+  f.chord.forEach((n, i) => bell(n, end + i * 0.012, 1.5, f.vol * 0.62, f.verb));
+
+  // 저음 받침. 소리에 무게를 준다
+  if (f.swell) tone(end - 0.02, f.notes[0] / 2, f.notes[0] / 2, 1.1, 0.2, 'sine');
 
   if (isLastOne) {
-    // 금색 한 방 — 위에서 아래로 쏟아지는 느낌
-    const top = notes[notes.length - 1] * 2;
-    [0, 1, 2, 3].forEach((i) => ping(top / (1 + i * 0.12), t0 + 0.42 + i * 0.06, 0.7, 0.26));
+    // 금색 한 방 — 위에서 아래로 쏟아진다
+    const top = f.notes[f.notes.length - 1] * 2;
+    [0, 1, 2, 3, 4].forEach((i) =>
+      bell(top / (1 + i * 0.115), end + 0.28 + i * 0.07, 1.1, 0.24, 0.62));
+    tone(end + 0.28, 130, 98, 1.6, 0.18, 'sine');
   }
 }
