@@ -2,7 +2,7 @@ import { getAdmin, resolveOwner } from '@/lib/admin';
 
 // 문자열 리터럴이어야 supabase-js 가 반환 타입을 추론한다
 const FIELDS =
-  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, last_one_label, last_one_name';
+  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, last_one_label, last_one_name';
 
 // 초 단위 값과 허용 범위
 const RANGES: Record<string, [number, number]> = {
@@ -10,6 +10,8 @@ const RANGES: Record<string, [number, number]> = {
   result_seconds:    [10, 180],
   auto_open_seconds: [10, 300],
   idle_seconds:      [10, 900],
+  // 분당 뽑기 허용 횟수. 너무 높이면 주소가 샜을 때 티켓이 순삭된다.
+  rate_per_min:      [1, 60],
 };
 
 // 자유 입력 문구 — 길이만 제한한다

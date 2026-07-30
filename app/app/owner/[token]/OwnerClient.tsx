@@ -15,6 +15,8 @@ type BoardInfo = {
   slide_seconds?: number;
   result_seconds?: number;
   auto_open_seconds?: number;
+  rate_per_min?: number;
+  board_pin?: string;
   error?: string;
 };
 
@@ -25,6 +27,14 @@ const TIMINGS = [
   { key: 'auto_open_seconds', label: '방치 시 자동 개봉',    hint: '카드를 열다 말고 갔을 때',        min: 10, max: 300 },
   { key: 'idle_seconds',      label: '초기화면 복귀',        hint: '뽑는 도중 손을 놓았을 때',        min: 10, max: 900 },
 ] as const;
+
+// 시간은 아니지만 같은 화면에서 조절한다
+const RATE = {
+  key: 'rate_per_min',
+  label: '분당 뽑기 허용',
+  hint: '주소가 새더라도 티켓이 한꺼번에 소진되지 않게 막는 값',
+  min: 1, max: 60,
+} as const;
 type RedeemRes = {
   ok: boolean; reason?: string; grade?: string; name?: string;
   isLastOne?: boolean; lastOneName?: string | null;
@@ -41,6 +51,9 @@ type Stats = {
   store?: string; branch?: string | null; title?: string;
   total: number; left: number; drawn: number; today: number;
   coupons: number; redeemed: number;
+  ratePerMin?: number;
+  recent10?: number;   // 최근 10분 뽑기 수
+  pinFails?: number;   // 최근 10분 PIN 실패 수
   byGrade: Grade[]; pending: Pending[];
 };
 
@@ -65,6 +78,14 @@ export default function OwnerClient({ token }: { token: string }) {
   const [timeMsg, setTimeMsg] = useState<string | null>(null);
   const [boxMsg, setBoxMsg] = useState<string | null>(null);
   const [boxBusy, setBoxBusy] = useState(false);
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  const copy = async (text: string, done: string) => {
+    try { await navigator.clipboard.writeText(text); setBoxMsg(done); }
+    catch { setBoxMsg('복사하지 못했습니다. 주소를 길게 눌러 복사하세요.'); }
+  };
 
   useEffect(() => { setPin(localStorage.getItem(pinKey)); }, [pinKey]);
 
@@ -105,7 +126,19 @@ export default function OwnerClient({ token }: { token: string }) {
       setErr(null);
       try {
         const res = await fetch(api('stats'), { headers: { 'x-owner-pin': v } });
-        if (res.status === 401) { setErr('PIN이 맞지 않거나 주소가 잘못되었습니다'); return; }
+        if (res.status === 401) {
+          const body = await res.json().catch(() => ({}));
+          setErr(body?.left !== undefined
+            ? `PIN이 맞지 않습니다 (남은 시도 ${body.left}회)`
+            : 'PIN이 맞지 않거나 주소가 잘못되었습니다');
+          return;
+        }
+        // 대입 시도 차단
+        if (res.status === 429) {
+          const body = await res.json().catch(() => ({}));
+          setErr(body?.message ?? 'PIN을 여러 번 틀렸습니다. 잠시 후 다시 시도하세요');
+          return;
+        }
         if (!res.ok) {
           const body = await res.text();
           setErr(`서버 오류 (${res.status})\n${body.slice(0, 200)}`);
@@ -177,6 +210,26 @@ export default function OwnerClient({ token }: { token: string }) {
             </div>
           </div>
 
+          {/* 이상 징후 — 평소엔 안 뜬다 */}
+          {(!!stats?.pinFails || (stats?.recent10 ?? 0) >= 12) && (
+            <div className="card alert">
+              <h3>확인이 필요합니다</h3>
+              {!!stats?.pinFails && (
+                <p className="demo">
+                  최근 10분간 <b>PIN 실패 {stats.pinFails}회</b>.
+                  직원이 잘못 눌렀을 수도 있지만, 계속 늘어나면 카운터 PIN을 바꾸고
+                  카운터 화면 주소를 재발급하세요.
+                </p>
+              )}
+              {(stats?.recent10 ?? 0) >= 12 && (
+                <p className="demo">
+                  최근 10분간 <b>{stats?.recent10}회</b> 뽑혔습니다.
+                  줄이 길었다면 정상입니다. 아니라면 주소가 외부에 새어나갔을 수 있습니다.
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="card">
             <h3>박스 <span>{stats?.box ? `${stats.box}회차 진행 중` : ''}</span></h3>
             <p className="demo" style={{ marginBottom: 10 }}>
@@ -227,8 +280,29 @@ export default function OwnerClient({ token }: { token: string }) {
             {bd?.board_token ? (
               <>
                 <a className="boardlink" href={`/board/${bd.board_token}`} target="_blank" rel="noreferrer">
-                  {typeof window !== 'undefined' ? window.location.origin : ''}/board/{bd.board_token}
+                  {origin}/board/{bd.board_token}
                 </a>
+                <div className="linkrow">
+                  <button onClick={() => copy(`${origin}/board/${bd.board_token}`, '카운터 주소를 복사했습니다')}>
+                    주소 복사
+                  </button>
+                  <button className="danger" onClick={async () => {
+                    if (!confirm(
+                      '카운터 화면 주소를 새로 발급합니다.\n\n' +
+                      '· 지금 주소는 즉시 사용할 수 없게 됩니다\n' +
+                      '· 태블릿에서 새 주소로 다시 열어야 합니다\n' +
+                      '· 발급된 뽑기권도 무효화됩니다\n\n' +
+                      '진행할까요?'
+                    )) return;
+                    const r = (await call(api('rotate'), {
+                      method: 'POST', body: JSON.stringify({ target: 'board' }),
+                    })) as { ok?: boolean; token?: string; error?: string };
+                    setBoxMsg(r?.ok
+                      ? '카운터 주소를 새로 발급했습니다. 태블릿에서 새 주소로 다시 열어주세요.'
+                      : (r?.error ?? '실패했습니다'));
+                    load();
+                  }}>주소 재발급</button>
+                </div>
                 <div className="modes">
                   {(['pin', 'open'] as const).map((m) => (
                     <button
@@ -250,8 +324,8 @@ export default function OwnerClient({ token }: { token: string }) {
                 </p>
 
                 <div className="timings">
-                  <label>화면 시간 (초)</label>
-                  {TIMINGS.map((t) => (
+                  <label>화면 시간 (초) · 뽑기 제한</label>
+                  {[...TIMINGS, RATE].map((t) => (
                     <div className="trow" key={t.key}>
                       <div className="tl">
                         <b>{t.label}</b>
@@ -265,7 +339,9 @@ export default function OwnerClient({ token }: { token: string }) {
                     </div>
                   ))}
                   <button className="save" onClick={async () => {
-                    const patch = Object.fromEntries(TIMINGS.map((t) => [t.key, bd[t.key]]));
+                    const patch = Object.fromEntries(
+                      [...TIMINGS, RATE].map((t) => [t.key, bd[t.key]])
+                    );
                     const r = (await call(api('board'), {
                       method: 'POST', body: JSON.stringify(patch),
                     })) as { ok?: boolean; message?: string; error?: string };
@@ -274,6 +350,43 @@ export default function OwnerClient({ token }: { token: string }) {
                     load();
                   }}>시간 저장</button>
                   {timeMsg && <p className="demo"><b>{timeMsg}</b></p>}
+                </div>
+
+                {/* 사장님 본인 주소 — 재발급하면 이 페이지 주소도 바뀐다 */}
+                <div className="ownerlink">
+                  <label>사장님 화면 주소 (본인용)</label>
+                  <a className="boardlink" href={`/owner/${token}`}>{origin}/owner/{token}</a>
+                  <div className="linkrow">
+                    <button onClick={() => copy(`${origin}/owner/${token}`, '사장님 주소를 복사했습니다')}>
+                      주소 복사
+                    </button>
+                    <button className="danger" onClick={async () => {
+                      if (!confirm(
+                        '사장님 화면 주소를 새로 발급합니다.\n\n' +
+                        '· 지금 주소는 즉시 사용할 수 없게 됩니다\n' +
+                        '· 새 주소로 자동 이동합니다 — 즐겨찾기를 다시 등록하세요\n' +
+                        '· 다른 기기에 저장해둔 링크도 모두 바꿔야 합니다\n\n' +
+                        '진행할까요?'
+                      )) return;
+                      const r = (await call(api('rotate'), {
+                        method: 'POST', body: JSON.stringify({ target: 'owner' }),
+                      })) as { ok?: boolean; token?: string; error?: string };
+                      if (r?.ok && r.token) {
+                        // PIN 기억을 새 주소 키로 옮긴 뒤 이동한다
+                        try {
+                          localStorage.setItem(`kuji_owner_pin_${r.token}`, pin ?? '');
+                          localStorage.removeItem(pinKey);
+                        } catch { /* 저장 실패해도 이동은 한다 */ }
+                        window.location.replace(`/owner/${r.token}`);
+                      } else {
+                        setBoxMsg(r?.error ?? '실패했습니다');
+                      }
+                    }}>주소 재발급</button>
+                  </div>
+                  <p className="demo">
+                    이 주소를 아는 사람은 PIN만 맞히면 들어옵니다.
+                    외부로 나갔다고 판단되면 재발급하세요.
+                  </p>
                 </div>
 
                 {bd.board_mode === 'pin' && (

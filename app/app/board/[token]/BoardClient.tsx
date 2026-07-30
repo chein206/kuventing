@@ -157,12 +157,33 @@ export default function BoardClient({ token }: { token: string }) {
   /* ---------- 세션 열기 ---------- */
   async function openSession(p?: string) {
     const { data } = await sb().rpc('open_session', { p_token: token, p_pin: p ?? null });
-    const r = data as { ok: boolean; reason?: string; pass?: string };
+    const r = data as {
+      ok: boolean; reason?: string; pass?: string;
+      left?: number; minutes?: number; perMin?: number;
+    };
     if (!r?.ok) {
-      if (r?.reason === 'BAD_PIN') { setPinErr(true); setPin(''); return; }
+      if (r?.reason === 'BAD_PIN') {
+        setPinErr(true); setPin('');
+        setMsg(r.left ? `PIN이 맞지 않습니다 (남은 시도 ${r.left}회)` : 'PIN이 맞지 않습니다');
+        return;
+      }
+      // PIN을 여러 번 틀렸을 때 — 대입 시도를 막는다
+      if (r?.reason === 'LOCKED') {
+        setPin('');
+        setMsg(`PIN을 여러 번 틀렸습니다. ${r.minutes ?? 10}분 후 다시 시도해주세요`);
+        setStep('attract');
+        return;
+      }
+      // 짧은 시간에 너무 많이 뽑혔을 때
+      if (r?.reason === 'RATE_LIMIT') {
+        setMsg('잠시만 기다려주세요');
+        setStep('attract');
+        return;
+      }
       if (r?.reason === 'BOX_EMPTY') { setMsg('티켓이 모두 소진되었습니다'); return; }
       setMsg('시작할 수 없습니다'); return;
     }
+    setMsg(null);
     setPass(r.pass!);
     setPinErr(false);
     setStep('list');
@@ -341,7 +362,10 @@ export default function BoardClient({ token }: { token: string }) {
 
       {step === 'pin' && (
         <div className="page">
-          <h2 className="ttl">직원 확인<small>{pinErr ? 'PIN이 맞지 않습니다' : '주문하신 손님만 뽑을 수 있습니다'}</small></h2>
+          <h2 className="ttl">
+            직원 확인
+            <small>{pinErr ? (msg ?? 'PIN이 맞지 않습니다') : '주문하신 손님만 뽑을 수 있습니다'}</small>
+          </h2>
           <div className="pin">
             <div className="pindots">
               {Array.from({ length: 4 }, (_, i) => <i key={i} className={i < pin.length ? 'f' : ''} />)}

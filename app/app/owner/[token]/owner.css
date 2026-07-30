@@ -24,6 +24,9 @@
 .ow .card h3{font-size:13px;font-weight:800;margin-bottom:12px;display:flex;gap:6px;align-items:center}
 .ow .card h3 span{font-size:11px;font-weight:600;color:var(--dim)}
 
+.ow .card.alert{border-color:#F0C79B;background:#FEF6EC}
+.ow .card.alert h3{color:#8A4B0B}
+
 .ow .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .ow .kpi{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .ow .kpi .l{font-size:11px;color:var(--dim);font-weight:600}
@@ -86,6 +89,15 @@
   background:var(--surf2);border:1px solid var(--line);border-radius:10px;padding:12px;
   font-family:ui-monospace,Menlo,monospace;text-decoration:none
 }
+.ow .linkrow{display:flex;gap:8px;margin-top:8px}
+.ow .linkrow button{
+  flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--surf2);
+  font-size:13px;font-weight:700;color:var(--ink)
+}
+.ow .linkrow button.danger{color:var(--bad);border-color:#F3C7C3;background:#FDF1F0}
+.ow .ownerlink{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.ow .ownerlink > label{font-size:13px;font-weight:800;display:block;margin-bottom:8px}
+
 .ow .modes{display:flex;gap:8px;margin-top:10px}
 .ow .modes button{
   flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--surf2);
