@@ -68,11 +68,20 @@ const CAMS: MotionCam[] = [
 ];
 const SIGN_CAM: MotionCam = { z0: 1.10, z1: 1.18, y0: -2, y1: -3.5, d0: 0.34, d1: 0.46, px: 34 };
 
-export type AdPos = 'top' | 'mid' | 'bottom';
+/** 자막 자리 — 세로(t/m/b) + 가로(l/r) */
+export type AdPos = 'tl' | 'tr' | 'ml' | 'mr' | 'bl' | 'br';
+
+/** 옛 값(top/mid/bottom)도 읽어 준다 */
+export function normPos(v?: string | null): AdPos {
+  const m: Record<string, AdPos> = { top: 'tl', mid: 'ml', bottom: 'bl' };
+  const k = (v ?? '').toLowerCase();
+  if (k in m) return m[k];
+  return (['tl', 'tr', 'ml', 'mr', 'bl', 'br'] as const).includes(k as AdPos) ? (k as AdPos) : 'bl';
+}
 
 type AdIn = {
   title?: string; sub?: string | null; price?: string | null;
-  image?: string | null; pos?: AdPos | null;
+  image?: string | null; pos?: string | null;
 };
 
 /**
@@ -80,11 +89,7 @@ type AdIn = {
  * 사진은 매장마다 다르다 — 접시가 아래에 있으면 글자를 위로 올려야 한다.
  * 사진 규격으로 전부 통제하려 하면 매장마다 사진을 다시 뽑게 된다.
  */
-const POS_TOP: Record<AdPos, number> = {
-  top: 300,
-  mid: 820,
-  bottom: 1240,
-};
+const POS_TOP: Record<string, number> = { t: 300, m: 820, b: 1240 };
 
 /**
  * 광고 슬라이드로 씬을 만든다. 사진 없는 슬라이드는 넣지 않는다 —
@@ -110,8 +115,8 @@ export function buildScenes(
     title: a.title ?? '',
     desc: a.sub ?? null,
     price: a.price ?? null,
-    top: POS_TOP[a.pos ?? 'bottom'] ?? POS_TOP.bottom,
-    pos: a.pos ?? 'bottom',
+    top: POS_TOP[normPos(a.pos)[0]],
+    pos: normPos(a.pos),
   }));
 
   scenes.push({
@@ -228,8 +233,11 @@ export default function MotionAd({ scenes }: { scenes: MotionScene[] }) {
           </>
         ) : (
           <div
-            className="madcap"
-            style={{ top: vh(s.top), left: px(96), width: px(888), gap: px(26) }}
+            className={`madcap ${s.pos[1] === 'r' ? 'right' : ''}`}
+            style={{
+              top: vh(s.top), width: px(888), gap: px(26),
+              ...(s.pos[1] === 'r' ? { right: px(96) } : { left: px(96) }),
+            }}
           >
             <div className="madkicker" style={{ fontSize: px(30) }}>{s.kicker}</div>
             <div className="madtitle" style={{ fontSize: px(100) }}>{s.title}</div>

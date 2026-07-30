@@ -695,11 +695,22 @@ function PrizeTab({
 
 /* ================= 광고 슬라이드 ================= */
 
-type AdPos = 'top' | 'mid' | 'bottom';
+type AdPos = 'tl' | 'tr' | 'ml' | 'mr' | 'bl' | 'br';
 type AdRow = { title: string; sub: string; price: string; image: string | null; pos: AdPos };
 
-// 사진마다 접시 자리가 달라서 글자를 옮길 수 있어야 한다
-const POS_LABEL: [AdPos, string][] = [['top', '위'], ['mid', '가운데'], ['bottom', '아래']];
+// 사진마다 접시 자리가 달라서 글자를 옮길 수 있어야 한다.
+// 격자 순서 그대로 화면에 놓는다 — 누르면 어디로 가는지 보고 알 수 있다.
+const POS_GRID: [AdPos, string][] = [
+  ['tl', '상좌'], ['tr', '상우'],
+  ['ml', '중좌'], ['mr', '중우'],
+  ['bl', '하좌'], ['br', '하우'],
+];
+const normPos = (v?: string | null): AdPos => {
+  const m: Record<string, AdPos> = { top: 'tl', mid: 'ml', bottom: 'bl' };
+  const k = (v ?? '').toLowerCase();
+  if (k in m) return m[k];
+  return (['tl','tr','ml','mr','bl','br'] as string[]).includes(k) ? (k as AdPos) : 'bl';
+};
 
 /**
  * 대기화면 슬라이드 편집.
@@ -725,12 +736,27 @@ function AdTab({
     seeded.current = true;
     setRows(board.ads.map((a) => ({
       title: a.title ?? '', sub: a.sub ?? '', price: a.price ?? '', image: a.image ?? null,
-      pos: (a.pos ?? 'bottom') as AdPos,
+      pos: normPos(a.pos),
     })));
   }, [board]);
 
   const patch = (i: number, v: Partial<AdRow>) =>
     setRows((r) => r.map((x, j) => (j === i ? { ...x, ...v } : x)));
+
+  /**
+   * 슬라이드를 하나 붙인다.
+   * 목록이 길면 새 행이 화면 밖에 생겨 "아무것도 안 보인다"고 느낀다.
+   * 저장이 끝나면 그 행으로 데려간다.
+   */
+  function addRow() {
+    const next: AdRow[] = [...rows, { title: '새 메뉴', sub: '', price: '', image: null, pos: 'bl' }];
+    commit(next, '슬라이드를 추가했습니다').then(() => {
+      requestAnimationFrame(() => {
+        const all = document.querySelectorAll('.ow .adrow');
+        all[all.length - 1]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+  }
 
   /** 서버에 배열을 통째로 보낸다 */
   async function commit(next: AdRow[], done: string) {
@@ -742,7 +768,7 @@ function AdTab({
         body: JSON.stringify({
           ads: next.map((a) => ({
             title: a.title.trim(), sub: a.sub.trim() || null,
-            price: a.price.trim() || null, image: a.image, pos: a.pos ?? 'bottom',
+            price: a.price.trim() || null, image: a.image, pos: a.pos ?? 'bl',
           })),
         }),
       })) as { ok?: boolean; message?: string; error?: string };
@@ -808,9 +834,9 @@ function AdTab({
               />
               <div className="posseg">
                 <label>글자 위치</label>
-                <div className="seg">
-                  {POS_LABEL.map(([v, l]) => (
-                    <button key={v} aria-pressed={(a.pos ?? 'bottom') === v}
+                <div className="posgrid">
+                  {POS_GRID.map(([v, l]) => (
+                    <button key={v} aria-pressed={normPos(a.pos) === v}
                             onClick={() => patch(i, { pos: v })}>{l}</button>
                   ))}
                 </div>
@@ -821,7 +847,7 @@ function AdTab({
 
         {rows.length < 10 && (
           <button className="addgrade" disabled={busy} onClick={() =>
-            commit([...rows, { title: '새 메뉴', sub: '', price: '', image: null, pos: 'bottom' }], '슬라이드를 추가했습니다')
+            addRow()
           }>+ 슬라이드 추가 ({rows.length}/10)</button>
         )}
 

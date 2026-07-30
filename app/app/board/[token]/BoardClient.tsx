@@ -5,12 +5,12 @@ import qrcode from 'qrcode-generator';
 import { sb, getBoard, draw, type Board, type DrawResult, type Prize } from '@/lib/supabase';
 import Ticket from './Ticket';
 import { Icon } from '@/lib/Icon';
-import MotionAd, { buildScenes, scenesDuration } from './MotionAd';
+import MotionAd, { buildScenes, scenesDuration, normPos } from './MotionAd';
 import * as sfx from '@/lib/sfx';
 
 type Ad = {
   title: string; sub?: string; price?: string; image?: string | null;
-  pos?: 'top' | 'mid' | 'bottom' | null;   // 자막 위치. 사진마다 접시 자리가 달라서 고르게 한다
+  pos?: string | null;   // 자막 위치(tl/tr/ml/mr/bl/br). 사진마다 접시 자리가 다르다
 };
 type Config = {
   campaignId: string; title: string; status: string; theme: string;
@@ -745,7 +745,7 @@ function AdSlide({ ad }: { ad: Ad }) {
     );
   }
   return (
-    <div className="slide ad full" data-pos={ad.pos ?? 'bottom'}>
+    <div className="slide ad full" data-pos={normPos(ad.pos)}>
       {/* 뒤에는 흐리게 채우고 위에는 원본을 통째로 얹는다 — 어떤 비율이든 안 잘린다 */}
       <div className="shot">
         <img className="blur" src={ad.image} alt="" aria-hidden="true" />

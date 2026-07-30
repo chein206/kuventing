@@ -64,7 +64,7 @@
 .mad .madlegib{position:absolute;inset:0}
 
 /* 자막 아래 (기본) */
-.mad .madscene[data-pos="bottom"] .madlegib,
+.mad .madscene[data-pos^="b"] .madlegib,
 .mad .madscene[data-pos="sign"] .madlegib{
   background:linear-gradient(to bottom,
     rgba(11,11,12,.62) 0%, rgba(11,11,12,0) 24%,
@@ -72,7 +72,7 @@
     rgba(11,11,12,.74) 76%, rgba(11,11,12,.93) 100%)
 }
 /* 자막 가운데 — 가운데를 띠처럼 눌러 준다 */
-.mad .madscene[data-pos="mid"] .madlegib{
+.mad .madscene[data-pos^="m"] .madlegib{
   background:linear-gradient(to bottom,
     rgba(11,11,12,.5) 0%, rgba(11,11,12,0) 20%,
     rgba(11,11,12,.28) 36%, rgba(11,11,12,.8) 52%,
@@ -80,7 +80,7 @@
     rgba(11,11,12,.62) 100%)
 }
 /* 자막 위 — 접시가 아래에 있는 사진에 쓴다 */
-.mad .madscene[data-pos="top"] .madlegib{
+.mad .madscene[data-pos^="t"] .madlegib{
   background:linear-gradient(to bottom,
     rgba(11,11,12,.9) 0%, rgba(11,11,12,.78) 26%,
     rgba(11,11,12,.34) 42%, rgba(11,11,12,0) 58%,
@@ -116,6 +116,9 @@
   will-change:transform,opacity
 }
 .mad .madcap.sign{align-items:center;text-align:center}
+/* 접시가 왼쪽에 있는 사진이면 글자를 오른쪽으로 민다 */
+.mad .madcap.right{align-items:flex-end;text-align:right}
+.mad .madcap.right .madprice{flex-direction:row-reverse}
 
 .mad .madkicker{
   font-family:var(--sans);font-weight:500;letter-spacing:.34em;

@@ -17,7 +17,7 @@ import PhotoDot, { type Uploader, type Remover } from '@/lib/PhotoDot';
  */
 
 type Caller = (p: string, i?: RequestInit) => Promise<unknown>;
-type AdPos = 'top' | 'mid' | 'bottom';
+type AdPos = 'tl' | 'tr' | 'ml' | 'mr' | 'bl' | 'br';
 
 type MPrize = { grade: string; name: string; qty: number; image_url: string | null };
 type MAd = { title: string; sub: string; price: string; image: string | null; pos: AdPos };
@@ -28,7 +28,17 @@ type MediaData = {
   ads?: { title?: string; sub?: string; price?: string; image?: string | null; pos?: string }[];
 };
 
-const POS_LABEL: [AdPos, string][] = [['top', '위'], ['mid', '가운데'], ['bottom', '아래']];
+const POS_GRID: [AdPos, string][] = [
+  ['tl', '상좌'], ['tr', '상우'],
+  ['ml', '중좌'], ['mr', '중우'],
+  ['bl', '하좌'], ['br', '하우'],
+];
+const normPos = (v?: string | null): AdPos => {
+  const m: Record<string, AdPos> = { top: 'tl', mid: 'ml', bottom: 'bl' };
+  const k = (v ?? '').toLowerCase();
+  if (k in m) return m[k];
+  return (['tl','tr','ml','mr','bl','br'] as string[]).includes(k) ? (k as AdPos) : 'bl';
+};
 
 const COLORS: Record<string, string> = {
   A: '#B8892F', B: '#7E8794', C: '#A2673B', D: '#4E7C8C',
@@ -54,7 +64,7 @@ export default function AdminMedia({
     setD(r);
     setAds((r.ads ?? []).map((a) => ({
       title: a.title ?? '', sub: a.sub ?? '', price: a.price ?? '',
-      image: a.image ?? null, pos: (a.pos ?? 'bottom') as AdPos,
+      image: a.image ?? null, pos: normPos(a.pos),
     })));
   }, [id, call]);
 
@@ -172,9 +182,9 @@ export default function AdminMedia({
               <div className="line">
                 <input value={a.price} maxLength={20} placeholder="가격"
                        onChange={(e) => patch(i, { price: e.target.value })} />
-                <div className="seg">
-                  {POS_LABEL.map(([v, l]) => (
-                    <button key={v} aria-pressed={a.pos === v}
+                <div className="posgrid">
+                  {POS_GRID.map(([v, l]) => (
+                    <button key={v} aria-pressed={normPos(a.pos) === v}
                             onClick={() => patch(i, { pos: v })}>{l}</button>
                   ))}
                 </div>
@@ -197,7 +207,7 @@ export default function AdminMedia({
 
         {ads.length < 10 && (
           <button className="add" disabled={busy} onClick={() =>
-            saveAds([...ads, { title: '새 메뉴', sub: '', price: '', image: null, pos: 'bottom' }],
+            saveAds([...ads, { title: '새 메뉴', sub: '', price: '', image: null, pos: 'bl' }],
                     '슬라이드를 추가했습니다')
           }>+ 슬라이드 추가 ({ads.length}/10)</button>
         )}

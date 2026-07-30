@@ -137,9 +137,15 @@
 .ow .adrow2{display:flex;align-items:flex-end;gap:12px;margin-top:6px}
 .ow .posseg{margin-left:auto;text-align:right}
 .ow .posseg label{display:block;font-size:11px;font-weight:700;color:var(--dim);margin-bottom:5px}
-.ow .posseg .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.ow .posseg .seg button{padding:9px 12px;font-size:12px;font-weight:700;color:var(--dim)}
-.ow .posseg .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+/* 화면에 놓이는 자리 그대로 2열 3행. 누르면 어디로 가는지 보고 안다 */
+.ow .posgrid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:4px;
+  border:1px solid var(--line);border-radius:9px;padding:4px;background:var(--surf2)
+}
+.ow .posgrid button{
+  padding:7px 10px;border-radius:6px;font-size:11px;font-weight:700;color:var(--dim)
+}
+.ow .posgrid button[aria-pressed="true"]{background:var(--ink);color:#fff}
 
 .ow .prow2 .pm{flex:1;min-width:0}
 .ow .prow2 .pname{

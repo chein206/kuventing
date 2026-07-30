@@ -88,19 +88,23 @@
   background:linear-gradient(to top,rgba(0,0,0,.86) 0%,rgba(0,0,0,.48) 30%,transparent 56%)
 }
 .slide.ad.full .cap{position:relative;padding:0 30px 32px;color:#fff}
-/* 자막 위치는 사장님이 슬라이드마다 고른다. 사진마다 접시 자리가 다르다 */
-.slide.ad.full[data-pos="top"]{justify-content:flex-start}
-.slide.ad.full[data-pos="top"] .cap{padding:34px 30px 0}
-.slide.ad.full[data-pos="top"] .shot::after{
+/* 자막 위치는 사장님이 슬라이드마다 고른다. 사진마다 접시 자리가 다르다.
+   세로 t/m/b · 가로 l/r 여섯 칸. 앞글자로 세로, 뒷글자로 가로를 가른다. */
+.slide.ad.full[data-pos^="t"]{justify-content:flex-start}
+.slide.ad.full[data-pos^="t"] .cap{padding:34px 30px 0}
+.slide.ad.full[data-pos^="t"] .shot::after{
   background:linear-gradient(to bottom,rgba(0,0,0,.88) 0%,rgba(0,0,0,.5) 30%,transparent 56%)
 }
-.slide.ad.full[data-pos="mid"]{justify-content:center}
-.slide.ad.full[data-pos="mid"] .cap{padding:0 30px}
-.slide.ad.full[data-pos="mid"] .shot::after{
+.slide.ad.full[data-pos^="m"]{justify-content:center}
+.slide.ad.full[data-pos^="m"] .cap{padding:0 30px}
+.slide.ad.full[data-pos^="m"] .shot::after{
   background:linear-gradient(to bottom,
     rgba(0,0,0,.2) 0%,rgba(0,0,0,.28) 22%,rgba(0,0,0,.82) 44%,
     rgba(0,0,0,.82) 70%,rgba(0,0,0,.3) 92%)
 }
+/* 오른쪽 칸 — 글자를 오른쪽으로 민다 */
+.slide.ad.full[data-pos$="r"] .cap{text-align:right}
+.slide.ad.full[data-pos$="r"] .price{flex-direction:row-reverse}
 .slide.ad.full .kind{color:rgba(255,255,255,.72)}
 .slide.ad.full h1{color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.5)}
 .slide.ad.full .sub{color:rgba(255,255,255,.82)}
