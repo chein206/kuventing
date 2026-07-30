@@ -68,7 +68,8 @@ export function readImageInfo(buf: ArrayBuffer): ImageInfo | null {
 }
 
 export const MAX_BYTES = 3 * 1024 * 1024;
-export const MAX_SIDE = 2400;
+// 광고 사진은 긴 변 2000 까지 만든다. 상한은 그보다 여유 있게.
+export const MAX_SIDE = 2600;
 
 /** 통과하지 못한 이유를 사장님이 읽을 문장으로 돌려준다 */
 export function imageProblem(buf: ArrayBuffer, kind: 'prize' | 'ad'): string | null {

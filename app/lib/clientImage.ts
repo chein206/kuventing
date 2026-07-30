@@ -10,7 +10,11 @@
  */
 
 export const PRIZE_SIDE = 1000;
-export const AD_LONG = 1600;
+// 광고 사진은 켄번즈로 최대 1.1배까지 확대된다.
+// 화면 폭이 890px 이면 확대 시 990px 이 필요한데, 원본이 그 언저리면
+// 1:1 리샘플링 구간에 걸려 가로줄이 기어다니는 것처럼 보인다(모아레).
+// 넉넉히 두 배쯤 남겨 둔다.
+export const AD_LONG = 2000;
 
 type Box = { left: number; top: number; side: number };
 
@@ -138,13 +142,13 @@ export async function makePrizeImage(file: File): Promise<Blob> {
   return encode(c, 900 * 1024);
 }
 
-/** 광고 슬라이드 — 구도를 살려야 하므로 자르지 않고 긴 변만 1600으로 */
+/** 광고 슬라이드 — 구도를 살려야 하므로 자르지 않고 긴 변만 2000으로 */
 export async function makeAdImage(file: File): Promise<Blob> {
   const img = await load(file);
   const W = img.naturalWidth, H = img.naturalHeight;
   if (!W || !H) throw new Error('DECODE');
 
-  const scale = Math.min(1, AD_LONG / Math.max(W, H));
+  const scale = Math.min(1, AD_LONG / Math.max(W, H));   // 원본보다 키우지는 않는다
   const { c, g } = ctx2d(Math.round(W * scale), Math.round(H * scale));
   g.drawImage(img, 0, 0, c.width, c.height);
   return encode(c, 900 * 1024);

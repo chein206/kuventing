@@ -29,7 +29,7 @@ type Config = {
 };
 
 // DB 값이 없을 때(마이그레이션 전) 쓰는 기본값
-const DEF = { idle: 20, slide: 6, result: 40, autoOpen: 45, motion: 3 };
+const DEF = { idle: 20, slide: 6, result: 40, autoOpen: 45, motion: 6 };
 
 // 오픈 화면 배경에 뿌리는 반짝임. 매 렌더 흔들리지 않게 모듈 수준에서 한 번만 만든다.
 const TWINKLES = Array.from({ length: 60 }, (_, i) => ({
