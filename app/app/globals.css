@@ -204,7 +204,11 @@ input{font:inherit;color:inherit}
 /* 상태 화면 (로딩 / 에러 / 매진) */
 .state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:12px;text-align:center;padding:40px 24px}
-.state .ic{font-size:44px}
+.state .ic{font-size:44px;color:var(--ink-dim);line-height:0}
+
+/* 아이콘은 SVG. 이모지와 달리 기준선이 아니라 상자로 놓이므로
+   line-height 를 죽여 위아래 여백이 생기지 않게 한다. */
+svg{display:block;flex:none}
 .state h2{font-size:20px;font-weight:var(--font-strong);letter-spacing:-.02em}
 .state p{font-size:13px;color:var(--ink-dim);line-height:1.7}
 .spin{width:32px;height:32px;border-radius:99px;border:3px solid var(--line);

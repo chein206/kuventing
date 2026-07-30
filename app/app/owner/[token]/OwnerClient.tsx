@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { makePrizeImage, makeAdImage, IMAGE_ERROR } from '@/lib/clientImage';
+import { Icon, type IconName } from '@/lib/Icon';
 
 type Caller = (path: string, init?: RequestInit) => Promise<unknown>;
 
@@ -481,11 +482,11 @@ export default function OwnerClient({ token }: { token: string }) {
 
       <nav className="tabs"><div className="in">
         {([
-          ['home', '📊', '홈'], ['use', '✅', '사용처리'],
-          ['prize', '🍜', '상품'], ['ad', '📣', '광고'],
-        ] as const).map(([k, i, l]) => (
+          ['home', 'chart', '홈'], ['use', 'check', '사용처리'],
+          ['prize', 'gift', '상품'], ['ad', 'megaphone', '광고'],
+        ] as [typeof tab, IconName, string][]).map(([k, ic, l]) => (
           <button key={k} aria-pressed={tab === k} onClick={() => setTab(k)}>
-            <span className="i">{i}</span>{l}
+            <span className="i"><Icon name={ic} /></span>{l}
           </button>
         ))}
       </div></nav>
@@ -503,7 +504,7 @@ export default function OwnerClient({ token }: { token: string }) {
 function PhotoDot({
   url, label, bg, query, mode, upload, removeImage, onChange,
 }: {
-  url?: string | null; label: string; bg: string; query: string;
+  url?: string | null; label: React.ReactNode; bg: string; query: string;
   mode: 'prize' | 'ad';
   upload: Uploader; removeImage: Remover; onChange: (url: string | null) => void;
 }) {
@@ -543,11 +544,11 @@ function PhotoDot({
         onClick={() => ref.current?.click()}
       >
         {url ? <img src={url} alt="" /> : <span>{label}</span>}
-        <i className="cam" aria-hidden="true">{busy ? '…' : '＋'}</i>
+        <i className="cam">{busy ? <span className="dots3" /> : <Icon name="camera" />}</i>
       </button>
 
       {url && !busy && (
-        <button className="rm" title="사진 떼기" onClick={drop}>✕</button>
+        <button className="rm" title="사진 떼기" onClick={drop}><Icon name="close" strokeWidth={2.6} /></button>
       )}
 
       <input
@@ -632,19 +633,24 @@ function PrizeTab({
               </div>
             </div>
             <div className="qty">
-              <button onClick={() => patch(i, { qty: Math.max(0, (p.qty || 0) - 1) })}>−</button>
+              <button aria-label="한 장 줄이기"
+                      onClick={() => patch(i, { qty: Math.max(0, (p.qty || 0) - 1) })}>
+                <Icon name="minus" strokeWidth={2.4} />
+              </button>
               <input
                 value={p.qty}
                 onChange={(e) => patch(i, { qty: Math.max(0, parseInt(e.target.value) || 0) })}
               />
-              <button onClick={() => patch(i, { qty: (p.qty || 0) + 1 })}>+</button>
+              <button aria-label="한 장 늘리기" onClick={() => patch(i, { qty: (p.qty || 0) + 1 })}>
+                <Icon name="plus" strokeWidth={2.4} />
+              </button>
             </div>
             <button
               className="del"
               disabled={rows.length <= 1}
               title="이 등급 지우기"
               onClick={() => setRows((r) => r.filter((_, j) => j !== i))}
-            >✕</button>
+            ><Icon name="close" strokeWidth={2.4} /></button>
           </div>
         ))}
 
@@ -694,7 +700,7 @@ function PrizeTab({
           <p className="demo">마지막 한 장을 뽑은 손님에게 등급 상품과 <b>함께</b> 주는 상품입니다.</p>
           <div className="lastphoto">
             <PhotoDot
-              url={lastImage} label="★" bg="#B8892F" mode="prize"
+              url={lastImage} label={<Icon name="star" />} bg="#B8892F" mode="prize"
               query="target=last"
               upload={upload} removeImage={removeImage}
               onChange={setLastImage}
@@ -817,14 +823,18 @@ function AdTab({
                 onChange={(url) => patch(i, { image: url })}
               />
               <div className="adord">
-                <button disabled={i === 0 || busy} onClick={() => move(i, -1)} title="위로">↑</button>
-                <button disabled={i === rows.length - 1 || busy} onClick={() => move(i, 1)} title="아래로">↓</button>
+                <button disabled={i === 0 || busy} onClick={() => move(i, -1)} title="위로">
+                  <Icon name="up" strokeWidth={2.2} />
+                </button>
+                <button disabled={i === rows.length - 1 || busy} onClick={() => move(i, 1)} title="아래로">
+                  <Icon name="down" strokeWidth={2.2} />
+                </button>
               </div>
               <div className="sp" />
               <button
                 className="del" disabled={busy} title="이 슬라이드 지우기"
                 onClick={() => commit(rows.filter((_, j) => j !== i), '슬라이드를 지웠습니다')}
-              >✕</button>
+              ><Icon name="close" strokeWidth={2.4} /></button>
             </div>
 
             <input
@@ -875,11 +885,11 @@ function UseTab({
   call, api, onDone, lastLabel,
 }: { call: Caller; api: (p: string) => string; onDone: () => void; lastLabel: string }) {
   const [code, setCode] = useState('');
-  const [vd, setVd] = useState<{ k: string; ic: string; h: string; s: string } | null>(null);
+  const [vd, setVd] = useState<{ k: string; ic: IconName; h: string; s: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit() {
-    if (!code.trim()) { setVd({ k: 'warn', ic: '⌨️', h: '코드를 입력하세요', s: '손님 화면의 6자리 코드입니다' }); return; }
+    if (!code.trim()) { setVd({ k: 'warn', ic: 'keypad', h: '코드를 입력하세요', s: '손님 화면의 6자리 코드입니다' }); return; }
     setBusy(true);
     try {
       const r = (await call(api('redeem'), {
@@ -887,7 +897,7 @@ function UseTab({
       })) as RedeemRes;
       if (r.ok) {
         setVd({
-          k: 'ok', ic: '✓',
+          k: 'ok', ic: 'check',
           h: `${r.grade}상 — ${r.name}`,
           s: r.isLastOne && r.lastOneName
             // 이름표는 사장님이 정한 문구를 쓴다 (기본 "막차 보너스")
@@ -897,15 +907,15 @@ function UseTab({
         setCode('');
         onDone();
       } else if (r.reason === 'ALREADY_USED') {
-        setVd({ k: 'bad', ic: '✕', h: '이미 사용된 쿠폰입니다',
+        setVd({ k: 'bad', ic: 'close', h: '이미 사용된 쿠폰입니다',
                 s: r.usedAt ? `${new Date(r.usedAt).toLocaleString('ko-KR')}에 사용 처리됨` : '' });
       } else if (r.reason === 'EXPIRED') {
-        setVd({ k: 'bad', ic: '✕', h: '기한이 지난 쿠폰입니다',
+        setVd({ k: 'bad', ic: 'close', h: '기한이 지난 쿠폰입니다',
                 s: r.expiresAt ? `${new Date(r.expiresAt).toLocaleDateString('ko-KR')}까지였습니다` : '' });
       } else {
-        setVd({ k: 'bad', ic: '✕', h: '없는 코드입니다', s: '다시 확인해주세요' });
+        setVd({ k: 'bad', ic: 'close', h: '없는 코드입니다', s: '다시 확인해주세요' });
       }
-    } catch { setVd({ k: 'bad', ic: '✕', h: '처리에 실패했습니다', s: '네트워크를 확인해주세요' }); }
+    } catch { setVd({ k: 'bad', ic: 'close', h: '처리에 실패했습니다', s: '네트워크를 확인해주세요' }); }
     setBusy(false);
   }
 
@@ -925,7 +935,7 @@ function UseTab({
         <button className="big" style={{ marginTop: 11 }} onClick={submit} disabled={busy}>확인</button>
         {vd && (
           <div className={`vd ${vd.k}`}>
-            <div className="ic">{vd.ic}</div>
+            <div className="ic"><Icon name={vd.ic} strokeWidth={2.2} /></div>
             <div className="h">{vd.h}</div>
             <div className="s" style={{ whiteSpace: 'pre-line' }}>{vd.s}</div>
           </div>

@@ -128,19 +128,45 @@
    뽑기만 보여주는 게 아니라 매장 메뉴를 크게 선보이는 자리다.  */
 .bd .pgrid{
   display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
-  overflow:auto;padding-bottom:4px;align-content:start
+  /* 등급이 많아도 카드가 글자만 남을 만큼 납작해지지 않게 바닥을 둔다.
+     그래도 넘치면 스크롤. 카운터 화면은 손이 안 가므로 넘기지 않는 게 목표다. */
+  grid-auto-rows:minmax(184px,1fr);
+  /* 남은 높이를 전부 받아야 1fr 이 커진다. flex:0 1 auto 로 두면
+     그리드 높이가 콘텐츠(=최소값 184)로 정해져 아래가 빈 채로 남는다. */
+  flex:1;min-height:0;
+  overflow:auto;padding-bottom:4px;align-content:stretch
 }
+/* 사진이 카드를 통째로 채우고 글자는 아래에 얹는다.
+   카드를 위(글자)/아래(사진)로 나누면 등급이 늘어날수록 사진이 눌린다.
+   등급 7개 · 세로 800×1280 에서 사진 높이가 96px 까지 줄었다.
+   광고 슬라이드와 같은 처리로 통일한다. */
 .bd .pcard{
   --gc:var(--accent);
-  display:flex;flex-direction:column;overflow:hidden;
+  position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  overflow:hidden;min-height:0;
   border-radius:22px;border:1px solid var(--line);
   background:color-mix(in srgb,var(--gc) 13%,var(--surf));
   box-shadow:var(--shadow);transition:.25s
 }
 .bd .pcard.out{opacity:.35;filter:saturate(.15)}
 
-.bd .pcard .ptop{padding:20px 20px 16px}
-.bd .pcard .phead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+/* 사진 — 카드 전체 */
+.bd .pcard .pshot{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block
+}
+/* 글자가 읽히도록 아래쪽에 그늘 */
+.bd .pcard.shot::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.55) 34%,rgba(0,0,0,.06) 66%)
+}
+/* 사진 없는 카드는 등급 글자를 크게 깐다 */
+.bd .pcard .pbig{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-size:96px;font-weight:900;color:var(--gc);opacity:.42;letter-spacing:-.05em
+}
+
+.bd .pcard .ptop{position:relative;z-index:1;padding:18px 20px 17px}
+.bd .pcard .phead{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .bd .pcard .pgrade{
   font-size:13px;font-weight:900;letter-spacing:.04em;color:#fff;
   background:var(--gc);padding:5px 11px;border-radius:99px
@@ -149,34 +175,29 @@
   margin-left:auto;font-size:13px;font-weight:800;color:var(--ink-dim)
 }
 .bd .pcard h3{
-  font-size:27px;font-weight:900;letter-spacing:-.035em;line-height:1.25;
+  font-size:27px;font-weight:900;letter-spacing:-.035em;line-height:1.22;
   word-break:keep-all
 }
-.bd .pcard p{font-size:15px;color:var(--ink-dim);margin-top:8px;line-height:1.45;font-weight:500}
+.bd .pcard p{font-size:14px;color:var(--ink-dim);margin-top:6px;line-height:1.4;font-weight:500}
 
-.bd .pcard .pimg{
-  margin-top:auto;aspect-ratio:16/10;background:var(--surf-2);position:relative;overflow:hidden
-}
-.bd .pcard .pimg img{width:100%;height:100%;object-fit:cover;display:block}
-.bd .pcard .pbig{
-  position:absolute;inset:0;display:grid;place-items:center;
-  font-size:88px;font-weight:900;color:var(--gc);opacity:.5;letter-spacing:-.05em
-}
+/* 사진 위에서는 글자를 흰색으로 */
+.bd .pcard.shot h3{color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.55)}
+.bd .pcard.shot p{color:rgba(255,255,255,.8)}
+.bd .pcard.shot .pleft{color:rgba(255,255,255,.78)}
 
-/* 라스트 보상은 두 칸을 다 쓴다 */
+/* 막차 보너스는 두 칸을 다 쓴다 */
 .bd .pcard.last{
   grid-column:1 / -1;--gc:var(--gold);
   background:color-mix(in srgb,var(--gold) 18%,var(--surf));
   border-color:color-mix(in srgb,var(--gold) 45%,var(--line))
 }
 .bd .pcard.last .pgrade{color:#2A1B00;background:var(--gold)}
-.bd .pcard.last .pimg{aspect-ratio:21/9}
+.bd .pcard.last .pbig{font-size:104px;opacity:.5}
 
 /* 화면이 좁으면 한 줄에 하나 */
 @media (max-width:620px){
   .bd .pgrid{grid-template-columns:1fr;gap:12px}
   .bd .pcard h3{font-size:23px}
-  .bd .pcard .pimg{aspect-ratio:16/9}
 }
 
 .bd .tgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;overflow:auto;padding:2px}

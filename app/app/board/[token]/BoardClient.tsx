@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import qrcode from 'qrcode-generator';
 import { sb, getBoard, draw, type Board, type DrawResult, type Prize } from '@/lib/supabase';
 import Ticket from './Ticket';
+import { Icon } from '@/lib/Icon';
 
 type Ad = { title: string; sub?: string; price?: string; image?: string | null };
 type Config = {
@@ -299,7 +300,7 @@ export default function BoardClient({ token }: { token: string }) {
       <div className="bar">
         {/* 오픈 화면에서는 뒤로 가면 이미 확정된 상품을 잃으므로 내보내지 않는다 */}
         {step !== 'attract' && step !== 'open' && (
-          <button className="home" onClick={goAttract} aria-label="처음으로">✕</button>
+          <button className="home" onClick={goAttract} aria-label="처음으로"><Icon name="close" /></button>
         )}
         <div className="nm">{cfg.store.name}{cfg.store.branch ? ` · ${cfg.store.branch}` : ''}</div>
         <div className="rt">
@@ -371,16 +372,23 @@ export default function BoardClient({ token }: { token: string }) {
               {Array.from({ length: 4 }, (_, i) => <i key={i} className={i < pin.length ? 'f' : ''} />)}
             </div>
             <div className="keys">
-              {['1','2','3','4','5','6','7','8','9','←','0','✓'].map((k) => (
-                <button key={k} onClick={() => {
-                  if (k === '←') setPin((v) => v.slice(0, -1));
-                  else if (k === '✓') openSession(pin);
+              {['1','2','3','4','5','6','7','8','9','del','0','ok'].map((k) => (
+                <button
+                  key={k}
+                  aria-label={k === 'del' ? '한 글자 지우기' : k === 'ok' ? '확인' : k}
+                  onClick={() => {
+                  if (k === 'del') setPin((v) => v.slice(0, -1));
+                  else if (k === 'ok') openSession(pin);
                   else if (pin.length < 6) {
                     const next = pin + k;
                     setPin(next);
                     if (next.length === 4) openSession(next);
                   }
-                }}>{k}</button>
+                }}>
+                  {k === 'del' ? <Icon name="backspace" />
+                    : k === 'ok' ? <Icon name="check" strokeWidth={2.6} />
+                    : k}
+                </button>
               ))}
             </div>
           </div>
@@ -395,25 +403,30 @@ export default function BoardClient({ token }: { token: string }) {
             {board.prizes.map((p) => (
               <div
                 key={p.grade}
-                className={`pcard ${p.left === 0 ? 'out' : ''}`}
+                className={`pcard ${p.left === 0 ? 'out' : ''} ${p.image ? 'shot' : 'nopic'}`}
                 style={{ ['--gc' as string]: gradeColor(p.grade) }}
               >
+                {/* 사진이 카드를 채우고 글자가 그 위에 얹힌다.
+                    카드를 위아래로 나누면 사진이 남는 높이만큼 눌려 작아진다. */}
+                {p.image
+                  ? <img className="pshot" src={p.image} alt="" />
+                  : <span className="pbig">{p.grade}</span>}
                 <div className="ptop">
                   <div className="phead">
                     <span className="pgrade">{p.grade}상</span>
                     <span className="pleft">{p.left === 0 ? '소진' : `${p.left}개 남음`}</span>
                   </div>
                   <h3>{p.name}</h3>
-                  <p>{p.useWhen === 'now' ? '그 자리에서 바로 받습니다' : '다음 방문 때 쓰는 쿠폰입니다'}</p>
-                </div>
-                <div className="pimg">
-                  {p.image ? <img src={p.image} alt="" /> : <span className="pbig">{p.grade}</span>}
+                  <p>{p.useWhen === 'now' ? '그 자리에서 바로' : '다음 방문 때 쓰는 쿠폰'}</p>
                 </div>
               </div>
             ))}
 
             {cfg.lastOneName && (
-              <div className="pcard last">
+              <div className={`pcard last ${cfg.lastOneImage ? 'shot' : 'nopic'}`}>
+                {cfg.lastOneImage
+                  ? <img className="pshot" src={cfg.lastOneImage} alt="" />
+                  : <span className="pbig"><Icon name="star" /></span>}
                 <div className="ptop">
                   <div className="phead">
                     <span className="pgrade">{cfg.lastOneLabel ?? '마지막 보상'}</span>
@@ -421,9 +434,6 @@ export default function BoardClient({ token }: { token: string }) {
                   </div>
                   <h3>{cfg.lastOneName}</h3>
                   <p>마지막 티켓을 뽑으면 등급 상품과 함께 드립니다</p>
-                </div>
-                <div className="pimg">
-                  {cfg.lastOneImage ? <img src={cfg.lastOneImage} alt="" /> : <span className="pbig">★</span>}
                 </div>
               </div>
             )}
@@ -722,13 +732,13 @@ function ResultView({
           축하합니다!
         </div>
 
-        {/* 라스트 보상이 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다 */}
+        {/* 막차 보너스가 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다 */}
         {r.isLastOne && r.lastOneName ? (
           <>
             <div className="shotbox gold">
               {lastOneImage
                 ? <img src={lastOneImage} alt="" />
-                : <div className="noimg">★</div>}
+                : <div className="noimg"><Icon name="star" /></div>}
             </div>
             <div className="gtag gold">{lastOneLabel}</div>
             <h1>{r.lastOneName}</h1>

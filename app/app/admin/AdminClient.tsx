@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase';
 import { PRESETS, TOTAL_DEFAULT, randomPins, type PresetPrize } from '@/lib/presets';
+import { Icon } from '@/lib/Icon';
 
 const GRADES = 'ABCDEFGH';
 const COLORS: Record<string, string> = {
@@ -428,7 +429,7 @@ function NewStore({
   return (
     <>
       <div className="head">
-        <div><h1>매장 추가</h1><p>매장 → 이벤트 → 상품 → 1회차 박스까지 한 번에 만듭니다</p></div>
+        <div><h1>매장 추가</h1><p>매장 · 이벤트 · 상품 · 1회차 박스까지 한 번에 만듭니다</p></div>
       </div>
 
       <div className="card">
@@ -499,7 +500,10 @@ function NewStore({
                 </td>
                 <td style={{ width: 44 }}>
                   <button className="del" disabled={rows.length <= 1}
-                          onClick={() => setRows((r) => r.filter((_, j) => j !== i))}>✕</button>
+                          aria-label="이 등급 지우기"
+                          onClick={() => setRows((r) => r.filter((_, j) => j !== i))}>
+                    <Icon name="close" strokeWidth={2.4} />
+                  </button>
                 </td>
               </tr>
             ))}

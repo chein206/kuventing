@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { Icon } from '@/lib/Icon';
 
 /**
  * 이 도메인(kuvt)은 서비스 전용이다. 소개는 회사 홈페이지가 맡는다.
@@ -11,7 +12,7 @@ export default function Home() {
   return (
     <div className="app">
       <div className="state">
-        <div className="ic">🎫</div>
+        <div className="ic"><Icon name="ticket" /></div>
         <h2>쿠벤팅</h2>
         <p>
           매장마다 주소가 다릅니다.<br />

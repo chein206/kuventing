@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getCoupon } from '@/lib/supabase';
+import { Icon } from '@/lib/Icon';
 
 type Coupon = {
   grade?: string; name?: string; image?: string | null;
@@ -28,7 +29,7 @@ export default function CouponClient({ campaignId, code }: { campaignId: string;
     return (
       <div className="app">
         <div className="state">
-          <div className="ic">🎫</div>
+          <div className="ic"><Icon name="ticket" /></div>
           <h2>쿠폰을 찾을 수 없습니다</h2>
           <p>주소를 다시 확인해주세요.</p>
         </div>

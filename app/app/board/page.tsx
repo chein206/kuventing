@@ -1,9 +1,11 @@
+import { Icon } from '@/lib/Icon';
+
 // 토큰 없이 /board 로 들어온 경우.
 export default function BoardIndex() {
   return (
     <div className="app">
       <div className="state">
-        <div className="ic">🎫</div>
+        <div className="ic"><Icon name="ticket" /></div>
         <h2>카운터 화면 주소가 필요합니다</h2>
         <p>
           매장마다 주소가 다릅니다.<br />
