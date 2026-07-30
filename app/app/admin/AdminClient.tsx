@@ -32,7 +32,7 @@ type Coupon = {
   code: string; expires_at: string; created_at: string; expired: boolean;
 };
 
-type Tab = 'dash' | 'stores' | 'new' | 'coupons';
+type Tab = 'dash' | 'stores' | 'new' | 'coupons' | 'account';
 
 export default function AdminClient() {
   const [ready, setReady] = useState(false);
@@ -152,6 +152,7 @@ export default function AdminClient() {
     { group: 'OVERVIEW', items: [{ key: 'dash', label: '대시보드' }] },
     { group: 'MANAGEMENT', items: [{ key: 'stores', label: '매장 목록' }, { key: 'new', label: '매장 추가' }] },
     { group: 'DATA', items: [{ key: 'coupons', label: '쿠폰 현황' }] },
+    { group: 'ACCOUNT', items: [{ key: 'account', label: '내 계정' }] },
   ];
 
   return (
@@ -194,6 +195,7 @@ export default function AdminClient() {
             <NewStore origin={origin} call={call} onCreated={() => { load(); }} setMsg={setMsg} />
           )}
           {tab === 'coupons' && <Coupons rows={coupons} />}
+          {tab === 'account' && <Account me={ov?.me ?? ''} />}
           {msg && <p className={`msg ${msg.bad ? 'bad' : 'ok'}`}>{msg.t}</p>}
         </main>
       </div>
@@ -581,6 +583,116 @@ function Coupons({ rows }: { rows: Coupon[] }) {
             </tbody>
           </table>
         )}
+      </div>
+    </>
+  );
+}
+
+/* ================= 내 계정 ================= */
+
+/** 비밀번호 규칙. 통과하지 못한 이유를 문장으로 돌려준다 */
+function pwProblem(next: string, current: string, email: string): string | null {
+  if (next.length < 10) return '10자 이상으로 만드세요.';
+  if (!/[A-Za-z]/.test(next) || !/[0-9]/.test(next)) return '영문과 숫자를 함께 넣으세요.';
+  if (next === current) return '지금 쓰는 비밀번호와 같습니다.';
+  const id = email.split('@')[0];
+  if (id.length >= 4 && next.toLowerCase().includes(id.toLowerCase())) {
+    return '이메일 아이디가 그대로 들어가 있습니다.';
+  }
+  return null;
+}
+
+function Account({ me: meProp }: { me: string }) {
+  // 대시보드를 아직 안 불렀으면 me 가 비어 있다. 세션에서 직접 꺼낸다.
+  const [me, setMe] = useState(meProp);
+  useEffect(() => {
+    if (meProp) { setMe(meProp); return; }
+    sb().auth.getUser().then(({ data }) => setMe(data.user?.email ?? ''));
+  }, [meProp]);
+
+  const [cur, setCur] = useState('');
+  const [next, setNext] = useState('');
+  const [again, setAgain] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ t: string; bad?: boolean } | null>(null);
+
+  const problem = next ? pwProblem(next, cur, me) : null;
+  const mismatch = !!again && next !== again;
+  const ready = !!cur && !!next && !!again && !problem && !mismatch;
+
+  async function change() {
+    setBusy(true); setMsg(null);
+
+    // 1) 지금 비밀번호가 맞는지 먼저 확인한다.
+    //    로그인된 탭을 누가 그대로 쓰는 상황에서 비밀번호만 바꿔치기하는 걸 막는다.
+    const { error: authErr } = await sb().auth.signInWithPassword({ email: me, password: cur });
+    if (authErr) {
+      setBusy(false);
+      setMsg({ t: '지금 비밀번호가 맞지 않습니다.', bad: true });
+      return;
+    }
+
+    // 2) 교체
+    const { error } = await sb().auth.updateUser({ password: next });
+    if (error) {
+      setBusy(false);
+      setMsg({ t: '변경 실패 — ' + error.message, bad: true });
+      return;
+    }
+
+    // 3) 다른 기기·브라우저에 남아 있던 세션은 끊는다. 이 탭은 유지.
+    await sb().auth.signOut({ scope: 'others' }).catch(() => {});
+
+    setBusy(false);
+    setCur(''); setNext(''); setAgain('');
+    setMsg({ t: '비밀번호를 바꿨습니다. 다른 기기의 로그인은 모두 끊었습니다.' });
+  }
+
+  return (
+    <>
+      <div className="head">
+        <div>
+          <h1>내 계정</h1>
+          <p>{me}</p>
+        </div>
+      </div>
+
+      <div className="card" style={{ maxWidth: 460 }}>
+        <h2>비밀번호 변경</h2>
+
+        <label className="f" style={{ display: 'block', marginBottom: 12 }}>
+          <span>지금 비밀번호</span>
+          <input type="password" value={cur} autoComplete="current-password"
+                 onChange={(e) => setCur(e.target.value)} />
+        </label>
+
+        <label className="f" style={{ display: 'block', marginBottom: 12 }}>
+          <span>새 비밀번호</span>
+          <input type="password" value={next} autoComplete="new-password"
+                 onChange={(e) => setNext(e.target.value)} />
+        </label>
+
+        <label className="f" style={{ display: 'block' }}>
+          <span>새 비밀번호 확인</span>
+          <input type="password" value={again} autoComplete="new-password"
+                 onChange={(e) => setAgain(e.target.value)}
+                 onKeyDown={(e) => { if (e.key === 'Enter' && ready && !busy) change(); }} />
+        </label>
+
+        {problem && <p className="msg bad">{problem}</p>}
+        {!problem && mismatch && <p className="msg bad">두 번 입력한 값이 다릅니다.</p>}
+
+        <button className="go" onClick={change} disabled={!ready || busy}>
+          {busy ? '바꾸는 중…' : '비밀번호 바꾸기'}
+        </button>
+
+        {msg && <p className={`msg ${msg.bad ? 'bad' : 'ok'}`}>{msg.t}</p>}
+
+        <p className="hint">
+          10자 이상, 영문과 숫자를 함께. 바꾸면 다른 기기에 남아 있던 로그인은 전부 끊깁니다.
+          <br />
+          임시 비밀번호로 처음 들어왔다면, 바꾼 뒤 <code>app/admin-임시비번.txt</code> 파일을 지우세요.
+        </p>
       </div>
     </>
   );

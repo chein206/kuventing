@@ -78,6 +78,7 @@
 .ad .msg.ok{color:var(--ok)}
 .ad .hint{font-size:12px;color:var(--dim);line-height:1.7;margin-top:8px}
 .ad .empty{font-size:13px;color:var(--dim);padding:8px 0}
+.ad .hint code{background:var(--surf2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px}
 
 /* KPI */
 .ad .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
