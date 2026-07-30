@@ -77,7 +77,7 @@ export default function OwnerClient({ token }: { token: string }) {
   const pinKey = `kuji_owner_pin_${token}`;   // 매장마다 따로 기억한다
   const [pin, setPin] = useState<string | null>(null);
   const [pinInput, setPinInput] = useState('');
-  const [tab, setTab] = useState<'home' | 'use' | 'prize'>('home');
+  const [tab, setTab] = useState<'home' | 'use' | 'prize' | 'ad'>('home');
   const [stats, setStats] = useState<Stats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [bd, setBd] = useState<BoardInfo | null>(null);
@@ -462,7 +462,9 @@ export default function OwnerClient({ token }: { token: string }) {
         </div>
       )}
 
-      {tab === 'use' && <UseTab call={call} api={api} onDone={load} />}
+      {tab === 'use' && (
+        <UseTab call={call} api={api} onDone={load} lastLabel={bd?.last_one_label ?? '막차 보너스'} />
+      )}
       {tab === 'prize' && (
         <PrizeTab
           call={call} api={api} stats={stats} board={bd} onDone={load}
@@ -470,8 +472,18 @@ export default function OwnerClient({ token }: { token: string }) {
         />
       )}
 
+      {tab === 'ad' && (
+        <AdTab
+          call={call} api={api} board={bd} onDone={load}
+          upload={upload} removeImage={removeImage}
+        />
+      )}
+
       <nav className="tabs"><div className="in">
-        {([['home', '📊', '홈'], ['use', '✅', '사용처리'], ['prize', '🍜', '상품']] as const).map(([k, i, l]) => (
+        {([
+          ['home', '📊', '홈'], ['use', '✅', '사용처리'],
+          ['prize', '🍜', '상품'], ['ad', '📣', '광고'],
+        ] as const).map(([k, i, l]) => (
           <button key={k} aria-pressed={tab === k} onClick={() => setTab(k)}>
             <span className="i">{i}</span>{l}
           </button>
@@ -724,10 +736,144 @@ function PrizeTab({
   );
 }
 
+/* ================= 광고 슬라이드 ================= */
+
+type AdRow = { title: string; sub: string; price: string; image: string | null };
+
+/**
+ * 대기화면 슬라이드 편집.
+ *
+ * 사진 업로드는 자리(index)로 서버 배열을 찌른다. 그래서 추가·삭제·순서 변경은
+ * 누른 즉시 저장한다 — 로컬에만 있는 슬라이드에 사진을 올리면 자리가 어긋난다.
+ * 문구는 다 고친 뒤 저장 버튼으로 보낸다.
+ */
+function AdTab({
+  call, api, board, onDone, upload, removeImage,
+}: {
+  call: Caller; api: (p: string) => string; board: BoardInfo | null; onDone: () => void;
+  upload: Uploader; removeImage: Remover;
+}) {
+  const [rows, setRows] = useState<AdRow[]>([]);
+  const [msg, setMsg] = useState<{ t: string; bad?: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const seeded = useRef(false);
+
+  // 편집 중에 폴링이 덮어쓰지 않도록 처음 한 번만 받는다
+  useEffect(() => {
+    if (seeded.current || !board?.ads) return;
+    seeded.current = true;
+    setRows(board.ads.map((a) => ({
+      title: a.title ?? '', sub: a.sub ?? '', price: a.price ?? '', image: a.image ?? null,
+    })));
+  }, [board]);
+
+  const patch = (i: number, v: Partial<AdRow>) =>
+    setRows((r) => r.map((x, j) => (j === i ? { ...x, ...v } : x)));
+
+  /** 서버에 배열을 통째로 보낸다 */
+  async function commit(next: AdRow[], done: string) {
+    setBusy(true); setMsg(null);
+    setRows(next);
+    try {
+      const r = (await call(api('ads'), {
+        method: 'POST',
+        body: JSON.stringify({
+          ads: next.map((a) => ({
+            title: a.title.trim(), sub: a.sub.trim() || null,
+            price: a.price.trim() || null, image: a.image,
+          })),
+        }),
+      })) as { ok?: boolean; message?: string; error?: string };
+
+      if (r?.ok) setMsg({ t: done });
+      else setMsg({ t: r?.message ?? r?.error ?? '저장하지 못했습니다', bad: true });
+    } catch { setMsg({ t: '저장하지 못했습니다', bad: true }); }
+    setBusy(false);
+    onDone();
+  }
+
+  const move = (i: number, d: -1 | 1) => {
+    const j = i + d;
+    if (j < 0 || j >= rows.length) return;
+    const next = [...rows];
+    [next[i], next[j]] = [next[j], next[i]];
+    commit(next, '순서를 바꿨습니다');
+  };
+
+  return (
+    <div className="pg">
+      <div className="card">
+        <h3>대기화면 광고 <span>손님이 뽑기 전에 돌아가는 화면 · 최대 10장</span></h3>
+
+        {!rows.length && <p className="demo">슬라이드가 없습니다. 아래에서 추가하세요.</p>}
+
+        {rows.map((a, i) => (
+          <div className="adrow" key={i}>
+            <div className="adhead">
+              <PhotoDot
+                url={a.image} label={String(i + 1)} bg="#4E7C8C" mode="ad"
+                query={`target=ad&index=${i}`}
+                upload={upload} removeImage={removeImage}
+                onChange={(url) => patch(i, { image: url })}
+              />
+              <div className="adord">
+                <button disabled={i === 0 || busy} onClick={() => move(i, -1)} title="위로">↑</button>
+                <button disabled={i === rows.length - 1 || busy} onClick={() => move(i, 1)} title="아래로">↓</button>
+              </div>
+              <div className="sp" />
+              <button
+                className="del" disabled={busy} title="이 슬라이드 지우기"
+                onClick={() => commit(rows.filter((_, j) => j !== i), '슬라이드를 지웠습니다')}
+              >✕</button>
+            </div>
+
+            <input
+              className="adtitle" value={a.title} maxLength={30} placeholder="메뉴 이름"
+              onChange={(e) => patch(i, { title: e.target.value })}
+            />
+            <input
+              className="adsub" value={a.sub} maxLength={60} placeholder="설명 (없어도 됩니다)"
+              onChange={(e) => patch(i, { sub: e.target.value })}
+            />
+            <input
+              className="adprice" value={a.price} maxLength={20} placeholder="가격 (없어도 됩니다)"
+              onChange={(e) => patch(i, { price: e.target.value })}
+            />
+          </div>
+        ))}
+
+        {rows.length < 10 && (
+          <button className="addgrade" disabled={busy} onClick={() =>
+            commit([...rows, { title: '새 메뉴', sub: '', price: '', image: null }], '슬라이드를 추가했습니다')
+          }>+ 슬라이드 추가 ({rows.length}/10)</button>
+        )}
+
+        {rows.length > 0 && (
+          <button className="big" style={{ marginTop: 12 }} disabled={busy}
+                  onClick={() => commit(rows, '저장했습니다. 카운터 화면에 바로 반영됩니다.')}>
+            {busy ? '저장 중…' : '문구 저장'}
+          </button>
+        )}
+
+        {msg && <p className="demo" style={{ marginTop: 8, color: msg.bad ? 'var(--bad)' : undefined }}>
+          <b>{msg.t}</b>
+        </p>}
+
+        <p className="demo" style={{ marginTop: 10 }}>
+          동그라미를 눌러 사진을 올립니다. <b>사진은 자르지 않습니다</b> — 가로·세로 어떤 비율이든
+          화면에 통째로 얹힙니다.
+          <br />추가·삭제·순서는 누르는 즉시 저장됩니다. 문구는 <b>문구 저장</b>을 눌러주세요.
+          <br />제목이나 사진 중 하나는 있어야 합니다. 넘김 간격은 <b>홈</b>에서 조절합니다.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ================= 사용처리 ================= */
 function UseTab({
-  call, api, onDone,
-}: { call: Caller; api: (p: string) => string; onDone: () => void }) {
+  call, api, onDone, lastLabel,
+}: { call: Caller; api: (p: string) => string; onDone: () => void; lastLabel: string }) {
   const [code, setCode] = useState('');
   const [vd, setVd] = useState<{ k: string; ic: string; h: string; s: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -744,7 +890,8 @@ function UseTab({
           k: 'ok', ic: '✓',
           h: `${r.grade}상 — ${r.name}`,
           s: r.isLastOne && r.lastOneName
-            ? `사용 처리되었습니다.\n라스트 보상 「${r.lastOneName}」도 함께 지급해주세요.`
+            // 이름표는 사장님이 정한 문구를 쓴다 (기본 "막차 보너스")
+            ? `사용 처리되었습니다.\n${lastLabel} 「${r.lastOneName}」도 함께 지급해주세요.`
             : '사용 처리되었습니다. 손님에게 제공해주세요.',
         });
         setCode('');

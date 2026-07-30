@@ -138,6 +138,30 @@
 .ow .lastphoto{display:flex;align-items:center;gap:11px;margin:12px 0 4px}
 .ow .lastphoto span{font-size:13px;font-weight:700;color:var(--dim)}
 
+/* 광고 슬라이드 편집 */
+.ow .adrow{padding:13px 0;border-bottom:1px solid var(--line)}
+.ow .adrow:last-of-type{border-bottom:none}
+.ow .adhead{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.ow .adhead .sp{flex:1}
+.ow .adord{display:flex;flex-direction:column;gap:3px}
+.ow .adord button{
+  width:26px;height:19px;border:1px solid var(--line);border-radius:6px;background:var(--surf2);
+  color:var(--dim);font-size:10px;font-weight:800;line-height:1
+}
+.ow .adord button:disabled{opacity:.3}
+.ow .adhead .del{
+  width:32px;height:32px;flex:none;border-radius:8px;border:1px solid var(--line);
+  color:var(--dim);font-size:13px;font-weight:800;background:var(--surf2)
+}
+.ow .adhead .del:disabled{opacity:.3}
+.ow .adrow input{
+  width:100%;border:1px solid var(--line);border-radius:9px;background:var(--surf2);
+  padding:10px 11px;margin-top:6px;font-size:14px;font-weight:600
+}
+.ow .adrow input:focus{outline:none;border-color:var(--pri);background:#fff}
+.ow .adrow .adtitle{font-size:15px;font-weight:800;letter-spacing:-.02em;margin-top:0}
+.ow .adrow .adprice{max-width:160px}
+
 .ow .prow2 .pm{flex:1;min-width:0}
 .ow .prow2 .pname{
   width:100%;border:none;background:none;padding:2px 0;font-size:15px;font-weight:700;

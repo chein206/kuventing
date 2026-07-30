@@ -40,6 +40,11 @@ Supabase 대시보드 > **SQL Editor** 에서 **번호 순서대로** 실행한�
 | `013_admin_auth.sql` | 운영자 계정 명단 + 대시보드·쿠폰 집계 |
 | `014_images.sql` | 사진 경로 저장 (상품 · 막차 보너스 · 광고) |
 | — | **`npm run storage`** ← Storage 버킷 `kuventing` 생성 (한 번만) |
+| `015_ads.sql` | 광고 슬라이드 편집 |
+| `016_lockdown.sql` | **함수 권한 잠금 (보안 수정 — 반드시)** |
+
+> `016` 은 함수를 새로 만든 뒤 다시 돌려도 된다. 스키마 전체를 훑어 기본을 "닫힘"으로 맞춘다.
+> 이유는 [기획.md 8-8-5](기획.md) 에 적어뒀다 — `revoke ... from anon` 만으로는 안 막힌다.
 
 선택
 - `seed_cafe.sql` + `seed_cafe_images.sql` — 데모 매장 2 (카페)
