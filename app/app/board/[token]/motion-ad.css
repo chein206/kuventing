@@ -1,0 +1,148 @@
+/* ============================================================
+   모션 광고 "고요한 한 그릇"
+   Claude Design 의 `광고 A 고요한 한그릇` 을 옮긴 것.
+
+   원본은 매 프레임 JS 로 진행도를 계산한다(영상으로 굽기 위한 구조).
+   여기서는 CSS 애니메이션이 대신한다 — 태블릿에서 15초를 JS 로 돌리면 끊긴다.
+   transform·opacity·width 만 건드린다.
+
+   이징은 원본과 같은 세 가지뿐이다.
+     drift  = easeInOutSine   cubic-bezier(.37,0,.63,1)
+     fadeIn = easeOutCubic    cubic-bezier(.215,.61,.355,1)
+     fadeOut= easeInCubic     cubic-bezier(.55,.055,.675,.19)
+   ============================================================ */
+.mad{
+  position:absolute;inset:0;overflow:hidden;background:#0B0B0C;
+  --ivory:#F4F0E8; --gold:#C8A461; --mute:#9A948A; --hair:rgba(244,240,232,.16);
+  --serif:'Noto Serif KR','Nanum Myeongjo',serif;
+  --sans:'Noto Sans KR',system-ui,sans-serif;
+  --ease-drift:cubic-bezier(.37,0,.63,1);
+  --ease-in:cubic-bezier(.215,.61,.355,1);
+  --ease-out:cubic-bezier(.55,.055,.675,.19);
+}
+.mad .madscene{position:absolute;inset:0}
+
+/* ---------- 무대 ---------- */
+/* 사진 — 느리게 확대되며 위로 밀린다 (켄번즈) */
+.mad .madshot{position:absolute;inset:0;overflow:hidden}
+.mad .madshot img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  transform-origin:38% 55%;
+  animation:madCam var(--dur) var(--ease-drift) both
+}
+@keyframes madCam{
+  from{transform:scale(var(--z0)) translateY(var(--y0))}
+  to  {transform:scale(var(--z1)) translateY(var(--y1))}
+}
+
+/* 어두움 겹 — 씬마다 값이 이어져서 컷이 튀지 않는다 */
+.mad .maddark{
+  position:absolute;inset:0;background:#0B0B0C;
+  animation:madDark var(--dur) var(--ease-drift) both
+}
+@keyframes madDark{from{opacity:var(--d0)}to{opacity:var(--d1)}}
+
+/* 글자가 읽히도록 위아래로 깔아 두는 고정 그라데이션 */
+.mad .madlegib{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,
+    rgba(11,11,12,.72) 0%, rgba(11,11,12,0) 26%,
+    rgba(11,11,12,0) 52%, rgba(11,11,12,.88) 100%)
+}
+.mad .madvig{
+  position:absolute;inset:0;
+  background:radial-gradient(120% 80% at 50% 45%,
+    rgba(11,11,12,0) 40%, rgba(11,11,12,.55) 100%)
+}
+
+/* ---------- 자막 ---------- */
+/* 나타났다 사라진다. 씬 경계에서 0 이라 컷이 매끄럽다 */
+@keyframes madFade{
+  0%  {opacity:0}
+  10% {opacity:0;animation-timing-function:var(--ease-in)}
+  28% {opacity:1}
+  82% {opacity:1;animation-timing-function:var(--ease-out)}
+  96% {opacity:0}
+  100%{opacity:0}
+}
+/* 아래에서 26 디자인px 올라온다 */
+@keyframes madRise{
+  0%  {transform:translateY(var(--rise,1.6%))}
+  12% {transform:translateY(var(--rise,1.6%));animation-timing-function:var(--ease-in)}
+  46% {transform:translateY(0)}
+  100%{transform:translateY(0)}
+}
+
+.mad .madcap{
+  position:absolute;display:flex;flex-direction:column;
+  animation:madFade var(--dur) linear both, madRise var(--dur) linear both;
+  will-change:transform,opacity
+}
+.mad .madcap.sign{align-items:center;text-align:center}
+
+.mad .madkicker{
+  font-family:var(--sans);font-weight:500;letter-spacing:.34em;
+  color:var(--gold);text-transform:uppercase
+}
+.mad .madtitle{
+  font-family:var(--serif);font-weight:700;line-height:1.24;
+  color:var(--ivory);letter-spacing:-.02em;white-space:pre-line;word-break:keep-all
+}
+.mad .madbody{
+  font-family:var(--sans);font-weight:400;line-height:1.6;color:var(--mute);
+  white-space:pre-line;word-break:keep-all
+}
+
+/* 가격은 한 박자 늦게 — 원본 rise(p,1,2,0.16,0.4) */
+.mad .madprice{
+  display:flex;align-items:center;color:var(--ivory);
+  font-family:var(--sans);font-weight:400;
+  animation:madLate var(--dur) linear both
+}
+@keyframes madLate{
+  0%,36%{opacity:0}
+  36%   {opacity:0;animation-timing-function:var(--ease-in)}
+  62%   {opacity:1}
+  100%  {opacity:1}
+}
+.mad .madtick{height:1px;background:var(--gold);opacity:.7;flex:none}
+.mad .madtick.wide{opacity:.8}
+
+/* 세트 구성 — 항목이 차례로 쌓인다 */
+.mad .maditems{display:flex;flex-direction:column}
+.mad .maditem{
+  display:flex;align-items:center;color:var(--ivory);font-family:var(--sans);
+  animation:madStack calc(var(--dur) * .34) var(--ease-in) both
+}
+@keyframes madStack{from{opacity:0;transform:translateY(1.6%)}to{opacity:1;transform:none}}
+
+/* ---------- 사인 컷 ---------- */
+.mad .madrule{
+  background:var(--gold);
+  animation:madRule var(--dur) var(--ease-drift) both
+}
+@keyframes madRule{from{width:0}to{width:14%}}   /* 원본 0 → 140 / 1080 */
+.mad .madstore{
+  font-family:var(--serif);font-weight:700;color:var(--ivory);letter-spacing:-.02em;
+  word-break:keep-all
+}
+.mad .madfoot{
+  position:absolute;display:flex;flex-direction:column;align-items:center;
+  animation:madFade var(--dur) linear both
+}
+.mad .madhair{width:100%;height:1px;background:var(--hair)}
+.mad .madinfo{
+  font-family:var(--sans);color:var(--ivory);text-align:center;
+  line-height:1.6;white-space:pre-line
+}
+.mad .madmark{
+  font-family:var(--sans);font-weight:500;letter-spacing:.3em;
+  color:var(--gold);opacity:.75
+}
+
+/* 움직임을 줄이도록 설정한 기기에서는 카메라를 멈춘다 */
+@media (prefers-reduced-motion:reduce){
+  .mad .madshot img{animation:none;transform:scale(var(--z0))}
+  .mad .maddark{animation:none;opacity:var(--d1)}
+  .mad .madrule{animation:none;width:14%}
+}

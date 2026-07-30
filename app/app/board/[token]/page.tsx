@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import BoardClient from './BoardClient';
 import './board.css';
+import './motion-ad.css';
 
 export async function generateMetadata(
   { params }: { params: Promise<{ token: string }> }

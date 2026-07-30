@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import qrcode from 'qrcode-generator';
 import { sb, getBoard, draw, type Board, type DrawResult, type Prize } from '@/lib/supabase';
 import Ticket from './Ticket';
 import { Icon } from '@/lib/Icon';
+import MotionAd, { buildScenes, scenesDuration } from './MotionAd';
 
 type Ad = { title: string; sub?: string; price?: string; image?: string | null };
 type Config = {
@@ -119,14 +120,31 @@ export default function BoardClient({ token }: { token: string }) {
   }, [pops]);
 
   /* ---------- 광고 슬라이드 순환 ---------- */
+  /**
+   * 첫 장은 모션 광고다. 사진 있는 광고 슬라이드로 씬을 만들어 돌린다.
+   * 사진이 하나도 없으면 예전처럼 글자 슬라이드를 쓴다.
+   */
+  const scenes = useMemo(
+    () => buildScenes(
+      cfg?.ads ?? [],
+      { name: cfg?.store.name ?? '', branch: cfg?.store.branch },
+      board?.left ?? 0,
+      board?.campaign?.total ?? 0,
+    ),
+    [cfg?.ads, cfg?.store.name, cfg?.store.branch, board?.left, board?.campaign?.total],
+  );
+
   const slideCount = 1 + (cfg?.ads?.length ?? 0);
   useEffect(() => {
     if (step !== 'attract' || slideCount <= 1) return;
-    const ms = (cfg?.slideSeconds ?? DEF.slide) * 1000;
-    const t = setInterval(() => setSlide((s) => (s + 1) % slideCount), ms);
-    return () => clearInterval(t);
+    // 모션 광고는 씬 길이의 합만큼 머문다. 중간에 잘리면 사인 컷을 못 본다
+    const ms = slide === 0 && scenes.length
+      ? scenesDuration(scenes) * 1000
+      : (cfg?.slideSeconds ?? DEF.slide) * 1000;
+    const t = setTimeout(() => setSlide((s) => (s + 1) % slideCount), ms);
+    return () => clearTimeout(t);
     // slide 가 바뀔 때마다 타이머를 다시 건다 = 손으로 넘기면 대기시간도 초기화된다
-  }, [step, slideCount, cfg?.slideSeconds, slide]);
+  }, [step, slideCount, cfg?.slideSeconds, slide, scenes]);
 
   // 손으로 넘기기
   const swipeX = useRef<number | null>(null);
@@ -354,7 +372,9 @@ export default function BoardClient({ token }: { token: string }) {
             }}
             onPointerCancel={() => { swipeX.current = null; }}
           >
-            {slide === 0 || !cfg.ads?.length ? (
+            {slide === 0 && scenes.length ? (
+              <MotionAd scenes={scenes} key="m" />
+            ) : slide === 0 || !cfg.ads?.length ? (
               <div className="slide kuji" key="k">
                 <div className="eyebrow">꽝 없는 뽑기</div>
                 <h1>주문하시면<br /><em>한 장</em> 뽑습니다</h1>
