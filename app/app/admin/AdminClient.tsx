@@ -592,7 +592,7 @@ function Coupons({ rows }: { rows: Coupon[] }) {
 
 /** 비밀번호 규칙. 통과하지 못한 이유를 문장으로 돌려준다 */
 function pwProblem(next: string, current: string, email: string): string | null {
-  if (next.length < 10) return '10자 이상으로 만드세요.';
+  if (next.length < 6) return '6자 이상으로 만드세요.';
   if (!/[A-Za-z]/.test(next) || !/[0-9]/.test(next)) return '영문과 숫자를 함께 넣으세요.';
   if (next === current) return '지금 쓰는 비밀번호와 같습니다.';
   const id = email.split('@')[0];
@@ -689,7 +689,7 @@ function Account({ me: meProp }: { me: string }) {
         {msg && <p className={`msg ${msg.bad ? 'bad' : 'ok'}`}>{msg.t}</p>}
 
         <p className="hint">
-          10자 이상, 영문과 숫자를 함께. 바꾸면 다른 기기에 남아 있던 로그인은 전부 끊깁니다.
+          6자 이상, 영문과 숫자를 함께. 바꾸면 다른 기기에 남아 있던 로그인은 전부 끊깁니다.
           <br />
           임시 비밀번호로 처음 들어왔다면, 바꾼 뒤 <code>app/admin-임시비번.txt</code> 파일을 지우세요.
         </p>
