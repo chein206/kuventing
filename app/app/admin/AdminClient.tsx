@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase';
 import { PRESETS, TOTAL_DEFAULT, randomPins, type PresetPrize } from '@/lib/presets';
 import { Icon } from '@/lib/Icon';
+import AdminMedia from './AdminMedia';
 
 const GRADES = 'ABCDEFGH';
 const COLORS: Record<string, string> = {
@@ -33,7 +34,7 @@ type Coupon = {
   code: string; expires_at: string; created_at: string; expired: boolean;
 };
 
-type Tab = 'dash' | 'stores' | 'new' | 'coupons' | 'account';
+type Tab = 'dash' | 'stores' | 'new' | 'coupons' | 'account' | 'media';
 
 export default function AdminClient() {
   const [ready, setReady] = useState(false);
@@ -52,6 +53,8 @@ export default function AdminClient() {
   const [stores, setStores] = useState<Store[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [open, setOpen] = useState<string | null>(null);   // 펼친 매장
+  // 사진·광고를 편집하는 매장. 사장님이 카톡으로 사진을 보내면 우리가 여기서 올린다
+  const [media, setMedia] = useState<{ id: string; name: string } | null>(null);
 
   /* ---------- 로그인 상태 ---------- */
   useEffect(() => {
@@ -71,10 +74,12 @@ export default function AdminClient() {
     const token = data.session?.access_token;
     if (!token) { setSignedIn(false); throw new Error('NO_SESSION'); }
 
+    // 사진 업로드는 FormData 다. Content-Type 을 직접 넣으면 경계값이 빠져 깨진다
+    const isForm = init?.body instanceof FormData;
     const res = await fetch(path, {
       ...init,
       headers: {
-        'Content-Type': 'application/json',
+        ...(isForm ? {} : { 'Content-Type': 'application/json' }),
         Authorization: `Bearer ${token}`,
         ...(init?.headers ?? {}),
       },
@@ -190,6 +195,7 @@ export default function AdminClient() {
             <Stores
               stores={stores} origin={origin} open={open} setOpen={setOpen}
               call={call} onChanged={load} setMsg={setMsg}
+              onEditMedia={(st) => { setMedia(st); setTab('media'); setMsg(null); }}
             />
           )}
           {tab === 'new' && (
@@ -197,6 +203,13 @@ export default function AdminClient() {
           )}
           {tab === 'coupons' && <Coupons rows={coupons} />}
           {tab === 'account' && <Account me={ov?.me ?? ''} />}
+          {tab === 'media' && (
+            <AdminMedia
+              store={media} call={call}
+              onBack={() => { setTab('stores'); setMsg(null); }}
+              setMsg={setMsg}
+            />
+          )}
           {msg && <p className={`msg ${msg.bad ? 'bad' : 'ok'}`}>{msg.t}</p>}
         </main>
       </div>
@@ -272,11 +285,12 @@ function Dash({ ov, onRefresh }: { ov: Overview | null; onRefresh: () => void })
 type Caller = (p: string, i?: RequestInit) => Promise<unknown>;
 
 function Stores({
-  stores, origin, open, setOpen, call, onChanged, setMsg,
+  stores, origin, open, setOpen, call, onChanged, setMsg, onEditMedia,
 }: {
   stores: Store[]; origin: string; open: string | null;
   setOpen: (v: string | null) => void; call: Caller; onChanged: () => void;
   setMsg: (m: { t: string; bad?: boolean } | null) => void;
+  onEditMedia: (s: { id: string; name: string }) => void;
 }) {
   const copy = (t: string, done: string) =>
     navigator.clipboard.writeText(t).then(() => setMsg({ t: done }))
@@ -319,6 +333,9 @@ function Stores({
                 <button onClick={() => window.open(`/board/${s.board_token}`, '_blank')}>카운터 열기</button>
               )}
               <button onClick={() => window.open(`/owner/${s.owner_token}`, '_blank')}>사장님 열기</button>
+              <button onClick={() => onEditMedia({ id: s.id, name: s.name + (s.branch ? ` · ${s.branch}` : '') })}>
+                사진·광고
+              </button>
               <button onClick={() => copy(guideText(s, origin), '안내문을 복사했습니다')}>안내문 복사</button>
               <button className="danger" onClick={async () => {
                 if (!confirm(`${s.name} 매장을 삭제할까요?\n뽑힌 기록이 있으면 거부됩니다.`)) return;
