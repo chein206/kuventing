@@ -451,15 +451,44 @@
 @keyframes beamPulse{from{opacity:.65;transform:scaleX(.85)}to{opacity:1;transform:scaleX(1.15)}}
 
 /* 튀는 불티 */
-.bd .peel .tear i{
-  position:absolute;left:-3px;border-radius:99px;background:#FFF6DF;
-  box-shadow:0 0 10px 3px color-mix(in srgb,var(--gold) 85%,transparent);
-  animation-name:sparkOut;animation-iteration-count:infinite;animation-timing-function:ease-out
+/* 절단점 — 날이 닿은 자리. 가장 뜨거운 흰 코어가 떨린다 */
+.bd .peel .tear .core{
+  position:absolute;left:-7px;top:50%;width:14px;height:14px;margin-top:-7px;
+  border-radius:99px;background:#fff;
+  box-shadow:0 0 12px 5px rgba(255,247,214,.95),
+             0 0 34px 14px color-mix(in srgb,var(--gold) 70%,transparent);
+  animation:coreFlicker .09s steps(2) infinite
 }
-@keyframes sparkOut{
-  0%  {opacity:0;   transform:translate(0,0) scale(.4)}
-  15% {opacity:1;   transform:translate(6px,calc(var(--dy) * .15)) scale(1.15)}
-  100%{opacity:0;   transform:translate(var(--dx),var(--dy)) scale(.25)}
+@keyframes coreFlicker{
+  0%  {opacity:1;   transform:scale(1)}
+  100%{opacity:.62; transform:scale(.78)}
+}
+
+/* 불티 — 길쭉한 막대라 잔상이 남는다. 동그란 점은 눈이 불꽃으로 안 읽는다 */
+.bd .peel .tear i{
+  position:absolute;left:-2px;border-radius:99px;
+  background:linear-gradient(90deg,rgba(255,120,20,0),#FFE9A8 55%,#fff);
+  box-shadow:0 0 6px 1px rgba(255,190,90,.85);
+  transform-origin:100% 50%;
+  animation-name:grindSpark;animation-iteration-count:infinite;
+  animation-timing-function:cubic-bezier(.15,.62,.35,1)
+}
+/* 넷 중 하나는 더 밝고 오래 산다 */
+.bd .peel .tear i.hot{
+  box-shadow:0 0 10px 3px rgba(255,215,140,.95);
+  animation-duration:.52s
+}
+/* 튀어나가며 부챗살로 퍼지고, 끝에서 중력으로 처지며 주황으로 식는다 */
+@keyframes grindSpark{
+  0%  {opacity:0;filter:brightness(2);
+       transform:translate(0,0) rotate(0deg) scaleX(.3)}
+  12% {opacity:1;filter:brightness(1.7);
+       transform:translate(calc(var(--dx) * .2),calc(var(--dy) * .2)) rotate(var(--rot)) scaleX(1)}
+  70% {opacity:.9;filter:brightness(1) saturate(1.4) hue-rotate(-12deg);
+       transform:translate(calc(var(--dx) * .8),calc(var(--dy) * .8 + var(--fall) * .35))
+                 rotate(var(--rot)) scaleX(.85)}
+  100%{opacity:0;filter:brightness(.6) saturate(2) hue-rotate(-26deg);
+       transform:translate(var(--dx),calc(var(--dy) + var(--fall))) rotate(var(--rot)) scaleX(.4)}
 }
 
 /* 다 열릴 때는 빛이 최대로 */
@@ -468,6 +497,10 @@
   transition:left .85s cubic-bezier(.4,0,.15,1),opacity .9s ease
 }
 .bd .peel.go .tear .beam{animation-duration:.18s}
+/* 다 열리는 순간엔 불꽃이 가장 거세다 */
+.bd .peel.go .tear .core{animation-duration:.06s;transform:scale(1.25)}
+.bd .peel.go .tear i{animation-duration:.26s}
+.bd .peel.go .tear i.hot{animation-duration:.36s}
 /* 티켓 색 — 세 화면(오픈 카드·그리드·미니)이 같은 값을 쓴다 */
 .bd{
   --tkt-bg:#1E2E52; --tkt-line:#C9A24B;

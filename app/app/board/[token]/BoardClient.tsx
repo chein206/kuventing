@@ -41,14 +41,34 @@ const TWINKLES = Array.from({ length: 60 }, (_, i) => ({
 // 티켓이 돌아 나오는 시간. board.css 의 pullOut 과 같이 움직인다
 const PULL_MS = 1150;
 
-const TEAR_SPARKS = Array.from({ length: 18 }, (_, i) => ({
-  top: `${(i * 100) / 18 + 2}%`,
-  dx: 26 + ((i * 23) % 46),          // 오른쪽으로 튀는 거리
-  dy: ((i % 5) - 2) * 16,            // 위아래 흩어짐
-  s: 4 + ((i * 5) % 6),
-  dur: `${0.5 + ((i * 11) % 7) * 0.09}s`,
-  delay: `-${((i * 7) % 13) * 0.07}s`,
-}));
+/**
+ * 찢는 자리에서 튀는 불티 — 그라인더로 철을 자를 때 나는 그것.
+ *
+ * 앞서 쓰던 "오른쪽으로 직진하는 굵은 알 18개"는 튀는 느낌만 있고 불꽃이 아니었다.
+ * 그라인더 불꽃의 특징은 넷이다.
+ *   1. 많고 잘다        — 굵은 알 몇 개가 아니라 잔 불티가 쏟아진다
+ *   2. 원뿔로 퍼진다     — 자르는 방향의 반대(왼쪽)로, 뒤·아래로 부챗살처럼
+ *   3. 중력으로 휜다     — 직선이 아니라 포물선. 끝에서 아래로 처진다
+ *   4. 흰 코어 → 주황    — 갓 튄 것은 흰빛, 식으면서 주황·빨강으로 죽는다
+ * 길쭉한 막대로 그려 잔상(궤적)을 만든다. 동그란 점은 눈이 불꽃으로 안 읽는다.
+ */
+const TEAR_SPARKS = Array.from({ length: 46 }, (_, i) => {
+  // -1..1 로 퍼지는 부챗살. 가운데가 촘촘하도록 세제곱
+  const spread = ((i % 13) / 6 - 1) ** 3;
+  const speed = 30 + ((i * 17) % 62);          // 멀리 가는 것과 금방 죽는 것을 섞는다
+  return {
+    top: `${((i * 37) % 100)}%`,
+    len: 5 + ((i * 7) % 9),                    // 막대 길이 = 잔상
+    thick: 1.5 + ((i * 3) % 3) * 0.6,
+    dx: -(speed * 0.5) - 8,                    // 자르는 방향의 반대로
+    dy: spread * 46 + 16,                      // 부챗살 + 아래로 처짐
+    fall: 26 + ((i * 11) % 30),                // 끝에서 더 떨어지는 양(중력)
+    rot: spread * 34,
+    dur: `${0.34 + ((i * 13) % 9) * 0.05}s`,
+    delay: `-${((i * 19) % 23) * 0.045}s`,
+    hot: i % 4 === 0,                          // 넷 중 하나는 더 밝고 크게
+  };
+});
 
 type Step = 'attract' | 'pin' | 'list' | 'grid' | 'open' | 'result';
 
@@ -618,14 +638,17 @@ export default function BoardClient({ token }: { token: string }) {
                 }}
               >›</div>
 
-              {/* 찢기는 자리에서 튀는 빛 + 불티 */}
+              {/* 찢기는 자리에서 새는 빛 + 그라인더 불꽃 */}
               <div className="tear">
                 <div className="beam" />
+                <div className="core" />
                 {TEAR_SPARKS.map((s, i) => (
-                  <i key={i} style={{
-                    top: s.top, width: s.s, height: s.s,
+                  <i key={i} className={s.hot ? 'hot' : ''} style={{
+                    top: s.top, width: s.len, height: s.thick,
                     ['--dx' as string]: `${s.dx}px`,
                     ['--dy' as string]: `${s.dy}px`,
+                    ['--fall' as string]: `${s.fall}px`,
+                    ['--rot' as string]: `${s.rot}deg`,
                     animationDuration: s.dur, animationDelay: s.delay,
                   }} />
                 ))}
