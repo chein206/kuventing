@@ -41,12 +41,14 @@ export type MotionScene =
       dur: number; photo: string; cam: MotionCam;
       kicker: string; title: string; desc?: string | null; price?: string | null;
       top: number;              // 자막 세로 위치 (1920 기준)
+      pos: AdPos;               // 그늘을 자막 쪽으로 옮기는 데 쓴다
     }
   | {
       kind: 'set';
       dur: number; photo: string; cam: MotionCam;
       kicker: string; title: string; items: string[]; price?: string | null;
       top: number;
+      pos: AdPos;
     }
   | {
       kind: 'sign';
@@ -64,7 +66,23 @@ const CAMS: MotionCam[] = [
 ];
 const SIGN_CAM: MotionCam = { z0: 1.10, z1: 1.18, y0: -2, y1: -3.5, d0: 0.34, d1: 0.46, px: 34 };
 
-type AdIn = { title?: string; sub?: string | null; price?: string | null; image?: string | null };
+export type AdPos = 'top' | 'mid' | 'bottom';
+
+type AdIn = {
+  title?: string; sub?: string | null; price?: string | null;
+  image?: string | null; pos?: AdPos | null;
+};
+
+/**
+ * 자막 세로 위치 (1920 기준).
+ * 사진은 매장마다 다르다 — 접시가 아래에 있으면 글자를 위로 올려야 한다.
+ * 사진 규격으로 전부 통제하려 하면 매장마다 사진을 다시 뽑게 된다.
+ */
+const POS_TOP: Record<AdPos, number> = {
+  top: 300,
+  mid: 820,
+  bottom: 1240,
+};
 
 /**
  * 광고 슬라이드로 씬을 만든다. 사진 없는 슬라이드는 넣지 않는다 —
@@ -88,7 +106,8 @@ export function buildScenes(
     title: a.title ?? '',
     desc: a.sub ?? null,
     price: a.price ?? null,
-    top: 1240,
+    top: POS_TOP[a.pos ?? 'bottom'] ?? POS_TOP.bottom,
+    pos: a.pos ?? 'bottom',
   }));
 
   scenes.push({
@@ -159,6 +178,7 @@ export default function MotionAd({ scenes }: { scenes: MotionScene[] }) {
       <div
         className="madscene"
         key={i}
+        data-pos={s.kind === 'sign' ? 'sign' : s.pos}
         style={{
           ['--dur' as string]: `${s.dur}s`,
           ['--z0' as string]: s.cam.z0,

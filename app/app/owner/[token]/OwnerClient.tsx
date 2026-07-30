@@ -12,7 +12,7 @@ type BoardInfo = {
   last_one_label?: string;
   last_one_name?: string;
   last_one_image?: string | null;
-  ads?: { title?: string; sub?: string; price?: string; image?: string | null }[];
+  ads?: { title?: string; sub?: string; price?: string; image?: string | null; pos?: string | null }[];
   board_token?: string;
   board_mode?: 'pin' | 'open';
   idle_seconds?: number;
@@ -744,7 +744,11 @@ function PrizeTab({
 
 /* ================= 광고 슬라이드 ================= */
 
-type AdRow = { title: string; sub: string; price: string; image: string | null };
+type AdPos = 'top' | 'mid' | 'bottom';
+type AdRow = { title: string; sub: string; price: string; image: string | null; pos: AdPos };
+
+// 사진마다 접시 자리가 달라서 글자를 옮길 수 있어야 한다
+const POS_LABEL: [AdPos, string][] = [['top', '위'], ['mid', '가운데'], ['bottom', '아래']];
 
 /**
  * 대기화면 슬라이드 편집.
@@ -770,6 +774,7 @@ function AdTab({
     seeded.current = true;
     setRows(board.ads.map((a) => ({
       title: a.title ?? '', sub: a.sub ?? '', price: a.price ?? '', image: a.image ?? null,
+      pos: (a.pos ?? 'bottom') as AdPos,
     })));
   }, [board]);
 
@@ -786,7 +791,7 @@ function AdTab({
         body: JSON.stringify({
           ads: next.map((a) => ({
             title: a.title.trim(), sub: a.sub.trim() || null,
-            price: a.price.trim() || null, image: a.image,
+            price: a.price.trim() || null, image: a.image, pos: a.pos ?? 'bottom',
           })),
         }),
       })) as { ok?: boolean; message?: string; error?: string };
@@ -845,16 +850,27 @@ function AdTab({
               className="adsub" value={a.sub} maxLength={60} placeholder="설명 (없어도 됩니다)"
               onChange={(e) => patch(i, { sub: e.target.value })}
             />
-            <input
-              className="adprice" value={a.price} maxLength={20} placeholder="가격 (없어도 됩니다)"
-              onChange={(e) => patch(i, { price: e.target.value })}
-            />
+            <div className="adrow2">
+              <input
+                className="adprice" value={a.price} maxLength={20} placeholder="가격 (없어도 됩니다)"
+                onChange={(e) => patch(i, { price: e.target.value })}
+              />
+              <div className="posseg">
+                <label>글자 위치</label>
+                <div className="seg">
+                  {POS_LABEL.map(([v, l]) => (
+                    <button key={v} aria-pressed={(a.pos ?? 'bottom') === v}
+                            onClick={() => patch(i, { pos: v })}>{l}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         ))}
 
         {rows.length < 10 && (
           <button className="addgrade" disabled={busy} onClick={() =>
-            commit([...rows, { title: '새 메뉴', sub: '', price: '', image: null }], '슬라이드를 추가했습니다')
+            commit([...rows, { title: '새 메뉴', sub: '', price: '', image: null, pos: 'bottom' }], '슬라이드를 추가했습니다')
           }>+ 슬라이드 추가 ({rows.length}/10)</button>
         )}
 
@@ -872,7 +888,9 @@ function AdTab({
         <p className="demo" style={{ marginTop: 10 }}>
           동그라미를 눌러 사진을 올립니다. <b>사진은 자르지 않습니다</b> — 가로·세로 어떤 비율이든
           화면에 통째로 얹힙니다.
-          <br />추가·삭제·순서는 누르는 즉시 저장됩니다. 문구는 <b>문구 저장</b>을 눌러주세요.
+          <br /><b>글자 위치</b>는 사진을 보고 고르세요 — 접시가 아래에 있으면 <b>위</b>,
+          위에 있으면 <b>아래</b>입니다. 글자 쪽에 그늘이 따라갑니다.
+          <br />추가·삭제·순서는 누르는 즉시 저장됩니다. 문구와 위치는 <b>문구 저장</b>을 눌러주세요.
           <br />제목이나 사진 중 하나는 있어야 합니다. 넘김 간격은 <b>홈</b>에서 조절합니다.
         </p>
       </div>

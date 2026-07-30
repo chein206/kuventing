@@ -7,7 +7,10 @@ import Ticket from './Ticket';
 import { Icon } from '@/lib/Icon';
 import MotionAd, { buildScenes, scenesDuration } from './MotionAd';
 
-type Ad = { title: string; sub?: string; price?: string; image?: string | null };
+type Ad = {
+  title: string; sub?: string; price?: string; image?: string | null;
+  pos?: 'top' | 'mid' | 'bottom' | null;   // 자막 위치. 사진마다 접시 자리가 달라서 고르게 한다
+};
 type Config = {
   campaignId: string; title: string; status: string; theme: string;
   mode: 'pin' | 'open'; ads: Ad[];
@@ -658,7 +661,7 @@ function AdSlide({ ad }: { ad: Ad }) {
     );
   }
   return (
-    <div className="slide ad full">
+    <div className="slide ad full" data-pos={ad.pos ?? 'bottom'}>
       {/* 뒤에는 흐리게 채우고 위에는 원본을 통째로 얹는다 — 어떤 비율이든 안 잘린다 */}
       <div className="shot">
         <img className="blur" src={ad.image} alt="" aria-hidden="true" />

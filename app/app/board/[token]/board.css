@@ -6,7 +6,7 @@
   width:100%;max-width:none;min-height:100dvh;flex:1;
   display:flex;flex-direction:column;padding:0;overflow:hidden;position:relative
 }
-/* 세로 배분 — 광고 70% · 티켓 판 20% · 상단 바 6% · 뽑기 버튼 3%.
+/* 세로 배분 — 광고 68% · 티켓 판 22% · 상단 바 6% · 뽑기 버튼 2.5%.
    광고가 1순위라 나머지를 먼저 정하고 남은 것을 광고에 준다(.stage 가 flex:1).
    clamp 는 작은 화면에서 숫자와 글자가 눌리지 않게 두는 바닥·천장이다. */
 .bd .bar{
@@ -68,6 +68,19 @@
   background:linear-gradient(to top,rgba(0,0,0,.86) 0%,rgba(0,0,0,.48) 30%,transparent 56%)
 }
 .slide.ad.full .cap{position:relative;padding:0 30px 32px;color:#fff}
+/* 자막 위치는 사장님이 슬라이드마다 고른다. 사진마다 접시 자리가 다르다 */
+.slide.ad.full[data-pos="top"]{justify-content:flex-start}
+.slide.ad.full[data-pos="top"] .cap{padding:34px 30px 0}
+.slide.ad.full[data-pos="top"] .shot::after{
+  background:linear-gradient(to bottom,rgba(0,0,0,.88) 0%,rgba(0,0,0,.5) 30%,transparent 56%)
+}
+.slide.ad.full[data-pos="mid"]{justify-content:center}
+.slide.ad.full[data-pos="mid"] .cap{padding:0 30px}
+.slide.ad.full[data-pos="mid"] .shot::after{
+  background:linear-gradient(to bottom,
+    rgba(0,0,0,.2) 0%,rgba(0,0,0,.28) 22%,rgba(0,0,0,.82) 44%,
+    rgba(0,0,0,.82) 70%,rgba(0,0,0,.3) 92%)
+}
 .slide.ad.full .kind{color:rgba(255,255,255,.72)}
 .slide.ad.full h1{color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.5)}
 .slide.ad.full .sub{color:rgba(255,255,255,.82)}
@@ -116,22 +129,37 @@
    칸 비율을 고정하면(aspect-ratio) 티켓 수에 따라 높이가 튀어 광고를 밀어낸다 */
 .mini{
   display:grid;grid-template-columns:repeat(10,1fr);grid-auto-rows:1fr;gap:6px;
-  height:clamp(140px,20dvh,300px)
+  height:clamp(150px,22dvh,320px)
 }
 .mini i{
-  position:relative;display:grid;place-items:center;font-style:normal;min-height:0
+  position:relative;display:grid;place-items:center;font-style:normal;min-height:0;
+  border-radius:6px;overflow:hidden
 }
-.mini i .art{position:absolute;inset:0;width:100%;height:100%}
+.mini i .art{position:absolute;inset:0;width:100%;height:100%;transition:opacity .3s}
 .mini i b{
-  position:relative;z-index:1;font-size:15px;font-weight:900;letter-spacing:-.02em
+  position:relative;z-index:1;font-size:17px;font-weight:900;letter-spacing:-.02em
 }
+
+/* 남은 칸 vs 나간 칸 — 멀리서도 갈려야 한다.
+   티켓 그림의 색만 바꾸면(Ticket 컴포넌트) 이 크기에서 구분이 안 됐다.
+   남은 칸은 떠 있고, 나간 칸은 눌러 앉은 것처럼 만든다. */
+.mini i:not(.u){
+  box-shadow:0 1px 0 rgba(0,0,0,.3), inset 0 0 0 1px rgba(255,255,255,.07)
+}
+.mini i.u{
+  background:rgba(0,0,0,.42);
+  box-shadow:inset 0 2px 7px rgba(0,0,0,.6), inset 0 0 0 1px rgba(0,0,0,.35)
+}
+/* 그림만 죽인다. 등급 글자는 그대로 또렷하게 남겨야 뭐가 나갔는지 읽힌다 */
+.mini i.u .art{opacity:.22;filter:saturate(.15) brightness(.6)}
+.mini i.u b{text-shadow:0 1px 3px rgba(0,0,0,.8)}
 .mini i.pop{animation:pp .6s cubic-bezier(.3,1.3,.4,1)}
 @keyframes pp{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
 
 .touch{
-  width:100%;height:clamp(36px,3dvh,54px);flex:none;
+  width:100%;height:clamp(32px,2.5dvh,48px);flex:none;
   display:grid;place-items:center;
-  font-size:clamp(15px,1.4dvh,19px);font-weight:900;letter-spacing:-.02em;
+  font-size:clamp(14px,1.25dvh,18px);font-weight:900;letter-spacing:-.02em;
   border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-ink);
   margin-top:10px;animation:br 2.4s ease-in-out infinite;box-shadow:var(--shadow),var(--glow)
 }

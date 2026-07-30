@@ -42,16 +42,34 @@
 }
 @keyframes madDark{from{opacity:var(--d0)}to{opacity:var(--d1)}}
 
-/* 글자가 읽히도록 위아래로 깔아 두는 고정 그라데이션.
-   시안은 어두운 배경 사진을 전제로 52%부터 내려왔지만,
-   규격(아래 30% 비우기)에 맞지 않는 사진이 오면 메뉴명이 접시 위에 걸린다.
-   광고가 안 읽히면 광고로서 실패이므로 자막 자리(64%)를 확실히 덮는다. */
-.mad .madlegib{
-  position:absolute;inset:0;
+/* 글자가 읽히도록 깔아 두는 그늘.
+   자막을 옮기면 그늘도 따라가야 한다 — 밝은 사진 위에 맨 글자를 얹으면
+   광고가 안 읽히고, 그건 광고로서 실패다.
+   시안은 어두운 배경 사진을 전제로 아래만 덮었다. */
+.mad .madlegib{position:absolute;inset:0}
+
+/* 자막 아래 (기본) */
+.mad .madscene[data-pos="bottom"] .madlegib,
+.mad .madscene[data-pos="sign"] .madlegib{
   background:linear-gradient(to bottom,
-    rgba(11,11,12,.72) 0%, rgba(11,11,12,0) 26%,
+    rgba(11,11,12,.62) 0%, rgba(11,11,12,0) 24%,
     rgba(11,11,12,0) 44%, rgba(11,11,12,.34) 58%,
     rgba(11,11,12,.74) 76%, rgba(11,11,12,.93) 100%)
+}
+/* 자막 가운데 — 가운데를 띠처럼 눌러 준다 */
+.mad .madscene[data-pos="mid"] .madlegib{
+  background:linear-gradient(to bottom,
+    rgba(11,11,12,.5) 0%, rgba(11,11,12,0) 20%,
+    rgba(11,11,12,.28) 36%, rgba(11,11,12,.8) 52%,
+    rgba(11,11,12,.8) 74%, rgba(11,11,12,.5) 92%,
+    rgba(11,11,12,.62) 100%)
+}
+/* 자막 위 — 접시가 아래에 있는 사진에 쓴다 */
+.mad .madscene[data-pos="top"] .madlegib{
+  background:linear-gradient(to bottom,
+    rgba(11,11,12,.9) 0%, rgba(11,11,12,.78) 26%,
+    rgba(11,11,12,.34) 42%, rgba(11,11,12,0) 58%,
+    rgba(11,11,12,0) 78%, rgba(11,11,12,.5) 100%)
 }
 .mad .madvig{
   position:absolute;inset:0;

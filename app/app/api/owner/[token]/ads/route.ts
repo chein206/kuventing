@@ -1,13 +1,17 @@
 import { getAdmin, resolveOwner } from '@/lib/admin';
 import { dropImage } from '@/lib/storage';
 
-type AdIn = { title?: string; sub?: string | null; price?: string | null; image?: string | null };
+type AdIn = {
+  title?: string; sub?: string | null; price?: string | null;
+  image?: string | null; pos?: string | null;
+};
 
 const REASON: Record<string, string> = {
   NOT_FOUND: '이벤트를 찾지 못했습니다',
   TOO_MANY: '슬라이드는 최대 10장입니다',
   EMPTY_SLIDE: '제목이나 사진 중 하나는 있어야 합니다',
   TOO_LONG: '글자 수를 줄여주세요',
+  BAD_POS: '글자 위치가 잘못됐습니다',
 };
 
 /**
