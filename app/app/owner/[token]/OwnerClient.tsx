@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from '@/lib/Icon';
 import PhotoDot, { type Uploader, type Remover } from '@/lib/PhotoDot';
+import { FONTS, fontOf, loadFont } from '@/lib/fonts';
 
 type Caller = (path: string, init?: RequestInit) => Promise<unknown>;
 
@@ -16,6 +17,7 @@ type BoardInfo = {
   board_token?: string;
   board_mode?: 'pin' | 'open';
   sound?: 'off' | 'soft' | 'loud';
+  font?: string;
   idle_seconds?: number;
   motion_seconds?: number;
   slide_seconds?: number;
@@ -91,6 +93,9 @@ export default function OwnerClient({ token }: { token: string }) {
   const [origin, setOrigin] = useState('');
 
   useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  // 글꼴 미리보기 — 예시 글자만 그리므로 조각도 그만큼만 받는다
+  useEffect(() => { FONTS.forEach((f) => loadFont(f.key)); }, []);
 
   const copy = async (text: string, done: string) => {
     try { await navigator.clipboard.writeText(text); setBoxMsg(done); }
@@ -354,6 +359,30 @@ export default function OwnerClient({ token }: { token: string }) {
                     ? '손님이 화면을 누르면 PIN 입력창이 뜹니다. 직원이 PIN을 눌러야 뽑을 수 있습니다.'
                     : '누구나 화면을 눌러 바로 뽑을 수 있습니다. 주문 확인 없이 뽑히니 주의하세요.'}
                 </p>
+
+                <div className="soundset">
+                  <label>화면 글꼴</label>
+                  <div className="fontlist">
+                    {FONTS.map((f) => (
+                      <button
+                        key={f.key}
+                        aria-pressed={(bd.font ?? 'system') === f.key}
+                        onClick={async () => {
+                          await call(api('board'), { method: 'POST', body: JSON.stringify({ font: f.key }) });
+                          load();
+                        }}
+                      >
+                        {/* 글꼴은 글로 설명이 안 된다. 그 글꼴로 쓴 예시를 보여준다 */}
+                        <b style={{ fontFamily: f.stack }}>차슈덮밥 세트 12,000원</b>
+                        <span>{f.label} · {f.note}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="demo" style={{ marginTop: 8 }}>
+                    <b>기본</b>은 내려받지 않아 화면이 가장 빨리 뜹니다.
+                    다른 글꼴은 처음 한 번만 받고, 그것도 화면에 쓰는 글자 조각만 받습니다.
+                  </p>
+                </div>
 
                 <div className="soundset">
                   <label>뽑기 소리</label>

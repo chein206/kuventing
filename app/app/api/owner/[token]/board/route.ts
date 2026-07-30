@@ -1,8 +1,11 @@
 import { getAdmin, resolveOwner } from '@/lib/admin';
+import { FONTS } from '@/lib/fonts';
+
+const FONT_KEYS: string[] = FONTS.map((f) => f.key);
 
 // 문자열 리터럴이어야 supabase-js 가 반환 타입을 추론한다
 const FIELDS =
-  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, motion_seconds, last_one_label, last_one_name, last_one_image, ads, sound';
+  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, motion_seconds, last_one_label, last_one_name, last_one_image, ads, sound, font';
 
 // 초 단위 값과 허용 범위
 const RANGES: Record<string, [number, number]> = {
@@ -45,6 +48,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
 
   const body = (await req.json()) as Record<string, unknown>;
   const patch: Record<string, unknown> = {};
+
+  // 화면 글꼴. 기본(system)은 내려받지 않는다
+  if (body.font !== undefined) {
+    if (!FONT_KEYS.includes(String(body.font))) {
+      return Response.json({ error: 'BAD_FONT' }, { status: 400 });
+    }
+    patch.font = body.font;
+  }
 
   // 뽑기 소리. 기본은 꺼져 있고 사장님이 매장에서 들어 보고 켠다
   if (body.sound !== undefined) {

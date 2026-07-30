@@ -227,3 +227,18 @@
 .ow .soundset{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .ow .soundset > label{font-size:13px;font-weight:800;display:block;margin-bottom:9px}
 .ow .soundset .modes{margin-top:0}
+
+/* 글꼴 고르기 — 글로 설명이 안 되므로 그 글꼴로 쓴 예시를 보여준다 */
+.ow .fontlist{display:flex;flex-direction:column;gap:7px}
+.ow .fontlist button{
+  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+  padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surf2);text-align:left
+}
+.ow .fontlist button b{font-size:18px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.ow .fontlist button span{font-size:11px;color:var(--dim);font-weight:600}
+.ow .fontlist button[aria-pressed="true"]{
+  background:var(--ink);border-color:var(--ink)
+}
+.ow .fontlist button[aria-pressed="true"] b{color:#fff}
+.ow .fontlist button[aria-pressed="true"] span{color:rgba(255,255,255,.7)}

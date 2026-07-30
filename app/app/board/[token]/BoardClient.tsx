@@ -7,6 +7,7 @@ import Ticket from './Ticket';
 import { Icon } from '@/lib/Icon';
 import MotionAd, { buildScenes, scenesDuration, normPos } from './MotionAd';
 import * as sfx from '@/lib/sfx';
+import { fontOf, loadFont } from '@/lib/fonts';
 
 type Ad = {
   title: string; sub?: string; price?: string; image?: string | null;
@@ -21,6 +22,7 @@ type Config = {
   autoOpenSeconds: number;   // 오픈 화면 방치 시 자동 개봉
   sound?: sfx.SoundMode;     // 뽑기 소리. 기본은 꺼둔다 (카운터 소음 환경)
   motionSeconds?: number;    // 모션 광고 컷 하나의 길이
+  font?: string;             // 화면 글꼴. 기본은 내려받지 않는다
   lastOneName: string | null;
   lastOneImage: string | null;
   lastOneLabel: string | null;   // "라스트원상"은 특정 브랜드 용어라 쓰지 않는다
@@ -208,6 +210,9 @@ export default function BoardClient({ token }: { token: string }) {
   // 사장님이 소리 설정을 바꾸면 볼륨을 따라간다
   useEffect(() => { sfx.setMode(cfg?.sound ?? 'off'); }, [cfg?.sound]);
 
+  // 고른 글꼴만 내려받는다. 기본값은 받지 않으므로 첫 화면이 늦어지지 않는다
+  useEffect(() => { loadFont(cfg?.font); }, [cfg?.font]);
+
   /* ---------- 화면 꺼짐 방지 ---------- */
   useEffect(() => {
     let lock: { release: () => Promise<void> } | null = null;
@@ -390,6 +395,7 @@ export default function BoardClient({ token }: { token: string }) {
   return (
     <div
       className="bd"
+      style={{ fontFamily: fontOf(cfg.font).stack }}
       onPointerDown={() => {
         lastTouch.current = Date.now();
         // 브라우저는 사용자가 만지기 전에는 소리를 못 내게 막는다. 여기서만 깨울 수 있다
