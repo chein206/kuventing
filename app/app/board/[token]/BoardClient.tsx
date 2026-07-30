@@ -403,11 +403,12 @@ export default function BoardClient({ token }: { token: string }) {
           <div className="foot">
             {/* 잔여 현황을 눌러도 뽑기가 시작된다 */}
             <div className="statuszone" onClick={start} role="button">
+              {/* 등급과 남은 수만. 상품명은 위 광고와 다음 화면에서 크게 보여주므로
+                  여기서 또 쓰면 글자만 많아지고 한 줄에 안 들어간다 */}
               <div className="gchips">
                 {(board?.prizes ?? []).map((p) => (
                   <div key={p.grade} className={`gchip ${p.left === 0 ? 'zero' : ''} ${p.left > 0 && p.left <= 2 ? 'hot' : ''}`}>
                     <div className="d" style={{ background: gradeColor(p.grade) }}>{p.grade}</div>
-                    <div className="t">{p.name}</div>
                     <div className="n">{p.left}</div>
                   </div>
                 ))}

@@ -87,17 +87,26 @@
 /* 잔여 현황 전체가 뽑기 시작 버튼이다 */
 .bd .statuszone{cursor:pointer;border-radius:var(--radius);transition:transform .12s}
 .bd .statuszone:active{transform:scale(.985)}
-.gchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+/* 등급별 잔여 — 등급 글자와 수량만. 한 줄에 다 들어와야 훑어진다.
+   상품명은 위 광고와 다음 화면이 크게 보여준다 */
+.gchips{display:flex;gap:8px;margin-bottom:13px}
 .gchip{
-  display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:99px;
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:10px 6px 11px;border-radius:12px;
   background:var(--surf);border:1px solid var(--line);box-shadow:var(--shadow)
 }
-.gchip .d{width:22px;height:22px;border-radius:99px;color:#fff;font-size:11px;font-weight:900;
-  display:grid;place-items:center}
-.gchip .t{font-size:14px;font-weight:700;letter-spacing:-.02em}
-.gchip .n{font-size:14px;font-weight:900}
-.gchip.zero{opacity:.32;filter:saturate(.2)}
-.gchip.hot{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 28%,transparent)}
+.gchip .d{
+  width:26px;height:26px;border-radius:99px;color:#fff;font-size:13px;font-weight:900;
+  display:grid;place-items:center;letter-spacing:-.02em
+}
+.gchip .n{font-size:20px;font-weight:900;letter-spacing:-.04em;line-height:1}
+.gchip.zero{opacity:.3;filter:saturate(.15)}
+.gchip.hot{
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 26%,transparent)
+}
+.gchip.hot .n{color:var(--accent)}
 
 .mini{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
 .mini i{
