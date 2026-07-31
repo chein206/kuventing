@@ -1,6 +1,7 @@
 'use client';
 
-import type { Art } from '@/lib/boardArt';
+import { useState } from 'react';
+import type { Art, Photo } from '@/lib/boardArt';
 
 /**
  * 티켓 한 장 — 활판 입장권.
@@ -31,11 +32,13 @@ type Props = {
   sel?: boolean;
   /** 나간 칸에 남기는 등급 색 */
   gradeColor?: string | null;
+  /** 번호 아래 한 줄 — 개봉 카드와 결과 카드에서만 쓴다 */
+  sub?: string;
   className?: string;
 };
 
 export default function Ticket({
-  art, size = 'tile', num = '', used = false, sel = false, gradeColor, className,
+  art, size = 'tile', num = '', used = false, sel = false, gradeColor, sub, className,
 }: Props) {
   // 나간 칸은 종이색을 갈아치우지 않고 **반투명하게 눌러 덮는다**.
   // 밝은 판·어두운 판 위에서 같은 규칙 하나로 합성돼야 한다. 불투명 검정으로 박으면
@@ -43,6 +46,12 @@ export default function Ticket({
   const ink = used ? 'rgba(255,255,255,.30)' : art.ink;
   const fs = size === 'big' ? 74 : size === 'mini' ? 15 : 26;
   const kids: React.ReactNode[] = [];
+
+  /* ── 사진 원판이 있으면 그것을 깐다 ── */
+  if (art.photo) return <PhotoTicket
+    art={art} photo={art.photo} size={size} num={num} sub={sub}
+    used={used} sel={sel} gradeColor={gradeColor} className={className}
+  />;
 
   /* ── 종이 ── */
   if (art.grain && size !== 'mini') {
@@ -218,6 +227,102 @@ export default function Ticket({
         ? 'inset 0 3px 9px rgba(0,0,0,.7), inset 0 0 0 1px rgba(0,0,0,.5)'
         // 밝은 판에서도 표가 선반과 갈리도록 테와 그늘을 함께 둔다
         : (sel ? 'none' : 'inset 0 0 0 1px rgba(0,0,0,.42), 0 1px 2px rgba(0,0,0,.3), 0 4px 8px -3px rgba(0,0,0,.3)'),
+    }}>{kids}</div>
+  );
+}
+
+/* ============================================================
+   사진 원판을 얹은 티켓.
+
+   벡터로 흉내 낼 수 없는 것이 셋 있다 — 종이 섬유, 잉크가 눌린 자리,
+   그리고 **황동 포일의 각도별 광택**. 그건 찍어서 쓴다.
+
+   반대로 미니 칸(69×49)은 사진이 진다. 원판을 그 크기로 줄이면 2중 괘선이
+   한 줄로 뭉개진다. 그래서 미니 칸은 그 크기를 생각하고 찍은 전용 원판을 쓴다.
+
+   번호 자리는 사진마다 다르다 — 천공 열 왼쪽 영역의 가운데에 앉힌다.
+   활판 73.8% · 검표 64.5% · 황동 75.6%. 재서 상수로 들고 있지 않으면
+   원판을 바꿀 때마다 번호가 천공 위로 올라탄다.
+   ============================================================ */
+function PhotoTicket({
+  art, photo, size, num, sub, used, sel, gradeColor, className,
+}: {
+  art: Art; photo: Photo; size: TicketSize;
+  num: string; sub?: string; used: boolean; sel: boolean;
+  gradeColor?: string | null; className?: string;
+}) {
+  // 사진이 아직 없으면(파일을 안 넣었으면) 종이색과 번호만 남는다.
+  // 화면이 깨지는 대신 읽을 수는 있게 둔다.
+  const [gone, setGone] = useState(false);
+
+  const mini = size === 'mini';
+  // 시안이 넘기던 실제 렌더 폭. 번호 크기를 이 폭에 비례시킨다
+  const w = size === 'big' ? 640 : 138;
+  const P = (n: number) => Math.round(n * (w / 560) * 100) / 100;
+  // 번호는 천공 왼쪽 영역의 가운데. 천공이 없는 원판(perf=1)은 카드 전체의 가운데
+  const half = photo.perf >= 1 ? 100 : photo.perf * 100;
+
+  const kids: React.ReactNode[] = [];
+
+  if (!gone) kids.push(<img key="im" src={mini ? photo.miniSrc : photo.src} alt=""
+    onError={() => setGone(true)}
+    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%',
+             display: 'block', objectFit: 'fill' }} />);
+
+  if (used) {
+    // 사진 위에 어둠을 씌운다 — 종이색을 갈아치우지 않아야 판 밝기가 달라도
+    // 규칙이 하나로 통한다
+    kids.push(<div key="ov" style={{
+      position: 'absolute', inset: 0, background: 'rgba(6,5,3,.56)',
+      borderRadius: `${art.radius}px`,
+    }} />);
+    // 검인 — 글자까지 사진이다. 시스템 글꼴로 얹으면 획 끝이 도장과 달라
+    // 글씨가 도장 위에 떠 보인다(고무는 뭉툭, 전각은 각짐).
+    // 작게 넣으면 진한 잉크 덩어리만 남아 얼룩으로 보이므로 크게 앉힌다.
+    kids.push(mini
+      ? <img key="st" src={photo.stampSrc} alt="" style={{
+          position: 'absolute', right: '1%', top: '50%', height: '74%', aspectRatio: '1',
+          transform: 'translateY(-50%)', opacity: 0.95,
+        }} />
+      : <img key="st" src={photo.stampSrc} alt="" style={{
+          position: 'absolute',
+          left: `${(photo.stampAt?.x ?? 0.855) * 100}%`,
+          top: `${(photo.stampAt?.y ?? 0.5) * 100}%`,
+          width: `${(photo.stampAt?.d ?? 0.2) * 150}%`, aspectRatio: '1',
+          transform: 'translate(-50%,-50%) rotate(-4deg)', opacity: 0.95, zIndex: 3,
+        }} />);
+    // 등급 색은 얇은 왼쪽 띠로만 남긴다 — 칸 전체를 물들이면 판이 알록달록해진다
+    if (gradeColor && mini) kids.push(<div key="gs" style={{
+      position: 'absolute', left: '5%', top: '16%', bottom: '16%', width: '3px',
+      borderRadius: '99px', background: gradeColor, opacity: 0.9,
+    }} />);
+  }
+
+  if (num && !mini) kids.push(<span key="n" style={{
+    position: 'absolute', left: 0, width: `${half}%`, top: '50%',
+    transform: 'translateY(-50%)', textAlign: 'center', lineHeight: 1, zIndex: 2,
+    fontFamily: art.numFont, fontWeight: 700,
+    fontSize: `${P(used ? 74 : 78)}px`, letterSpacing: '-.02em',
+    color: used ? (gradeColor || '#7C8492') : art.numc,
+    textShadow: used ? '0 1px 4px rgba(0,0,0,.9)' : 'none',
+  }}>{num}</span>);
+
+  if (sub && !used && !mini) kids.push(<div key="sb" style={{
+    position: 'absolute', left: 0, width: `${half}%`, top: '50%',
+    marginTop: P(52), textAlign: 'center', zIndex: 2,
+    fontFamily: "'Pretendard','Apple SD Gothic Neo',sans-serif", fontWeight: 800,
+    fontSize: `${P(19)}px`, letterSpacing: '-.02em', color: art.numc, lineHeight: 1,
+  }}>{sub}</div>);
+
+  return (
+    <div className={className} style={{
+      position: 'absolute', inset: 0, borderRadius: `${art.radius}px`,
+      background: gone ? art.pap : undefined,
+      overflow: mini ? 'hidden' : undefined,
+      filter: used ? 'saturate(.7)' : undefined,
+      boxShadow: sel
+        ? '0 0 0 3px #E0C077, 0 0 0 7px rgba(224,192,119,.22), 0 10px 20px -8px rgba(0,0,0,.8)'
+        : (mini ? (used ? 'inset 0 2px 6px rgba(0,0,0,.6)' : '0 1px 2px rgba(0,0,0,.35)') : undefined),
     }}>{kids}</div>
   );
 }

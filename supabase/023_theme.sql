@@ -16,6 +16,12 @@
 --   light-east  밝은 판 · 동양 인찰     톤이 하나라 테두리와 도장으로만 가른다
 --   classic     처음 만든 판 · 남색     남색 바탕에 금선. 무늬 없이 단순하다
 --
+--   photo-letterpress  사진 판 · 활판 입장권   진짜 종이를 찍어 얹었다
+--   photo-brass        사진 판 · 황동 포일     포일 광택은 벡터로 흉내 낼 수 없다
+--
+-- 사진 판은 `app/public/photo/` 에 원판 사진이 있어야 제대로 뜬다.
+-- 파일이 없으면 종이색과 번호만 남는다 — 화면이 깨지지는 않는다.
+--
 -- 처음 만든 남색 티켓은 지운 게 아니라 한 칸으로 옮겼다. 별·바코드·점선이
 -- 벡터 UI 의 상투구인 것은 맞지만 못 쓸 물건이라는 뜻은 아니다. 무엇보다
 -- **고를 수 있어야 비교가 된다** — 첫 매장에서 사장님이 나란히 보고 정한다.
@@ -66,7 +72,8 @@ alter table kuji.campaigns
   drop constraint if exists campaigns_theme_chk;
 alter table kuji.campaigns
   add constraint campaigns_theme_chk
-  check (theme in ('dark-west', 'dark-east', 'light-west', 'light-east', 'classic'));
+  check (theme in ('dark-west', 'dark-east', 'light-west', 'light-east',
+                   'photo-letterpress', 'photo-brass', 'classic'));
 
 -- 확인
 select title, theme, font from kuji.campaigns order by created_at desc;

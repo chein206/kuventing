@@ -398,7 +398,13 @@ export default function BoardClient({ token }: { token: string }) {
   return (
     <div
       className="bd"
-      style={{ fontFamily: fontOf(cfg.font).stack }}
+      style={{
+        fontFamily: fontOf(cfg.font).stack,
+        // 사진 원판은 2:1 이 아니다(활판 1.877 · 황동 1.891). 칸 비율을 테마가 정한다
+        ['--tk-ratio' as string]: String(art.photo?.ratio ?? 2),
+        // 판 표면 — 사진 판은 참나무 판 위에 표를 늘어놓는다
+        ['--surface' as string]: art.photo ? `url(${art.photo.surface})` : 'none',
+      }}
       onPointerDown={() => {
         lastTouch.current = Date.now();
         // 브라우저는 사용자가 만지기 전에는 소리를 못 내게 막는다. 여기서만 깨울 수 있다
@@ -612,7 +618,7 @@ export default function BoardClient({ token }: { token: string }) {
               ))}
             </div>
             <div
-              className={`peel ${revealing ? 'go' : ''} ${slowOpen ? 'slow' : ''} ${grip ? 'grip' : ''}`}
+              className={`peel ${art.photo ? 'photo' : ''} ${revealing ? 'go' : ''} ${slowOpen ? 'slow' : ''} ${grip ? 'grip' : ''}`}
               ref={cardRef}
               style={{
                 ['--px' as string]: `${px}px`,
@@ -634,18 +640,24 @@ export default function BoardClient({ token }: { token: string }) {
 
               {/* 위층 — 티켓 표면 */}
               <div className="cover">
-                <Ticket art={art} size="big" />
+                <Ticket art={art} size="big"
+                        num={art.photo && sel ? String(sel) : ''}
+                        sub={art.photo ? cfg.title : undefined} />
                 {/* 미는 방향 안내 화살표 */}
                 <div className="guide"><span>›</span><span>›</span><span>›</span></div>
                 {/* 표면 조판 — 손잡이가 지나가는 왼쪽과 스텁은 비운다.
                     글자색은 종이 잉크를 따른다. 종이가 크라프트지라 흰 글자는 안 읽힌다 */}
-                <div className="lbl" style={{ color: art.numc }}>
+                {!art.photo && <div className="lbl" style={{ color: art.numc }}>
                   <span className="ev">{cfg.title}</span>
                   <b>{cfg.store.name}</b>
                   <span className="no" style={{ fontFamily: art.numFont }}>NO. {sel}</span>
-                </div>
+                </div>}
                 {/* 손잡이가 미끄러지는 홈 */}
                 <div className="slot" />
+                {/* 사진 판은 천공선이 실제로 뚫려 있다 — 그 자리에서 빛이 샌다 */}
+                {art.photo && (
+                  <div className="perfbeam" style={{ left: `${art.photo.perf * 100}%` }} />
+                )}
               </div>
 
               <div
@@ -677,8 +689,9 @@ export default function BoardClient({ token }: { token: string }) {
               >
                 {/* 빗살 홈 — 손가락이 걸리는 자리. 동그란 금색 알은 "게임 버튼"으로
                     읽혀서, 실제로 쥐고 미는 물건의 모양으로 바꿨다 */}
-                <i className="comb" />
-                <span>❯</span>
+                {art.photo
+                  ? <img className="lever" src={art.photo.leverSrc} alt="" />
+                  : <><i className="comb" /><span>❯</span></>}
               </div>
 
               {/* 찢기는 자리에서 새는 빛 + 그라인더 불꽃 */}
@@ -710,7 +723,7 @@ export default function BoardClient({ token }: { token: string }) {
       )}
 
       {step === 'result' && result && (
-        <ResultView r={result} campaignId={cfg.campaignId} prizes={snap}
+        <ResultView r={result} art={art} campaignId={cfg.campaignId} prizes={snap}
                     lastOneImage={cfg.lastOneImage}
                     lastOneLabel={cfg.lastOneLabel ?? '마지막 보상'}
                     seconds={cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
@@ -799,9 +812,9 @@ function Mini({ board, art, pops }: { board: Board | null; art: Art; pops: numbe
 
 /* ================= 결과 ================= */
 function ResultView({
-  r, campaignId, prizes, seconds, lastOneImage, lastOneLabel, onDone,
+  r, art, campaignId, prizes, seconds, lastOneImage, lastOneLabel, onDone,
 }: {
-  r: DrawResult; campaignId: string; prizes: Prize[]; seconds: number;
+  r: DrawResult; art: Art; campaignId: string; prizes: Prize[]; seconds: number;
   lastOneImage: string | null; lastOneLabel: string; onDone: () => void;
 }) {
   const [qr, setQr] = useState<string | null>(null);
@@ -934,7 +947,15 @@ function ResultView({
                 ? <img src={r.image} alt="" />
                 : <div className="noimg">{r.grade}</div>}
             </div>
-            <div className="gtag" style={{ background: gradeColor(r.grade) }}>{r.grade}</div>
+            {art.photo ? (
+              /* 밀랍 봉인 — 가운데가 비어 있어 글자를 얹을 수 있다 */
+              <div className="wax">
+                <img src={art.photo.sealSrc} alt="" />
+                <b>{r.grade}</b>
+              </div>
+            ) : (
+              <div className="gtag" style={{ background: gradeColor(r.grade) }}>{r.grade}</div>
+            )}
             <h1>{r.name}</h1>
           </>
         )}

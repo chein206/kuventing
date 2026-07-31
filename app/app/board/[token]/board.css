@@ -130,7 +130,8 @@
   flex:none;position:relative;z-index:2;
   display:flex;flex-direction:column;gap:11px;
   padding:14px 22px 14px;
-  background:var(--rail);border-top:1px solid var(--hair);
+  background:var(--rail);background-image:var(--surface,none);background-size:190px;
+  border-top:1px solid var(--hair);
   box-shadow:inset 0 14px 22px -14px rgba(0,0,0,.95)
 }
 /* 선반 머리말 — 가운데 실선이 오른쪽으로 사라진다 */
@@ -293,7 +294,7 @@
   padding:10px 8px
 }
 .bd .tk2{
-  aspect-ratio:2/1;position:relative;transition:transform .12s
+  aspect-ratio:var(--tk-ratio,2);position:relative;transition:transform .12s
 }
 /* 남은 칸 vs 나간 칸의 구분은 티켓이 직접 그린다 — 나간 칸에는 실제로 구멍이 뚫리고
    종이가 눌러 덮인다. 칸이 한 겹 더 덮으면 두 번 눌려 아무것도 안 남는다. */
@@ -524,7 +525,7 @@
 
 .bd .peel{
   --px:0px;
-  position:relative;width:min(560px,92vw);aspect-ratio:2/1;
+  position:relative;width:min(560px,92vw);aspect-ratio:var(--tk-ratio,2);
   overflow:visible
 }
 /* 아래층 — 결과 */
@@ -747,4 +748,51 @@
   position:absolute;right:18px;top:44%;transform:translateY(-50%);
   height:58%;z-index:2;pointer-events:none;
   filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))
+}
+
+/* ============================================================
+   사진 판 — 원판을 사진으로 찍어 얹은 테마
+   ============================================================ */
+
+/* 티켓 선택 화면도 참나무 판 위에 늘어놓는다 */
+.bd .tgrid{
+  background-image:var(--surface,none);background-size:190px;
+  border-radius:4px;padding:14px 10px;
+  box-shadow:inset 0 0 60px 20px rgba(0,0,0,.55),inset 0 2px 0 rgba(255,255,255,.06)
+}
+/* 사진이 없는 테마에서는 위 상자가 그냥 투명한 여백이 된다 */
+
+/* 천공선에서 새는 빛 — 사진의 실제 천공 자리(--left)에 맞춘다.
+   사진 판은 그라인더 불꽃을 쓰지 않는다. 종이표에서 용접 불꽃이 튀는 것이
+   가장 큰 위화감이었다. 대신 뚫린 자리에서 빛이 샌다. */
+.bd .peel .perfbeam{
+  position:absolute;top:-5%;bottom:-5%;width:34px;margin-left:-17px;z-index:2;
+  pointer-events:none;filter:blur(6px);
+  background:linear-gradient(90deg,transparent,rgba(255,248,224,.95) 48%,
+             rgba(227,199,127,.8) 58%,transparent);
+  animation:phLeak .36s ease-in-out infinite alternate
+}
+@keyframes phLeak{from{opacity:.55;transform:scaleX(.8)}to{opacity:1;transform:scaleX(1.3)}}
+.bd .peel.go .perfbeam{animation-duration:.18s}
+
+/* 황동 레버 — 사진. 가로로 찍힌 것을 세워 쓴다.
+   자리잡기(회전)와 흔들림을 바깥/안쪽으로 나눈다 —
+   @keyframes 의 transform 이 인라인 회전을 통째로 덮어쓴다. */
+.bd .peel.photo .knob{
+  width:58px;height:122px;background:none;border-radius:0;overflow:visible;
+  box-shadow:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.75))
+}
+.bd .peel.photo .knob .lever{
+  position:absolute;left:50%;top:50%;width:122px;height:58px;
+  margin-left:-61px;margin-top:-29px;transform:rotate(90deg);display:block
+}
+/* 사진 판은 표 안에 조판이 인쇄돼 있어 홈을 겹쳐 그리지 않는다 */
+.bd .peel.photo .slot{display:none}
+
+/* 밀랍 봉인 — 가운데가 비어 있어 글자를 얹을 수 있다 */
+.bd .wax{position:relative;width:92px;flex:none;display:grid;place-items:center}
+.bd .wax img{width:100%;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.bd .wax b{
+  position:absolute;font-size:30px;font-weight:900;color:#FBE6DC;line-height:1;
+  text-shadow:0 1px 3px rgba(70,4,10,.85)
 }

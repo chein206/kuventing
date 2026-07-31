@@ -16,7 +16,40 @@
  * 종이결, 2중 활판 괘선, 천공(구멍), 지폐용 기요셰 무늬, 검인 도장.
  */
 
-export type ThemeKey = 'dark-west' | 'dark-east' | 'light-west' | 'light-east' | 'classic';
+export type ThemeKey =
+  | 'dark-west' | 'dark-east' | 'light-west' | 'light-east'
+  | 'photo-letterpress' | 'photo-brass'
+  | 'classic';
+
+/**
+ * 사진 원판 한 벌.
+ *
+ * 사진마다 **천공 열 위치가 다르다**(활판 73.8% · 검표 64.5% · 황동 75.6%).
+ * 번호를 천공 왼쪽 영역의 가운데에 앉히려면 그 값을 각각 들고 있어야 한다.
+ * 재서 상수로 갖고 있지 않으면 원판을 바꿀 때마다 번호가 어긋난다.
+ *
+ * **여러 원판을 한 판에 섞어 쓰면 안 된다** — 천공 자리가 칸마다 달라 보인다.
+ */
+export type Photo = {
+  /** 큰 카드·타일용 원판 (배경 없는 투명 PNG, 천공이 실제로 뚫려 있다) */
+  src: string;
+  /** 미니 칸 전용 원판 — 괘선 한 줄 + 여백뿐 */
+  miniSrc: string;
+  /** 가로 ÷ 세로 */
+  ratio: number;
+  /** 천공 열의 가로 위치 (0~1). 1 이면 천공이 없다 */
+  perf: number;
+  /** 검인 도장. 글자까지 사진이고 잉크 농담이 알파에 들어 있다 */
+  stampSrc: string;
+  /** 원판에 눌러 둔 빈 도장 자리. 없으면 오른쪽 기본 자리에 찍는다 */
+  stampAt?: { x: number; y: number; d: number };
+  /** 밀랍 봉인 — 가운데가 비어 있어 글자를 얹을 수 있다 */
+  sealSrc: string;
+  /** 개봉 화면에서 미는 황동 레버 (가로로 찍힌 것을 세워 쓴다) */
+  leverSrc: string;
+  /** 판 표면 — 이음새 없이 반복된다 */
+  surface: string;
+};
 
 export type Art = {
   /** 종이색 */
@@ -42,6 +75,17 @@ export type Art = {
   stamp: number;
   /** 동양 판 — 도장이 사각 전각이고 무늬가 아사노하 */
   east?: boolean;
+
+  /**
+   * 사진 원판.
+   *
+   * 있으면 티켓을 벡터로 그리지 않고 이 사진을 깐다. 종이 섬유, 잉크가 눌린 자리,
+   * 황동 포일의 각도별 광택은 벡터로 흉내 낼 수 없다.
+   *
+   * 다만 **미니 칸(69×49)은 사진이 진다** — 그 크기로 줄이면 2중 괘선이 한 줄로
+   * 뭉개진다. 그래서 미니 칸 전용 원판을 따로 둔다.
+   */
+  photo?: Photo;
 
   /* ── 처음 만든 판이 쓰는 것들 ── */
   /** 뜯는 자리를 천공 대신 점선으로 */
@@ -127,6 +171,46 @@ const CLASSIC: Art = {
   dash: 1, star: 1, bars: 1, notch: true,
 };
 
+/* ------------------------------------------------------------
+   사진 판 — 원판을 사진으로 찍어 얹는다.
+
+   사진이 이긴 것   종이 섬유 · 잉크가 눌린 자리 · 황동 포일의 각도별 광택.
+                   특히 포일은 벡터로 흉내 낼 수 없다.
+   벡터가 이긴 것   미니 칸(69×49). 사진을 그 크기로 줄이면 괘선이 뭉개진다.
+                   그래서 미니 칸은 전용 원판을 따로 쓴다.
+
+   운용은 와이파이라 용량은 우선순위가 낮다. 사진을 쓸지 말지는 **읽히는지**로만 가른다.
+------------------------------------------------------------ */
+const PHOTO_BASE = {
+  stampSrc: '/photo/stamp-geom.png',
+  sealSrc: '/photo/seal-wax.png',
+  leverSrc: '/photo/handle-brass.png',
+  surface: '/photo/surface-oak.jpg',
+  miniSrc: '/photo/ticket-mini.png',
+};
+
+/** 활판 입장권 — 크라프트지 · 2중 활판 괘선 · 실제로 뚫린 천공 */
+const PHOTO_LETTERPRESS: Photo = {
+  ...PHOTO_BASE, src: '/photo/ticket-letterpress.png', ratio: 1.877, perf: 0.738,
+};
+/** 황동 포일 — 각도에 따라 색이 변한다. 사진으로 뽑아 가장 값을 한 장 */
+const PHOTO_BRASS: Photo = {
+  ...PHOTO_BASE, src: '/photo/ticket-brass.png', ratio: 1.891, perf: 0.756,
+};
+
+const PHOTO_ART = (photo: Photo, ink: string, radius: number): Art => ({
+  pap: '#D3C1A1',
+  ink,
+  numc: ink,
+  numFont: "Georgia,'Times New Roman',serif",
+  radius,
+  band: 0, bandSrc: '',
+  ros: 0, rosSrc: '',
+  grain: 0, grainSrc: '',
+  perf: 0, stamp: 0,
+  photo,
+});
+
 export type ThemeDef = {
   key: ThemeKey;
   label: string;
@@ -164,6 +248,20 @@ export const THEMES: ThemeDef[] = [
     note: '한지 판에 한지 표. 테두리와 도장으로만 가른다',
     dark: false,
     art: EAST('#DCD0B2'),
+  },
+  {
+    key: 'photo-letterpress',
+    label: '사진 판 · 활판 입장권',
+    note: '진짜 종이를 찍어 얹었다. 참나무 판 위 · 밀랍 봉인',
+    dark: true,
+    art: PHOTO_ART(PHOTO_LETTERPRESS, '#2B2118', 10),
+  },
+  {
+    key: 'photo-brass',
+    label: '사진 판 · 황동 포일',
+    note: '포일이 각도에 따라 색이 변한다. 상등 판',
+    dark: true,
+    art: PHOTO_ART(PHOTO_BRASS, '#7E5F18', 2),
   },
   {
     key: 'classic',
