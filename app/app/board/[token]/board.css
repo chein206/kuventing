@@ -784,7 +784,11 @@
 }
 .bd .peel.photo .knob .lever{
   position:absolute;left:50%;top:50%;width:122px;height:58px;
-  margin-left:-61px;margin-top:-29px;transform:rotate(90deg);display:block
+  margin-left:-61px;margin-top:-29px;transform:rotate(90deg);display:block;
+  /* img 는 브라우저가 기본으로 끌 수 있는 물건이다. 손잡이를 잡고 밀면
+     HTML5 드래그가 시작되면서 pointermove 가 끊겨 티켓이 안 열렸다.
+     손잡이는 부모(.knob)가 잡는다 — 그림은 이벤트를 받지 않는다. */
+  pointer-events:none;user-select:none;-webkit-user-drag:none
 }
 /* 사진 판은 표 안에 조판이 인쇄돼 있어 홈을 겹쳐 그리지 않는다 */
 .bd .peel.photo .slot{display:none}
@@ -796,3 +800,8 @@
   position:absolute;font-size:30px;font-weight:900;color:#FBE6DC;line-height:1;
   text-shadow:0 1px 3px rgba(70,4,10,.85)
 }
+
+/* 사진 판은 그라인더 불꽃을 쓰지 않는다.
+   종이표에서 용접 불꽃이 튀는 것이 가장 큰 위화감이었다.
+   천공선에서 새는 빛이 그 자리를 대신한다. */
+.bd .peel.photo .tear{display:none}

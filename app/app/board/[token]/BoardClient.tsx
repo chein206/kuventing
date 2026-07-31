@@ -690,7 +690,7 @@ export default function BoardClient({ token }: { token: string }) {
                 {/* 빗살 홈 — 손가락이 걸리는 자리. 동그란 금색 알은 "게임 버튼"으로
                     읽혀서, 실제로 쥐고 미는 물건의 모양으로 바꿨다 */}
                 {art.photo
-                  ? <img className="lever" src={art.photo.leverSrc} alt="" />
+                  ? <img className="lever" src={art.photo.leverSrc} alt="" draggable={false} />
                   : <><i className="comb" /><span>❯</span></>}
               </div>
 
