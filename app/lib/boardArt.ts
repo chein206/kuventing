@@ -16,7 +16,7 @@
  * 종이결, 2중 활판 괘선, 천공(구멍), 지폐용 기요셰 무늬, 검인 도장.
  */
 
-export type ThemeKey = 'dark-west' | 'dark-east' | 'light-west' | 'light-east';
+export type ThemeKey = 'dark-west' | 'dark-east' | 'light-west' | 'light-east' | 'classic';
 
 export type Art = {
   /** 종이색 */
@@ -42,6 +42,16 @@ export type Art = {
   stamp: number;
   /** 동양 판 — 도장이 사각 전각이고 무늬가 아사노하 */
   east?: boolean;
+
+  /* ── 처음 만든 판이 쓰는 것들 ── */
+  /** 뜯는 자리를 천공 대신 점선으로 */
+  dash?: number;
+  /** 4갈래 반짝별 */
+  star?: number;
+  /** 줄무늬(바코드 흉내) */
+  bars?: number;
+  /** 좌우 옆구리가 반원으로 파인 입장권 실루엣 */
+  notch?: boolean;
 };
 
 /* ------------------------------------------------------------
@@ -93,6 +103,30 @@ const EAST = (pap: string): Art => ({
   east: true,
 });
 
+/**
+ * 처음 만든 판 — 남색 바탕에 금선.
+ *
+ * 활판 입장권으로 갈아 끼우면서 지운 게 아니라 **한 칸으로 옮겼다.**
+ * 셋(별·바코드·점선)이 벡터 UI 의 상투구인 것은 맞지만, 그게 곧 못 쓸 물건이라는
+ * 뜻은 아니다. 어떤 매장은 이쪽이 어울리고, 무엇보다 **고를 수 있어야 비교가 된다.**
+ * 첫 매장에서 사장님이 둘을 나란히 보고 정하면 된다.
+ *
+ * 종이결·기요셰·검인은 넣지 않는다 — 그건 활판 쪽의 문법이고, 여기 섞으면
+ * 둘 다 아닌 것이 된다.
+ */
+const CLASSIC: Art = {
+  pap: '#1E2E52',
+  ink: '#C9A24B',
+  numc: '#EFE0B8',
+  numFont: "'Pretendard','Apple SD Gothic Neo',sans-serif",
+  radius: 8,
+  band: 0, bandSrc: '',
+  ros: 0, rosSrc: '',
+  grain: 0, grainSrc: '',
+  perf: 0, stamp: 0,
+  dash: 1, star: 1, bars: 1, notch: true,
+};
+
 export type ThemeDef = {
   key: ThemeKey;
   label: string;
@@ -130,6 +164,13 @@ export const THEMES: ThemeDef[] = [
     note: '한지 판에 한지 표. 테두리와 도장으로만 가른다',
     dark: false,
     art: EAST('#DCD0B2'),
+  },
+  {
+    key: 'classic',
+    label: '처음 만든 판 · 남색 입장권',
+    note: '남색 바탕에 금선. 무늬 없이 단순하다',
+    dark: true,
+    art: CLASSIC,
   },
 ];
 

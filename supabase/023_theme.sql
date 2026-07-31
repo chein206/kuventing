@@ -14,6 +14,11 @@
 --   dark-east   어두운 판 · 동양 인찰   일식 · 한식 · 전통주
 --   light-west  밝은 판 · 서양 활판     카페 · 베이커리 · 분식
 --   light-east  밝은 판 · 동양 인찰     톤이 하나라 테두리와 도장으로만 가른다
+--   classic     처음 만든 판 · 남색     남색 바탕에 금선. 무늬 없이 단순하다
+--
+-- 처음 만든 남색 티켓은 지운 게 아니라 한 칸으로 옮겼다. 별·바코드·점선이
+-- 벡터 UI 의 상투구인 것은 맞지만 못 쓸 물건이라는 뜻은 아니다. 무엇보다
+-- **고를 수 있어야 비교가 된다** — 첫 매장에서 사장님이 나란히 보고 정한다.
 --
 -- 옛 이름은 **판 밝기만 맞춰서** 옮긴다. neon 은 어두운 판이었으므로 dark-west 로.
 -- ============================================================
@@ -61,7 +66,7 @@ alter table kuji.campaigns
   drop constraint if exists campaigns_theme_chk;
 alter table kuji.campaigns
   add constraint campaigns_theme_chk
-  check (theme in ('dark-west', 'dark-east', 'light-west', 'light-east'));
+  check (theme in ('dark-west', 'dark-east', 'light-west', 'light-east', 'classic'));
 
 -- 확인
 select title, theme, font from kuji.campaigns order by created_at desc;

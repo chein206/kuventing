@@ -85,6 +85,16 @@ export default function Ticket({
       background: `radial-gradient(circle at 50% 50%,${ink} 34%,transparent 36%) 0 0/3px 6px repeat-y`,
       opacity: used ? 0.45 : art.perf,
     }} />);
+    if (art.dash) kids.push(<div key="ds" style={{
+      position: 'absolute', top: '10%', bottom: '10%', left: '74%', width: '2px',
+      background: `repeating-linear-gradient(180deg,${ink} 0 2px,transparent 2px 6px)`,
+      opacity: used ? 0.5 : 1,
+    }} />);
+    if (art.bars) kids.push(<div key="bc" style={{
+      position: 'absolute', right: '7%', top: '20%', bottom: '20%', width: '17%',
+      background: `repeating-linear-gradient(90deg,${ink} 0 2px,transparent 2px 4px)`,
+      opacity: used ? 0.3 : 0.85,
+    }} />);
     if (art.stamp && used) kids.push(art.east
       ? <img key="sm" src="/art/inkan.svg" alt="" style={{
           position: 'absolute', right: '4%', top: '50%', height: '48%',
@@ -107,6 +117,19 @@ export default function Ticket({
       for (let y = 12; y <= 188; y += 11) dots.push(<circle key={y} cx={296} cy={y} r={2.3} />);
       g.push(<g key="pf" fill={ink} opacity={used ? 0.45 : art.perf}>{dots}</g>);
     }
+    /* 처음 만든 판 — 뜯는 점선, 4갈래 별, 줄무늬 */
+    if (art.dash) g.push(<line key="ds" x1={300} y1={18} x2={300} y2={182}
+                               stroke={ink} strokeWidth={3} strokeDasharray="4 9"
+                               strokeLinecap="round" opacity={used ? 0.5 : 1} />);
+    if (art.star) g.push(<g key="st" fill={ink} opacity={used ? 0.35 : 1}>
+      <path d="M46,74 Q52,94 66,100 Q52,106 46,126 Q40,106 26,100 Q40,94 46,74 Z" />
+      <path d="M74,66 Q77,80 86,84 Q77,88 74,102 Q71,88 62,84 Q71,80 74,66 Z" />
+    </g>);
+    if (art.bars) g.push(<g key="bc" fill={ink} opacity={used ? 0.3 : 0.85}>
+      {[0, 12, 20, 34, 42, 56, 68, 76].map((d, i) => (
+        <rect key={i} x={300 + d} y={66} width={i % 3 === 0 ? 7 : 4} height={68} rx={1.5} />
+      ))}
+    </g>);
     /* 검인 — 안 나간 표에는 빈 도장 자리만, 나간 표에는 실제로 찍힌다.
        서양은 원형 스탬프, 동양은 사각 전각(篆刻). */
     if (art.stamp) {
@@ -162,10 +185,35 @@ export default function Ticket({
     textShadow: used ? '0 1px 3px rgba(0,0,0,.9)' : 'none',
   }}>{num}</span>);
 
+  /* 옆구리가 반원으로 파인 입장권 실루엣.
+     그라데이션 두 겹을 겹쳐 파는 방법도 있지만 그러려면 mask-composite 에 기대야 하고,
+     표준 키워드와 -webkit- 구형 키워드가 브라우저마다 다르게 합성된다.
+     외곽선 하나를 그린 SVG 를 마스크로 쓰면 합성 규칙이 끼어들 자리가 없다.
+     미니 칸은 2:1 이 아니고 68px 밖에 안 되므로 파지 않는다 — 파면 찌그러져 보인다. */
+  const notch = art.notch && size !== 'mini' ? (() => {
+    const R = 18, NR = 15, W = 400, H = 200;
+    const d =
+      `M ${R},0 H ${W - R} A ${R},${R} 0 0 1 ${W},${R}` +
+      ` V ${H / 2 - NR} A ${NR},${NR} 0 0 0 ${W},${H / 2 + NR}` +
+      ` V ${H - R} A ${R},${R} 0 0 1 ${W - R},${H}` +
+      ` H ${R} A ${R},${R} 0 0 1 0,${H - R}` +
+      ` V ${H / 2 + NR} A ${NR},${NR} 0 0 1 0,${H / 2 - NR}` +
+      ` V ${R} A ${R},${R} 0 0 1 ${R},0 Z`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" ` +
+      `preserveAspectRatio="none"><path d="${d}" fill="#000"/></svg>`;
+    const url = `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+    return {
+      maskImage: url, WebkitMaskImage: url,
+      maskSize: '100% 100%', WebkitMaskSize: '100% 100%',
+      maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat',
+    } as React.CSSProperties;
+  })() : null;
+
   return (
     <div className={className} style={{
       position: 'absolute', inset: 0, borderRadius: `${art.radius}px`, overflow: 'hidden',
       background: art.pap,
+      ...notch,
       boxShadow: used
         ? 'inset 0 3px 9px rgba(0,0,0,.7), inset 0 0 0 1px rgba(0,0,0,.5)'
         // 밝은 판에서도 표가 선반과 갈리도록 테와 그늘을 함께 둔다

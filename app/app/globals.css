@@ -89,6 +89,23 @@ input{font:inherit;color:inherit}
   --glow:none;
 }
 
+/* ── 처음 만든 판 · 남색 입장권 — 무늬 없이 단순하다 ── */
+[data-theme="classic"]{
+  --stamp-pap:#1E2E52; --stamp-ink:#EFE0B8;
+  --page:#0E0E10; --surf:#18181B; --surf-2:#202024;
+  --ink:#FAFAFA; --ink-dim:#8B8B93; --line:#2B2B31;
+  --accent:#C9A24B; --accent-2:#9C7A2E; --accent-ink:#241A05; --gold:#C9A24B;
+  --rail:#131316; --hair:rgba(201,162,75,.30);
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 12px 30px -18px rgba(0,0,0,.9);
+  --tk-face:linear-gradient(160deg,#2A3B63,#1E2E52);
+  --tk-ink:#EFE0B8; --tk-used:#15171E; --tk-used-ink:#3B4150;
+  --font-strong:800; --grid-gap:6px;
+  --ga:#D9B45C; --gb:#9FA6B2; --gc:#C08A5A; --gd:#6FA8C7; --ge:#6C6C74;
+  --gf:#8FD694; --gg:#C98ACB; --gh:#7E8798;
+  --glow:none;
+}
+
 .app{width:100%;max-width:430px;flex:1;display:flex;flex-direction:column;position:relative}
 .screen{display:flex;flex-direction:column;flex:1;padding:0 14px 28px;animation:fadeUp .32s cubic-bezier(.2,.7,.3,1)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
