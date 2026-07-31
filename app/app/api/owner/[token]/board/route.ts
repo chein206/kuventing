@@ -1,11 +1,13 @@
 import { getAdmin, resolveOwner } from '@/lib/admin';
 import { FONTS } from '@/lib/fonts';
+import { THEMES } from '@/lib/boardArt';
 
 const FONT_KEYS: string[] = FONTS.map((f) => f.key);
+const THEME_KEYS: string[] = THEMES.map((t) => t.key);
 
 // 문자열 리터럴이어야 supabase-js 가 반환 타입을 추론한다
 const FIELDS =
-  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, motion_seconds, last_one_label, last_one_name, last_one_image, ads, sound, font';
+  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, motion_seconds, last_one_label, last_one_name, last_one_image, ads, sound, font, theme';
 
 // 초 단위 값과 허용 범위
 const RANGES: Record<string, [number, number]> = {
@@ -55,6 +57,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
       return Response.json({ error: 'BAD_FONT' }, { status: 400 });
     }
     patch.font = body.font;
+  }
+
+  // 화면 테마 — 판 밝기 × 문양. 밝기는 매장 조명이, 문양은 업종이 정한다
+  if (body.theme !== undefined) {
+    if (!THEME_KEYS.includes(String(body.theme))) {
+      return Response.json({ error: 'BAD_THEME' }, { status: 400 });
+    }
+    patch.theme = body.theme;
   }
 
   // 뽑기 소리. 기본은 꺼져 있고 사장님이 매장에서 들어 보고 켠다

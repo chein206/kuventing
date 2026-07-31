@@ -8,6 +8,7 @@ import { Icon } from '@/lib/Icon';
 import MotionAd, { buildScenes, scenesDuration, normPos } from './MotionAd';
 import * as sfx from '@/lib/sfx';
 import { fontOf, loadFont } from '@/lib/fonts';
+import { themeOf, type Art } from '@/lib/boardArt';
 
 type Ad = {
   title: string; sub?: string; price?: string; image?: string | null;
@@ -115,7 +116,7 @@ export default function BoardClient({ token }: { token: string }) {
       const { data } = await sb().rpc('get_board_config', { p_token: token });
       const c = data as Config;
       if (!c || c.error) { setCfg({ ...(c ?? {}), error: 'NOT_FOUND' } as Config); return; }
-      document.documentElement.dataset.theme = c.theme || 'warm';
+      document.documentElement.dataset.theme = themeOf(c.theme).key;
       setCfg(c);
       setBoard(await getBoard(c.campaignId));
     })();
@@ -391,6 +392,8 @@ export default function BoardClient({ token }: { token: string }) {
 
   const left = board?.left ?? 0;
   const total = board?.campaign?.total ?? 0;
+  // 티켓 아트는 테마가 정한다 — 판 밝기가 종이색을, 문양이 무늬와 도장을 고른다
+  const art = themeOf(cfg.theme).art;
 
   return (
     <div
@@ -453,7 +456,10 @@ export default function BoardClient({ token }: { token: string }) {
             <div className="statuszone" onClick={start} role="button">
               {/* 등급별 잔여 칩은 뺐다. 위 칸(24/50)과 아래 티켓 판이 이미 같은 것을
                   말하고 있어서 셋이 겹쳤다. 등급별 수량은 다음 화면 상품 카드에 있다 */}
-              <Mini board={board} pops={pops} />
+              <div className="railhead">
+                <span>남은 티켓</span><i /><em>{left} / {total}</em>
+              </div>
+              <Mini board={board} art={art} pops={pops} />
             </div>
             <button className="touch" onClick={start}>화면을 눌러 뽑기 시작</button>
             {msg && <p style={{ textAlign: 'center', color: 'var(--accent)', fontWeight: 700, marginTop: 10 }}>{msg}</p>}
@@ -525,6 +531,8 @@ export default function BoardClient({ token }: { token: string }) {
                   ? <img className={`pshot ${isFlat(cfg.lastOneImage) ? 'flat' : ''}`} src={cfg.lastOneImage} alt="" />
                   : <span className="pbig"><Icon name="star" /></span>}
                 <span className="pgrade wide">{cfg.lastOneLabel ?? '마지막 보상'}</span>
+                {/* 막차 보너스에만 붙는 황동 검인 — 등급 상품과 한눈에 갈린다 */}
+                <img className="pseal" src="/art/seal-last.svg" alt="" />
                 <div className="pbar">
                   <b>{cfg.lastOneName}</b>
                   <span>1개</span>
@@ -541,18 +549,16 @@ export default function BoardClient({ token }: { token: string }) {
 
       {step === 'grid' && board && (
         <div className="page">
-          <h2 className="ttl">티켓을 선택하세요<small>검은 칸은 이미 소진된 티켓입니다.</small></h2>
+          <h2 className="ttl">티켓을 선택하세요<small>구멍이 뚫린 칸은 이미 나간 티켓입니다</small></h2>
           <div className="tgrid">
             {board.board.map((s) => s.grade ? (
               <div key={s.pos} className="tk2 used">
-                <Ticket variant="tile" used accent={gradeColor(s.grade)} className="art" />
-                <span style={{ color: gradeColor(s.grade) }}>{s.grade}</span>
+                <Ticket art={art} size="tile" used num={s.grade} gradeColor={gradeColor(s.grade)} />
               </div>
             ) : (
               <div key={s.pos} data-pos={s.pos} className={`tk2 ${sel === s.pos ? 'sel' : ''}`}
                    onClick={() => setSel(sel === s.pos ? null : s.pos)}>
-                <Ticket variant="tile" className="art" />
-                <span>{s.pos}</span>
+                <Ticket art={art} size="tile" num={String(s.pos)} sel={sel === s.pos} />
               </div>
             ))}
           </div>
@@ -582,8 +588,7 @@ export default function BoardClient({ token }: { token: string }) {
                   ['--w' as string]: `${pull.w}px`,
                 }}
               >
-                <Ticket variant="tile" className="art" />
-                <span>{sel}</span>
+                <Ticket art={art} size="tile" num={sel ? String(sel) : ''} />
               </div>
             </div>
           )}
@@ -594,7 +599,7 @@ export default function BoardClient({ token }: { token: string }) {
         <div className="page">
           <h2 className="ttl">
             {sel}번 티켓
-            <small>{revealing ? '열리는 중…' : '금색 손잡이를 천천히 오른쪽으로 미세요'}</small>
+            <small>{revealing ? '열리는 중…' : '황동 손잡이를 천천히 오른쪽으로 미세요'}</small>
           </h2>
           <div className={`openstage ${revealing ? 'firing' : ''}`}>
             {/* 배경 반짝임 */}
@@ -629,13 +634,18 @@ export default function BoardClient({ token }: { token: string }) {
 
               {/* 위층 — 티켓 표면 */}
               <div className="cover">
-                <Ticket variant="full" className="art" />
+                <Ticket art={art} size="big" />
                 {/* 미는 방향 안내 화살표 */}
                 <div className="guide"><span>›</span><span>›</span><span>›</span></div>
-                <div className="lbl">
+                {/* 표면 조판 — 손잡이가 지나가는 왼쪽과 스텁은 비운다.
+                    글자색은 종이 잉크를 따른다. 종이가 크라프트지라 흰 글자는 안 읽힌다 */}
+                <div className="lbl" style={{ color: art.numc }}>
+                  <span className="ev">{cfg.title}</span>
                   <b>{cfg.store.name}</b>
-                  <span>{cfg.title}</span>
+                  <span className="no" style={{ fontFamily: art.numFont }}>NO. {sel}</span>
                 </div>
+                {/* 손잡이가 미끄러지는 홈 */}
+                <div className="slot" />
               </div>
 
               <div
@@ -664,7 +674,12 @@ export default function BoardClient({ token }: { token: string }) {
                   sfx.grindStop();
                   if (!finished.current) { setRevealing(false); setPx(0); }
                 }}
-              >›</div>
+              >
+                {/* 빗살 홈 — 손가락이 걸리는 자리. 동그란 금색 알은 "게임 버튼"으로
+                    읽혀서, 실제로 쥐고 미는 물건의 모양으로 바꿨다 */}
+                <i className="comb" />
+                <span>❯</span>
+              </div>
 
               {/* 찢기는 자리에서 새는 빛 + 그라인더 불꽃 */}
               <div className="tear">
@@ -768,15 +783,14 @@ function AdSlide({ ad }: { ad: Ad }) {
 }
 
 /* ================= 미니 그리드 ================= */
-function Mini({ board, pops }: { board: Board | null; pops: number[] }) {
+function Mini({ board, art, pops }: { board: Board | null; art: Art; pops: number[] }) {
   if (!board) return null;
   return (
     <div className="mini">
       {board.board.map((s) => (
         <i key={s.pos} className={`${s.grade ? 'u' : ''} ${pops.includes(s.pos) ? 'pop' : ''}`}>
-          <Ticket variant="tile" used={!!s.grade}
-                  accent={s.grade ? gradeColor(s.grade) : undefined} className="art" />
-          <b style={s.grade ? { color: gradeColor(s.grade) } : undefined}>{s.grade ?? ''}</b>
+          <Ticket art={art} size="mini" used={!!s.grade}
+                  num={s.grade ?? ''} gradeColor={s.grade ? gradeColor(s.grade) : null} />
         </i>
       ))}
     </div>

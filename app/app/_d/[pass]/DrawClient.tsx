@@ -1,5 +1,6 @@
 'use client';
 
+import { themeOf } from '@/lib/boardArt';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   sb, getBoard, checkPass, draw,
@@ -74,7 +75,7 @@ export default function DrawClient({ pass }: { pass: string }) {
           setStep('blocked');
           return;
         }
-        document.documentElement.dataset.theme = b.campaign.theme || 'warm';
+        document.documentElement.dataset.theme = themeOf(b.campaign.theme).key;
         setBoard(b);
         setStep('list');
       } catch {

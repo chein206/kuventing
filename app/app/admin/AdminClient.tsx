@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sb } from '@/lib/supabase';
 import { PRESETS, TOTAL_DEFAULT, randomPins, type PresetPrize } from '@/lib/presets';
+import { THEMES, normTheme, type ThemeKey } from '@/lib/boardArt';
 import { Icon } from '@/lib/Icon';
 import AdminMedia from './AdminMedia';
 
@@ -393,7 +394,7 @@ function NewStore({
   const [title, setTitle] = useState('오픈 기념 뽑기');
   const [total, setTotal] = useState(TOTAL_DEFAULT);
   const [days, setDays] = useState(7);
-  const [theme, setTheme] = useState<'warm' | 'modern' | 'neon'>(PRESETS[0].theme);
+  const [theme, setTheme] = useState<ThemeKey>(normTheme(PRESETS[0].theme));
   const [mode, setMode] = useState<'pin' | 'open'>('pin');
   const [lastName, setLastName] = useState(PRESETS[0].lastOneName);
   const [pins, setPins] = useState(randomPins());
@@ -405,7 +406,7 @@ function NewStore({
     const p = PRESETS.find((x) => x.key === k) ?? PRESETS[0];
     setPreset(k);
     setRows(p.prizes.map((x) => ({ ...x })));
-    setTheme(p.theme);
+    setTheme(normTheme(p.theme));
     setLastName(p.lastOneName);
   }
 
@@ -470,9 +471,9 @@ function NewStore({
                    onChange={(e) => setDays(Math.max(1, parseInt(e.target.value) || 1))} /></label>
           <label className="f"><span>테마</span>
             <select value={theme} onChange={(e) => setTheme(e.target.value as typeof theme)}>
-              <option value="warm">따뜻한 (밝은 사진)</option>
-              <option value="modern">모던 (어두운 사진)</option>
-              <option value="neon">네온</option>
+              {THEMES.map((t) => (
+                <option key={t.key} value={t.key}>{t.label} — {t.note}</option>
+              ))}
             </select></label>
           <label className="f"><span>뽑기 방식</span>
             <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>

@@ -16,9 +16,9 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  // 테마는 캠페인 설정을 읽어 클라이언트에서 교체한다. 기본값 warm.
+  // 테마는 캠페인 설정을 읽어 클라이언트에서 교체한다. 기본값은 어두운 판.
   return (
-    <html lang="ko" data-theme="warm">
+    <html lang="ko" data-theme="dark-west">
       <body>{children}</body>
     </html>
   );

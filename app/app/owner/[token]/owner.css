@@ -242,3 +242,24 @@
 }
 .ow .fontlist button[aria-pressed="true"] b{color:#fff}
 .ow .fontlist button[aria-pressed="true"] span{color:rgba(255,255,255,.7)}
+
+/* 화면 테마 — 두 축(판 밝기 × 문양)을 눈으로 고른다 */
+.ow .themelist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.ow .themelist button{
+  display:flex;align-items:center;gap:10px;text-align:left;
+  padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surf2)
+}
+.ow .themelist button[aria-pressed="true"]{border-color:var(--pri);background:#fff}
+.ow .themelist .sw{
+  width:38px;height:38px;flex:none;border-radius:7px;position:relative;overflow:hidden;
+  border:1px solid var(--line)
+}
+.ow .themelist .sw b{
+  position:absolute;left:6px;right:6px;top:50%;height:12px;margin-top:-6px;border-radius:2px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.35)
+}
+.ow .themelist span{font-size:12.5px;font-weight:700;letter-spacing:-.01em;min-width:0}
+.ow .themelist em{
+  display:block;font-style:normal;font-size:11px;font-weight:600;color:var(--dim);
+  margin-top:3px;line-height:1.45
+}

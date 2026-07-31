@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Icon, type IconName } from '@/lib/Icon';
 import PhotoDot, { type Uploader, type Remover } from '@/lib/PhotoDot';
 import { FONTS, fontOf, loadFont } from '@/lib/fonts';
+import { THEMES } from '@/lib/boardArt';
 
 type Caller = (path: string, init?: RequestInit) => Promise<unknown>;
 
@@ -18,6 +19,7 @@ type BoardInfo = {
   board_mode?: 'pin' | 'open';
   sound?: 'off' | 'soft' | 'loud';
   font?: string;
+  theme?: string;
   idle_seconds?: number;
   motion_seconds?: number;
   slide_seconds?: number;
@@ -359,6 +361,33 @@ export default function OwnerClient({ token }: { token: string }) {
                     ? '손님이 화면을 누르면 PIN 입력창이 뜹니다. 직원이 PIN을 눌러야 뽑을 수 있습니다.'
                     : '누구나 화면을 눌러 바로 뽑을 수 있습니다. 주문 확인 없이 뽑히니 주의하세요.'}
                 </p>
+
+                <div className="soundset">
+                  <label>화면 테마</label>
+                  <div className="themelist">
+                    {THEMES.map((t) => (
+                      <button
+                        key={t.key}
+                        aria-pressed={(bd.theme ?? 'dark-west') === t.key}
+                        onClick={async () => {
+                          await call(api('board'), { method: 'POST', body: JSON.stringify({ theme: t.key }) });
+                          load();
+                        }}
+                      >
+                        {/* 두 축을 그대로 보여준다 — 큰 면이 판, 작은 조각이 표 */}
+                        <i className="sw" style={{ background: t.dark ? '#0E0E10' : '#EFE7DA' }}>
+                          <b style={{ background: t.art.pap }} />
+                        </i>
+                        <span>{t.label}<em>{t.note}</em></span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="demo" style={{ marginTop: 8 }}>
+                    <b>판 밝기</b>는 매장 조명과 유리창 방향이 정합니다 —
+                    밤 장사면 어두운 판, 낮에 창가 자리면 밝은 판이 잘 읽힙니다.
+                    <b> 문양</b>은 업종이 정합니다.
+                  </p>
+                </div>
 
                 <div className="soundset">
                   <label>화면 글꼴</label>
