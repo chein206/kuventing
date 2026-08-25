@@ -31,3 +31,6 @@ desktop.ini
 
 # Vercel
 .vercel/
+
+# 개인 메모용 음성 (앱 자산 아님)
+audio/
