@@ -540,6 +540,7 @@
   box-shadow:inset 0 0 0 4px rgba(255,255,255,.3)
 }
 .bd .peel .under .ug img{width:100%;height:100%;object-fit:cover}
+.bd .peel .under .ug.flat img{object-fit:contain;padding:10px}
 .bd .peel .under .un{font-size:22px;font-weight:900;letter-spacing:-.03em;padding:0 20px;text-align:center}
 
 /* 위층 — 티켓 표면. 왼쪽부터 잘려 나간다.
@@ -681,6 +682,8 @@
   animation:pop .7s cubic-bezier(.2,1.35,.35,1) .15s both
 }
 .bd .res .shotbox img{width:100%;height:100%;object-fit:cover;display:block}
+/* 그림은 자르지 않고 통째로 얹는다 */
+.bd .res .shotbox.flat img{object-fit:contain;padding:28px}
 .bd .res .shotbox .noimg{
   width:100%;height:100%;display:grid;place-items:center;
   font-size:170px;font-weight:900;color:var(--gc);letter-spacing:-.05em

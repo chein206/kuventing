@@ -630,7 +630,8 @@ export default function BoardClient({ token }: { token: string }) {
               <div className="under">
                 {pending ? (
                   <>
-                    <div className="ug" style={{ background: gradeColor(pending.grade) }}>
+                    <div className={`ug ${pending.image && isFlat(pending.image) ? 'flat' : ''}`}
+                         style={{ background: gradeColor(pending.grade) }}>
                       {pending.image ? <img src={pending.image} alt="" /> : pending.grade}
                     </div>
                     <div className="un">{pending.name}</div>
@@ -920,7 +921,7 @@ function ResultView({
         {/* 막차 보너스가 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다 */}
         {r.isLastOne && r.lastOneName ? (
           <>
-            <div className="shotbox gold">
+            <div className={`shotbox gold ${lastOneImage && isFlat(lastOneImage) ? 'flat' : ''}`}>
               {lastOneImage
                 ? <img src={lastOneImage} alt="" />
                 : <div className="noimg"><Icon name="star" /></div>}
@@ -942,7 +943,10 @@ function ResultView({
           </>
         ) : (
           <>
-            <div className="shotbox" style={{ ['--gc' as string]: gradeColor(r.grade) }}>
+            {/* 그림(할인권 SVG 같은 것)은 자르지 않는다 — 안에 글자와 테두리가 들어 있다.
+                정사각으로 꽉 채우면 "1,000원" 글자가 잘려 나갔다 */}
+            <div className={`shotbox ${r.image && isFlat(r.image) ? 'flat' : ''}`}
+                 style={{ ['--gc' as string]: gradeColor(r.grade) }}>
               {r.image
                 ? <img src={r.image} alt="" />
                 : <div className="noimg">{r.grade}</div>}
