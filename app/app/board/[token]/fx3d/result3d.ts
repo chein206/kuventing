@@ -37,7 +37,7 @@ export type PlayOpts = {
   dark: boolean;
   /** WebGL 이 도중에 죽으면 부른다 — 글자 화면으로 내려간다 */
   onLost?: () => void;
-  /** 카드가 뒤집혀 상품이 보이는 순간 — 팡파레를 여기에 맞춘다 */
+  /** 팡파레를 울릴 순간 — 앞면이 돌아오기 시작할 때(CUE). 카드가 다 뒤집히기 조금 전이다 */
   onReveal?: () => void;
 };
 
@@ -45,6 +45,13 @@ export type PlayOpts = {
  * 카드 · 메달 · 그늘은 한 번만 만들어 두고 판마다 그림(텍스처)만 갈아 끼운다.
  * 재질을 판마다 새로 만들고 버리면 셰이더도 같이 버려져, 결과가 뜰 때마다 다시 굽느라 멈칫한다.
  */
+/**
+ * 팡파레 시작 시각(초). 앞면은 0.94초쯤부터 돌아오며 보이고 1.12초에 다 뒤집혀 색종이가 터진다.
+ * 1.12초에 걸었더니 상품이 먼저 보이고 음악이 뒤따랐다(사장님) — 태블릿의 소리 출력 지연(수십 ms)과
+ * 첫 박이 차오르는 시간까지 감안해 앞면이 돌아오는 순간에 맞춰 당긴다
+ */
+const CUE = 0.85;
+
 type Kit = {
   card: Group; box: Mesh; coin: Group; shadow: Mesh;
   edge: MeshStandardMaterial; fm: MeshStandardMaterial; bm: MeshStandardMaterial;
@@ -70,7 +77,7 @@ class Stage implements Runner {
   private T: TierDef = TIER.A;
   private t0 = 0; private token = 0;
   private cardAt = new Vector3(); private coinAt = new Vector3(); private cardSize = 440; private coinK = 1;
-  private revealed = false; private shake = 0; private punch = 0;
+  private revealed = false; private cued = false; private shake = 0; private punch = 0;
   private rayK = 1; private bokK = 1;
   private reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -175,7 +182,7 @@ class Stage implements Runner {
 
     for (const x of [K.card, K.coin, K.shadow]) x.visible = true;
     this.live = true;
-    this.revealed = false; this.shake = 0; this.punch = 0;
+    this.revealed = false; this.cued = false; this.shake = 0; this.punch = 0;
     this.t0 = performance.now() / 1000;
     this.gl.run(this);
   }
@@ -253,9 +260,9 @@ class Stage implements Runner {
     K.shadow.scale.set(this.cardSize * 1.5, this.cardSize * 1.5, 1);
     K.shMat.opacity = (this.opts?.dark ? .7 : .42) * eOutCubic(k);
 
+    if (!this.cued && lt >= CUE) { this.cued = true; this.opts?.onReveal?.(); }
     if (!this.revealed && lt >= 1.12) {
       this.revealed = true;
-      this.opts?.onReveal?.();
       this.punch = 1; this.shake = this.reduce ? 0 : T.shake;
       // 카드 뒤 테두리 안쪽에서 고리로 터뜨린다 — 뒤집혀 나온 상품을 덮지 않고 둘레로 쏟아진다
       this.conf.burst(new Vector3(this.cardAt.x, this.cardAt.y, -30), T.burst, T.power, this.cardSize);
