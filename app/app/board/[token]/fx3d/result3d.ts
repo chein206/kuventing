@@ -32,6 +32,8 @@ export type PlayOpts = {
   front: string | null;
   /** 그림(할인권 SVG)이면 자르지 않는다 */
   flat: boolean;
+  /** 그림 둘레 바탕 — 테마가 정한다(밝은 교환권은 밝은 바탕에) */
+  mat?: string;
   slip: SlipInfo;
   /** 밝은 판이면 빛줄기를 줄이고 빛 망울은 끈다 — 밝은 바탕에 더한 빛은 바래 보인다 */
   dark: boolean;
@@ -151,7 +153,7 @@ class Stage implements Runner {
 
     const img = o.front ? await loadImg(o.front) : null;
     if (my !== this.token) return;
-    const front = new CanvasTexture(printCanvas(img, o.flat, o.grade));
+    const front = new CanvasTexture(printCanvas(img, o.flat, o.grade, o.mat));
     const back = new CanvasTexture(cardBackCanvas(o.grade, o.slip, o.dark));
     const face = new CanvasTexture(coinCanvas(o.grade));
     for (const t of [front, back, face]) { t.colorSpace = SRGBColorSpace; t.anisotropy = 8; }

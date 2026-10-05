@@ -274,7 +274,7 @@ function PhotoTicket({
     // 사진 위에 어둠을 씌운다 — 종이색을 갈아치우지 않아야 판 밝기가 달라도
     // 규칙이 하나로 통한다
     kids.push(<div key="ov" style={{
-      position: 'absolute', inset: 0, background: 'rgba(6,5,3,.56)',
+      position: 'absolute', inset: 0, background: photo.dim ?? 'rgba(6,5,3,.56)',
       borderRadius: `${art.radius}px`,
     }} />);
     // 검인 — 글자까지 사진이다. 시스템 글꼴로 얹으면 획 끝이 도장과 달라

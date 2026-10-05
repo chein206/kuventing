@@ -374,7 +374,7 @@ export function cardBackCanvas(grade: string, info: SlipInfo, dark = true) {
  * 상품 인화지 — 사진 둘레에 종이 테두리. 그림(할인권 SVG)은 자르지 않고 통째로 얹는다.
  * 사진을 못 받았으면 등급 글자를 크게 찍어 둔다(화면이 비지 않게).
  */
-export function printCanvas(img: HTMLImageElement | null, flat: boolean, grade: string) {
+export function printCanvas(img: HTMLImageElement | null, flat: boolean, grade: string, mat = '#202024') {
   const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
   const g = c.getContext('2d')!;
   g.fillStyle = '#D8CAAE'; g.fillRect(0, 0, S, S);
@@ -386,7 +386,7 @@ export function printCanvas(img: HTMLImageElement | null, flat: boolean, grade: 
     g.fillStyle = lg; g.font = '700 620px ' + SERIF; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(grade, S / 2, S / 2 + 30);
   } else if (flat) {
-    g.fillStyle = '#202024'; g.fillRect(ins, ins, iw, iw);
+    g.fillStyle = mat; g.fillRect(ins, ins, iw, iw);
     contain(g, img, ins + 40, ins + 40, iw - 80, iw - 80);
   } else {
     cover(g, img, ins, ins, iw, iw);

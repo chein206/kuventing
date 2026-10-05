@@ -52,6 +52,10 @@ export type Photo = {
   surface: string;
   /** 개봉 화면에서 말려 올라간 표 뒷면 색. 없으면 크라프트지 */
   back?: string;
+  /** 쓴 칸 덮개. 없으면 어둡게 — 밝은 판에서 검은 덮개는 판에 구멍이 난 것처럼 무겁다 */
+  dim?: string;
+  /** 결과 카드에서 그림(교환권) 둘레 바탕. 없으면 먹색 — 밝은 교환권을 먹색에 앉히면 액자만 보인다 */
+  mat?: string;
 };
 
 export type Art = {
@@ -219,6 +223,7 @@ const PHOTO_BEAUTY: Photo = {
   stampSrc: '/photo/stamp-beauty.png', stampAt: { x: 0.88, y: 0.5, d: 0.22 },
   sealSrc: '/photo/seal-beauty.png', leverSrc: '/photo/handle-brass.png',
   surface: '/photo/surface-marble.jpg', back: '#EAD2C8',
+  dim: 'rgba(74,35,56,.32)', mat: '#E4C9BF',
 };
 const BRAND_ART = (photo: Photo, pap: string, numc: string, numFont: string): Art => ({
   pap, ink: numc, numc, numFont, radius: 5,

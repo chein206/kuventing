@@ -466,7 +466,8 @@ export default function BoardClient({ token, build }: { token: string; build: st
       onPointerUp={() => {
         // 전체화면은 사용자 손짓 안에서만 걸 수 있다(터치는 손을 뗄 때). 크롬 탭으로 띄운 태블릿은
         // 새로고침하면 풀리므로, 대기 화면에서는 시작 버튼이 아니어도 아무 데나 만지면 다시 건다
-        if (stepRef.current === 'attract' && !document.fullscreenElement) {
+        // 공개 데모(/demo/*)는 홈페이지 방문자의 화면이라 걸지 않는다
+        if (stepRef.current === 'attract' && !document.fullscreenElement && !token.startsWith('demo-')) {
           document.documentElement.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {});
         }
       }}
