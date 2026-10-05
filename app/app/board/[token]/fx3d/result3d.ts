@@ -8,7 +8,7 @@
  */
 import {
   AmbientLight, BoxGeometry, CanvasTexture, Color, CylinderGeometry, DirectionalLight, Group, Mesh,
-  MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry, PointLight, Scene,
+  MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry, Scene,
   SRGBColorSpace, type Texture, Vector3,
 } from 'three';
 import {
@@ -58,7 +58,8 @@ class Stage implements Runner {
   private rays2 = makeRays();
   private bok = makeBokeh(100);
   private conf: Confetti;
-  private glint = new PointLight(0xfff2d8, 0, 1800, 2);
+  /** 앞면을 훑는 광택 — 대각선 한 줄이 지나간다(위치 · 세기) */
+  private sheen = { uSheen: { value: -1 }, uSheenA: { value: 0 } };
   private kit: Kit;
   private tex: Texture[] = [];
   private live = false;
@@ -78,7 +79,6 @@ class Stage implements Runner {
     // 조명 — 물리 단위라 예전 값에 π 를 곱한 크기다
     this.scene.add(new AmbientLight(0xffffff, .7));
     const dl = new DirectionalLight(0xfff0dc, 2.7); dl.position.set(-400, 600, 900); this.scene.add(dl);
-    this.scene.add(this.glint);
     this.conf = new Confetti(this.scene, 680);
     this.kit = this.makeKit();
   }
@@ -89,6 +89,20 @@ class Stage implements Runner {
     const edge = new MeshStandardMaterial({ color: 0xd9b45c, metalness: 1, roughness: .22, envMapIntensity: 1.4 });
     const fm = new MeshStandardMaterial({ map: ph, emissiveMap: ph, emissive: 0xffffff, emissiveIntensity: .5,
       roughness: .4, metalness: 0, envMapIntensity: .3 });
+    /*
+     * 앞면 광택 — 예전엔 점광원을 카드 앞으로 지나가게 했는데, 무광 인화지에서 넓고 뿌연 흰 얼룩이 됐다.
+     * 사진 위에 대각선으로 가는 빛 한 줄만 얹는다(광택지가 빛을 받아 반짝 하는 정도)
+     */
+    fm.onBeforeCompile = (sh) => {
+      sh.uniforms.uSheen = this.sheen.uSheen; sh.uniforms.uSheenA = this.sheen.uSheenA;
+      sh.fragmentShader = 'uniform float uSheen; uniform float uSheenA;\n' + sh.fragmentShader.replace(
+        '#include <opaque_fragment>',
+        `#include <opaque_fragment>
+        #ifdef USE_MAP
+          float sx = vMapUv.x + (1.0 - vMapUv.y) * 0.45;
+          gl_FragColor.rgb += vec3(1.0, 0.96, 0.88) * exp(-pow((sx - uSheen) * 9.0, 2.0)) * uSheenA;
+        #endif`);
+    };
     const bm = new MeshStandardMaterial({ map: ph, roughness: .75, metalness: 0 });
     // 상자는 1 크기로 만들고 칸 크기만큼 늘린다 — 화면마다 칸 크기가 달라도 같은 상자를 쓴다
     const box = new Mesh(new BoxGeometry(1, 1, 1), [edge, edge, edge, edge, fm, bm]);
@@ -129,7 +143,7 @@ class Stage implements Runner {
     const img = o.front ? await loadImg(o.front) : null;
     if (my !== this.token) return;
     const front = new CanvasTexture(printCanvas(img, o.flat, o.grade));
-    const back = new CanvasTexture(cardBackCanvas(o.grade, o.slip));
+    const back = new CanvasTexture(cardBackCanvas(o.grade, o.slip, o.dark));
     const face = new CanvasTexture(coinCanvas(o.grade));
     for (const t of [front, back, face]) { t.colorSpace = SRGBColorSpace; t.anisotropy = 8; }
     this.tex = [front, back, face];
@@ -143,8 +157,10 @@ class Stage implements Runner {
     this.rays.u.uCol.value.set(T.ray); this.rays2.u.uCol.value.set(T.ray2);
     this.rays.u.uAmp.value = 0; this.rays2.u.uAmp.value = 0;
     this.bok.u.uCol.value.set(T.bokeh); this.bok.u.uAmp.value = 0;
-    // 밝은 판에 더한 빛은 바래 보인다 — 빛줄기는 줄이고 빛 망울은 끈다
+    // 밝은 판에 더한 빛은 바래 보인다 — 빛줄기는 줄이고 빛 망울은 끈다. 금속은 밝은 주변을 비춘다
     this.rayK = o.dark ? 1 : .45; this.bokK = o.dark ? 1 : 0;
+    this.scene.environment = o.dark ? this.gl.env : this.gl.envLight;
+    this.sheen.uSheenA.value = 0;
     this.conf.setTier(T);
 
     // 첫 프레임에서 그림을 올리느라 끊기지 않게 미리 올려 둔다. 셰이더는 보통 이미 구워져 있다
@@ -235,7 +251,8 @@ class Stage implements Runner {
     if (!this.revealed && lt >= 1.12) {
       this.revealed = true;
       this.punch = 1; this.shake = this.reduce ? 0 : T.shake;
-      this.conf.burst(new Vector3(this.cardAt.x, this.cardAt.y, 40), T.burst, T.power);
+      // 카드 뒤 테두리 안쪽에서 고리로 터뜨린다 — 뒤집혀 나온 상품을 덮지 않고 둘레로 쏟아진다
+      this.conf.burst(new Vector3(this.cardAt.x, this.cardAt.y, -30), T.burst, T.power, this.cardSize);
       this.conf.startRain(Math.round(T.rain * (this.reduce ? .5 : 1) * (this.gl.lite ? .6 : 1)));
     }
 
@@ -245,13 +262,12 @@ class Stage implements Runner {
     K.coin.rotation.y += dt * 2.5;
     K.coin.position.set(this.coinAt.x, this.coinAt.y + Math.sin(lt * 2) * 3, 0);
 
-    // 앞면을 훑고 지나가는 빛
+    // 앞면을 훑고 지나가는 광택 한 줄 — 3.2초마다
     const cyc = (lt - 1.4) % 3.2;
     if (lt > 1.4 && cyc < 1.15) {
-      const q = cyc / 1.15;
-      this.glint.position.set(this.cardAt.x - 700 + 1400 * q, this.cardAt.y + 260, 380);
-      this.glint.intensity = 3e5 * T.glint * Math.sin(Math.PI * q);
-    } else this.glint.intensity = 0;
+      this.sheen.uSheen.value = -0.5 + 2.4 * (cyc / 1.15);
+      this.sheen.uSheenA.value = 0.11 * T.glint;
+    } else this.sheen.uSheenA.value = 0;
 
     // 카메라 — 천천히 숨 쉬듯 흔들리고, 터질 때 한 번 다가왔다 물러난다
     const p = this.cam.position;

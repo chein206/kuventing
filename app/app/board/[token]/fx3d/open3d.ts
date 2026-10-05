@@ -356,6 +356,7 @@ class OpenScene implements Runner {
     this.rays.u.uAmp.value = 0; this.bok.u.uAmp.value = 0;
     this.rays.u.uCol.value.set(PLAIN_RAY); this.bok.u.uCol.value.set(PLAIN_BOKEH);
     this.rayK = o.dark ? 1 : .45; this.bokK = o.dark ? 1 : 0;
+    this.scene.environment = o.dark ? this.gl.env : this.gl.envLight;
     this.sparks.clear(); this.conf.parkAll();
 
     this.gl.r.initTexture(tt);
@@ -593,7 +594,8 @@ class OpenScene implements Runner {
       this.sparks.emit(o.x + rnd(-120, 120) * s, o.y + rnd(-110, 110) * s, o.z + 20,
         Math.cos(th) * sp * .9, Math.sin(th) * sp * .9 + 250 * s, rnd(100, 600), rnd(.4, 1.1));
     }
-    this.conf.burst(new Vector3(o.x, o.y, o.z + 60), T.burst, T.power);
+    // 쪽지 뒤에서 고리로 터뜨린다 — 박이 차오르는 글자를 덮지 않고 둘레로 쏟아진다
+    this.conf.burst(new Vector3(o.x, o.y, o.z - 40), T.burst, T.power, this.TH * 1.1);
     this.conf.startRain(Math.round(T.rain * (this.gl.lite ? .6 : 1) * (this.reduce ? .5 : 1)));
     this.opts?.finale();
   }

@@ -299,18 +299,21 @@ export function ticketCanvas(art: Art, t: TicketInfo, im: TicketImgs) {
   return c;
 }
 
-/** 쪽지를 정사각 카드 뒷면에 얹는다 — 어두운 판 위에 쪽지 한 장 */
-export function cardBackCanvas(grade: string, info: SlipInfo) {
+/**
+ * 쪽지를 정사각 카드 뒷면에 얹는다 — 판 위에 쪽지 한 장.
+ * 어두운 판은 짙은 바탕, 밝은 판은 크림 바탕 — 밝은 판에서 검은 네모가 날아오면 혼자 무겁다
+ */
+export function cardBackCanvas(grade: string, info: SlipInfo, dark = true) {
   const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
   const g = c.getContext('2d')!;
   const bg = g.createRadialGradient(S / 2, S / 2, 40, S / 2, S / 2, S * 0.75);
-  bg.addColorStop(0, '#2A241C'); bg.addColorStop(1, '#100E0B');
+  bg.addColorStop(0, dark ? '#2A241C' : '#F4ECDD'); bg.addColorStop(1, dark ? '#100E0B' : '#D9CBB0');
   g.fillStyle = bg; g.fillRect(0, 0, S, S);
   for (let i = 0; i < 7000; i++) {
-    g.fillStyle = 'rgba(255,230,180,' + (Math.random() * 0.035).toFixed(3) + ')';
+    g.fillStyle = (dark ? 'rgba(255,230,180,' : 'rgba(90,70,40,') + (Math.random() * 0.035).toFixed(3) + ')';
     g.fillRect(Math.random() * S, Math.random() * S, 2, 2);
   }
-  g.strokeStyle = 'rgba(201,162,75,.55)'; g.lineWidth = 4; g.strokeRect(26, 26, S - 52, S - 52);
+  g.strokeStyle = dark ? 'rgba(201,162,75,.55)' : 'rgba(156,114,38,.6)'; g.lineWidth = 4; g.strokeRect(26, 26, S - 52, S - 52);
   contain(g, slipCanvas(grade, info, true), 56, 56, S - 112, S - 112);
   return c;
 }
@@ -368,12 +371,16 @@ export function shadowCanvas() {
   return c;
 }
 
-/** 금속이 비출 주변 — 위는 따뜻한 조명, 가운데 정면에 소프트박스, 아래는 어둠 */
-export function envCanvas() {
+/**
+ * 금속이 비출 주변 — 위는 따뜻한 조명, 가운데 정면에 소프트박스, 아래는 어둠.
+ * 밝은 판은 아래까지 밝게 — 아래를 비추는 금박이 까맣게 떠서 밝은 바탕 위에 먼지처럼 보였다
+ */
+export function envCanvas(light = false) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 256;
   const g = c.getContext('2d')!;
   const gr = g.createLinearGradient(0, 0, 0, 256);
-  gr.addColorStop(0, '#fff4dc'); gr.addColorStop(0.32, '#b08a5a'); gr.addColorStop(0.55, '#2a2118'); gr.addColorStop(1, '#07070a');
+  if (light) { gr.addColorStop(0, '#fffaf0'); gr.addColorStop(0.32, '#eadcc2'); gr.addColorStop(0.55, '#c8b593'); gr.addColorStop(1, '#a8977a'); }
+  else { gr.addColorStop(0, '#fff4dc'); gr.addColorStop(0.32, '#b08a5a'); gr.addColorStop(0.55, '#2a2118'); gr.addColorStop(1, '#07070a'); }
   g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
   for (const [x, y, r] of [[80, 56, 70], [260, 40, 90], [420, 78, 50], [384, 126, 58], [128, 132, 40]]) {
     const rg = g.createRadialGradient(x, y, 0, x, y, r);

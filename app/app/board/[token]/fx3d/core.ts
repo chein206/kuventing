@@ -198,15 +198,25 @@ export class Confetti {
     for (const P of this.P) { if (k >= n) break; if (P.mode === 0) { this.rain(P); k++; } }
     this.rainTarget = n;
   }
-  burst(origin: Vector3, n: number, power: number) {
+  /**
+   * 한 점에서 터진다. ring 을 주면 고리로 터진다 — 그 지름의 테두리 바로 안쪽(카드 뒤)에서 바깥을 향해
+   * 화면과 나란히 쏟아진다. 뒤집혀 나온 상품을 덮지 않고 둘레를 감싼다
+   */
+  burst(origin: Vector3, n: number, power: number, ring = 0) {
     let k = 0;
     for (const P of this.P) {
       if (k >= n) break;
       if (P.mode !== 0) continue;
       P.mode = 2; this.look(P);
-      P.p.copy(origin).add(this.tmp.set(rnd(-50, 50), rnd(-50, 50), rnd(-20, 20)));
       const th = rnd(0, Math.PI * 2);
-      this.tmp.set(Math.cos(th) * rnd(.45, 1), Math.sin(th) * rnd(.45, 1) + rnd(.2, .7), rnd(.3, 1.2)).normalize();
+      if (ring) {
+        const r = ring * rnd(.32, .5);
+        P.p.copy(origin).add(this.tmp.set(Math.cos(th) * r, Math.sin(th) * r, rnd(-15, 15)));
+        this.tmp.set(Math.cos(th), Math.sin(th) + rnd(.1, .45), rnd(0, .15)).normalize();
+      } else {
+        P.p.copy(origin).add(this.tmp.set(rnd(-50, 50), rnd(-50, 50), rnd(-20, 20)));
+        this.tmp.set(Math.cos(th) * rnd(.45, 1), Math.sin(th) * rnd(.45, 1) + rnd(.2, .7), rnd(.3, 1.2)).normalize();
+      }
       P.v.copy(this.tmp).multiplyScalar(rnd(520, 1350) * power);
       k++;
     }
@@ -255,8 +265,9 @@ export class Gl {
   ok = false;
   readonly canvas = document.createElement('canvas');
   r!: WebGLRenderer;
-  /** 금속이 비출 주변(PMREM) — 두 장면이 같이 쓴다 */
+  /** 금속이 비출 주변(PMREM) — 두 장면이 같이 쓴다. 밝은 판은 envLight */
   env: Texture | null = null;
+  envLight: Texture | null = null;
   W = 800; H = 1280; D = 2400; uScale = 1;
   pr = 1.5; lite = false;
   private host: HTMLElement | null = null;
@@ -277,11 +288,16 @@ export class Gl {
       e.preventDefault(); this.ok = false;
       const c = this.cur; this.halt(); this.detach(); c?.lost();
     });
-    const envTex = new CanvasTexture(envCanvas());
-    envTex.mapping = EquirectangularReflectionMapping; envTex.colorSpace = SRGBColorSpace;
     const pm = new PMREMGenerator(this.r);
-    this.env = pm.fromEquirectangular(envTex).texture;
-    envTex.dispose(); pm.dispose();
+    const bake = (light: boolean) => {
+      const t = new CanvasTexture(envCanvas(light));
+      t.mapping = EquirectangularReflectionMapping; t.colorSpace = SRGBColorSpace;
+      const out = pm.fromEquirectangular(t).texture;
+      t.dispose();
+      return out;
+    };
+    this.env = bake(false); this.envLight = bake(true);
+    pm.dispose();
     this.ok = true;
   }
 
