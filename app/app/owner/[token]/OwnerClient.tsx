@@ -332,7 +332,7 @@ export default function OwnerClient({ token }: { token: string }) {
             {bd && (
               <div className="soundset">
                 <label>끝물 방식 · 가장 낮은 등급만 남았을 때</label>
-                <div className="modes">
+                <div className="modes two">
                   {ENDGAME.map(([v, l]) => (
                     <button
                       key={v}

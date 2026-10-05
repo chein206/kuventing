@@ -104,6 +104,8 @@
   font-size:13px;font-weight:700;color:var(--dim);
   word-break:keep-all   /* 한글은 글자마다 끊긴다 — "피날레 넣 / 고 새 판" 이 되지 않게 띄어쓰기에서만 */
 }
+/* 고를 게 넷이면 폰 폭에서 한 줄에 다 안 들어간다 — 두 줄 두 칸 */
+.ow .modes.two{display:grid;grid-template-columns:1fr 1fr}
 .ow .modes button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 
 /* 상품 구성 */
