@@ -194,21 +194,7 @@ export function tensionStop() {
   setTimeout(() => { try { o1.stop(); o2.stop(); } catch { /* 이미 멈춤 */ } }, 500);
 }
 
-/* ---------- 다 열릴 때: 확정음 ----------
-   "티켓이 확정됐다"를 알리는 한 방. 성격이 다른 다섯 가지를 두고 골라 쓴다.
-   여는 소리(지익-)가 노이즈라, 확정음은 그와 결이 달라야 끝이 분명해진다. */
-
-export type SnapKind = 'thud' | 'clang' | 'latch' | 'pop' | 'shatter';
-
-export const SNAP_LABEL: Record<SnapKind, string> = {
-  thud: '뚝 — 둔탁하게 끊김',
-  clang: '챠앙 — 금속 울림',
-  latch: '철컥 — 자물쇠 열림',
-  pop: '팡 — 코르크 터짐',
-  shatter: '쨍 — 유리 깨짐',
-};
-
-/** 짧은 노이즈 한 방. 여러 확정음이 공통으로 쓴다 */
+/** 짧은 노이즈 한 방 — 심장의 "딱" */
 function burst(t: number, from: number, to: number, dur: number, vol: number, q = 0.9) {
   if (!ctx || !master) return;
   const src = noise();
@@ -243,52 +229,9 @@ function tone(
   o.start(t); o.stop(t + dur + 0.02);
 }
 
-export function snapOf(kind: SnapKind) {
-  if (!on() || !ctx) return;
-  const t = ctx.currentTime + 0.01;
-
-  switch (kind) {
-    // 지금 쓰던 것. 종이가 끊기는 둔탁한 맛
-    case 'thud':
-      burst(t, 3200, 600, 0.24, 0.8);
-      tone(t, 520, 120, 0.22, 0.34);
-      break;
-
-    // 금속을 때린 울림. 여는 소리가 그라인더라 결이 이어진다
-    case 'clang':
-      burst(t, 6000, 2200, 0.05, 0.5, 1.6);
-      // 배음이 딱 맞지 않게 흩어 두면 쇳소리가 된다
-      [1850, 2790, 4130, 5600].forEach((f, i) =>
-        tone(t + i * 0.004, f, f * 0.985, 0.85 - i * 0.13, 0.2 - i * 0.035, 'sine'));
-      tone(t, 320, 210, 0.3, 0.22);
-      break;
-
-    // 자물쇠가 풀리는 두 단 클릭. 기계적이고 끝이 분명하다
-    case 'latch':
-      burst(t, 2600, 900, 0.035, 0.65, 1.4);
-      burst(t + 0.055, 4200, 1400, 0.05, 0.8, 1.2);
-      tone(t + 0.055, 180, 90, 0.16, 0.34);
-      break;
-
-    // 코르크가 빠지는 소리. 축하 쪽으로 기운다
-    case 'pop':
-      tone(t, 700, 90, 0.09, 0.55, 'sine');
-      burst(t + 0.01, 1500, 420, 0.07, 0.45, 0.7);
-      burst(t + 0.06, 5200, 3000, 0.22, 0.14, 0.8);   // 뒤에 남는 공기음
-      break;
-
-    // 유리가 깨지며 조각이 튄다. 가장 화려하고 날카롭다
-    case 'shatter':
-      burst(t, 7000, 3000, 0.07, 0.6, 1.1);
-      [3300, 4700, 5900, 7300, 2600].forEach((f, i) =>
-        tone(t + 0.02 + i * 0.028, f, f * 0.94, 0.3 - i * 0.04, 0.16, 'sine'));
-      tone(t, 260, 150, 0.2, 0.2);
-      break;
-  }
-}
-
-/* ---------- 3D 개봉이 다 열린 순간: 휙 + 반짝 ----------
+/* ---------- 개봉이 다 열린 순간: 휙 + 반짝 ----------
    화면에서는 표가 날아가고 등급 글자에 박이 차오른다. 코르크 "팡"은 태블릿에서 "뚝"으로 들렸다(사장님).
+   평면 개봉(WebGL 없는 기기)도 같은 소리를 낸다.
    표가 날아가는 바람 소리 위로, 박이 차오르는 0.1~0.65초 동안 높은 종이 위로 흩뿌려진다.
    금(A·B)은 길고 화려하게, 구리(C)는 중간, 은(D 이하)은 짧게 — 등급 낙차는 결과 팡파레가 이어 받는다. */
 
@@ -336,11 +279,6 @@ export function reveal(grade: string) {
     src.start(t + 0.1); src.stop(t + 0.15 + len);
   }
 }
-
-/** 화면에서 부르는 확정음(평면 개봉 화면). 3D 개봉은 reveal() */
-let snapKind: SnapKind = 'pop';
-export const setSnap = (k: SnapKind) => { snapKind = k; };
-export function snap() { snapOf(snapKind); }
 
 /* ---------- 결과: 등급에 따라 ----------
    등급 낙차가 소리로 느껴져야 한다. A 는 화려하게 쏟아지고 E 는 툭 끝난다.

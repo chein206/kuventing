@@ -46,7 +46,7 @@ export default function SfxClient() {
       sfx.tensionSet(k, p);
       if (t >= 4.5) {
         window.clearInterval(htimer.current!);
-        sfx.grindStop(); sfx.tensionStop(); sfx.snap();
+        sfx.grindStop(); sfx.tensionStop(); sfx.reveal('A');
         setHushing(false);
       }
     }, 20);
@@ -65,7 +65,7 @@ export default function SfxClient() {
       if (push.current >= 1) {
         window.clearInterval(timer.current!);
         sfx.grindStop();
-        sfx.snap();
+        sfx.reveal('A');
         setGrinding(false);
       }
     }, 80);
@@ -93,7 +93,7 @@ export default function SfxClient() {
       <section>
         <h2>여는 소리</h2>
         <button className="row big" onClick={demoGrind} disabled={grinding}>
-          <b>{grinding ? '갈리는 중…' : '지이익 — 확정음까지 한 번에'}</b>
+          <b>{grinding ? '갈리는 중…' : '지이익 — 다 열릴 때까지 한 번에'}</b>
           <span>손잡이를 끝까지 미는 2초를 그대로 재현합니다</span>
         </button>
         <button className="row big" onClick={demoHush} disabled={hushing}>
@@ -112,20 +112,7 @@ export default function SfxClient() {
       </section>
 
       <section>
-        <h2>확정음 <em>평면 개봉 화면(WebGL 없는 기기)</em></h2>
-        {(Object.keys(sfx.SNAP_LABEL) as sfx.SnapKind[]).map((k) => (
-          <button key={k} className="row" onClick={() => { wake(); sfx.snapOf(k); }}>
-            <b>{sfx.SNAP_LABEL[k]}</b>
-            <span>{k}</span>
-          </button>
-        ))}
-        <p className="n">
-          지금 화면에 들어가 있는 것은 <b>팡</b>입니다. 다른 걸 고르면 바꿔 드립니다.
-        </p>
-      </section>
-
-      <section>
-        <h2>결과 팡파레 <em>등급이 높을수록 음이 많다</em></h2>
+        <h2>결과 팡파레 <em>Flow 녹음본 — A·B 금 · C 구리 · D 이하 은</em></h2>
         <div className="grades">
           {['A', 'B', 'C', 'D', 'E'].map((g) => (
             <button key={g} onClick={() => { wake(); sfx.fanfare(g); }}>{g}</button>

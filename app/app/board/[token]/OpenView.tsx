@@ -303,7 +303,7 @@ function Open2D({ sel, pending, art, title, store, autoOpenSeconds, onOpened }: 
     setRevealing(true);
     setPx(maxX.current);
     sfx.grindStop();
-    sfx.snap();
+    sfx.reveal(pending.grade);
     setTimeout(onOpened, slow ? 1400 : 950);
   }, [pending, onOpened]);
 
