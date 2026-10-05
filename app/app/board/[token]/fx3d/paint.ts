@@ -1,9 +1,10 @@
 /**
- * 3D 연출에 쓰는 그림을 캔버스로 그린다 — 상품 인화지, 등급 쪽지, 등급 메달.
+ * 3D 연출에 쓰는 그림을 캔버스로 그린다 — 표 겉면, 등급 쪽지(표 안쪽), 상품 인화지, 등급 메달.
  *
  * 이미지 파일로 두지 않는 이유: 쪽지에는 매장 이름·회차 제목·표 번호가 들어가고
  * 메달에는 등급 글자가 들어간다. 매장마다·뽑을 때마다 달라서 그때 그린다.
  */
+import type { Art } from '@/lib/boardArt';
 
 export const SLIP_W = 1600;
 export const SLIP_H = Math.round(SLIP_W / 1.877);
@@ -47,14 +48,18 @@ function contain(g: CanvasRenderingContext2D, img: HTMLImageElement | HTMLCanvas
 
 export type SlipInfo = { store: string; title: string; no: number | null };
 
+/** 등급 글자 자리 — 쪽지 높이(표 비율)에 맞춘다. 활판 1.877 · 황동 1.891 · 벡터 표 2 */
+export const letterAt = (H: number) => ({ x: LETTER.x, y: Math.round(H * (LETTER.y / SLIP_H)), size: LETTER.size });
+
 /**
  * 등급 쪽지 — 표를 찢으면 드러나는 안쪽 인쇄면.
  * revealed 가 false 면 등급 글자를 그리지 않는다(개봉 화면에서는 양각으로 따로 얹는다).
+ * ratio 는 표의 가로세로 비 — 개봉 화면 바닥은 표와 같은 크기여야 한다.
  */
-export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean) {
-  const c = document.createElement('canvas'); c.width = SLIP_W; c.height = SLIP_H;
+export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, ratio = 1.877) {
+  const W = SLIP_W, H = Math.round(SLIP_W / ratio), L = letterAt(H);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d')!;
-  const W = SLIP_W, H = SLIP_H;
   roundRect(g, 4, 4, W - 8, H - 8, 34); g.clip();
   const bg = g.createLinearGradient(0, 0, W, H);
   bg.addColorStop(0, '#ECE2CB'); bg.addColorStop(1, '#DCCDAE');
@@ -99,16 +104,198 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean) {
   g.fillStyle = ink(0.26);
   for (let y = 110; y < H - 110; y += 16) g.fillRect(820, y, 3, 8);
   g.fillStyle = ink(0.46); g.font = '700 26px ' + SERIF; g.textAlign = 'center';
-  g.fillText('G  R  A  D  E', LETTER.x, H - 92);
+  g.fillText('G  R  A  D  E', L.x, H - 92);
 
   if (revealed) {
     const pal = METAL[metalOf(grade)];
-    const lg = g.createLinearGradient(LETTER.x - 260, LETTER.y - 280, LETTER.x + 260, LETTER.y + 280);
+    const lg = g.createLinearGradient(L.x - 260, L.y - 280, L.x + 260, L.y + 280);
     pal.forEach((col, i) => lg.addColorStop(i / (pal.length - 1), col));
-    g.font = '700 ' + LETTER.size + 'px ' + SERIF; g.textBaseline = 'middle';
-    g.fillStyle = 'rgba(30,20,8,.45)'; g.fillText(grade, LETTER.x + 7, LETTER.y + 8);
-    g.fillStyle = lg; g.fillText(grade, LETTER.x, LETTER.y);
+    g.font = '700 ' + L.size + 'px ' + SERIF; g.textBaseline = 'middle';
+    g.fillStyle = 'rgba(30,20,8,.45)'; g.fillText(grade, L.x + 7, L.y + 8);
+    g.fillStyle = lg; g.fillText(grade, L.x, L.y);
   }
+  return c;
+}
+
+/**
+ * 양각 높이 — 등급 글자를 잉크 없이 눌러 찍은 자리(흰 = 솟은 곳).
+ * 흐리게 그려 가장자리에 비탈을 만든다. 개봉 화면 바닥의 빛 계산이 이 비탈에서 글자 윤곽을 만든다.
+ * 쪽지의 금속 글자(slipCanvas revealed)와 자리 · 크기 · 글꼴이 같아야 다 열렸을 때 박이 그 자리를 채운다.
+ */
+export function letterHeight(grade: string, ratio = 1.877) {
+  const L = letterAt(Math.round(SLIP_W / ratio));
+  const c = document.createElement('canvas'); c.width = 1024; c.height = Math.round(1024 / ratio);
+  const g = c.getContext('2d')!;
+  const k = c.width / SLIP_W;
+  g.fillStyle = '#000'; g.fillRect(0, 0, c.width, c.height);
+  const draw = (h: CanvasRenderingContext2D, s: number) => {
+    h.fillStyle = '#fff'; h.font = '700 ' + Math.round(L.size * s) + 'px ' + SERIF;
+    h.textAlign = 'center'; h.textBaseline = 'middle'; h.fillText(grade, L.x * s, L.y * s);
+  };
+  // 타입상 늘 있지만 옛 사파리는 실제로는 흐리지 않는다 — 값이 문자열로 읽힐 때만 쓴다
+  if (typeof (g as { filter?: unknown }).filter === 'string') {
+    g.filter = 'blur(9px)'; draw(g, k); g.filter = 'none';
+  } else {
+    // 캔버스 흐림이 없는 브라우저 — 작게 그려 크게 늘리면 가장자리가 번진다
+    const q = 6, sm = document.createElement('canvas');
+    sm.width = Math.ceil(c.width / q); sm.height = Math.ceil(c.height / q);
+    const h = sm.getContext('2d')!;
+    h.fillStyle = '#000'; h.fillRect(0, 0, sm.width, sm.height); draw(h, k / q);
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(sm, 0, 0, c.width, c.height);
+  }
+  return c;
+}
+
+/* ------------------------------------------------------------ 표 겉면 */
+export type TicketInfo = { no: number; title: string; store: string; font: string };
+export type TicketImgs = { photo?: HTMLImageElement | null; band?: HTMLImageElement | null; ros?: HTMLImageElement | null };
+
+/** 처음 만든 판의 표 실루엣 — 옆구리가 반원으로 파였다 (Ticket.tsx 의 마스크와 같은 길) */
+function notchPath(g: CanvasRenderingContext2D, W: number, H: number) {
+  const sx = W / 400, sy = H / 200, R = 18, NR = 15;
+  g.save(); g.scale(sx, sy); g.beginPath();
+  g.moveTo(R, 0); g.lineTo(400 - R, 0); g.arcTo(400, 0, 400, R, R);
+  g.lineTo(400, 100 - NR); g.arc(400, 100, NR, -Math.PI / 2, Math.PI / 2, true);
+  g.lineTo(400, 200 - R); g.arcTo(400, 200, 400 - R, 200, R);
+  g.lineTo(R, 200); g.arcTo(0, 200, 0, 200 - R, R);
+  g.lineTo(0, 100 + NR); g.arc(0, 100, NR, Math.PI / 2, -Math.PI / 2, true);
+  g.lineTo(0, R); g.arcTo(0, 0, R, 0, R);
+  g.closePath(); g.restore();
+}
+
+/** 종이결 — 카운터 화면은 feTurbulence 로 그린다. 캔버스에는 같은 결을 잔 섬유로 뿌린다 */
+function fibers(g: CanvasRenderingContext2D, W: number, H: number, amt: number) {
+  const n = Math.round(26000 * amt);
+  for (let i = 0; i < n; i++) {
+    g.fillStyle = 'rgba(74,56,34,' + (Math.random() * 0.075 * amt).toFixed(3) + ')';
+    g.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 2.6, 1 + Math.random());
+  }
+  for (let i = 0; i < n / 3; i++) {
+    g.fillStyle = 'rgba(255,246,226,' + (Math.random() * 0.08 * amt).toFixed(3) + ')';
+    g.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 2, 1);
+  }
+}
+
+/** 글자 사이 — 지원하는 브라우저만. 없으면 그냥 붙여 쓴다 */
+function spacing(g: CanvasRenderingContext2D, v: string) {
+  if ('letterSpacing' in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = v;
+}
+
+/** 공백에서만 끊는다(word-break: keep-all). 한 단어가 길면 그대로 둔다 */
+function wrap(g: CanvasRenderingContext2D, text: string, max: number) {
+  const out: string[] = [];
+  let line = '';
+  for (const w of text.split(' ')) {
+    const t = line ? line + ' ' + w : w;
+    if (line && g.measureText(t).width > max) { out.push(line); line = w; } else line = t;
+  }
+  if (line) out.push(line);
+  return out;
+}
+
+/**
+ * 개봉 화면의 표 겉면 — 카운터 화면의 Ticket(big) + 개봉 카드 글자(.lbl)와 같은 그림.
+ * 3D 에서 표를 말아 올리려면 그림이 텍스처여야 한다. DOM 을 찍을 수는 없으므로 같은 규칙으로 다시 그린다.
+ * 치수는 카운터 화면의 큰 카드(가로 560px) 기준 — 바꿀 때는 Ticket.tsx · board.css(.peel .cover) 와 같이.
+ */
+export function ticketCanvas(art: Art, t: TicketInfo, im: TicketImgs) {
+  const ratio = art.photo?.ratio ?? 2;
+  const W = 1280, H = Math.round(W / ratio), k = W / 560;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d')!;
+
+  if (art.photo) {
+    // 사진 원판 — 천공 구멍과 가장자리는 알파로 뚫려 있다. 번호는 천공 왼쪽 칸의 가운데
+    if (im.photo) g.drawImage(im.photo, 0, 0, W, H);
+    else { roundRect(g, 0, 0, W, H, art.radius * k); g.fillStyle = art.pap; g.fill(); }
+    const P = (n: number) => n * (640 / 560) * k;
+    const cx = (art.photo.perf >= 1 ? 1 : art.photo.perf) * W / 2;
+    g.fillStyle = art.numc; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '700 ' + P(78) + 'px ' + art.numFont; spacing(g, '-0.02em');
+    g.fillText(String(t.no), cx, H / 2);
+    g.font = '800 ' + P(19) + 'px ' + t.font;
+    g.fillText(t.title, cx, H / 2 + P(52) + P(19) / 2, art.photo.perf * W * 0.9);
+    spacing(g, '0px');
+    return c;
+  }
+
+  if (art.notch) notchPath(g, W, H); else roundRect(g, 0, 0, W, H, Math.max(1, art.radius * k));
+  g.save(); g.clip();
+  g.fillStyle = art.pap; g.fillRect(0, 0, W, H);
+  if (art.grain) fibers(g, W, H, art.grain);
+  // 보안 잔무늬 띠 — 높이 17% 로 깔아 반복
+  if (art.band && im.band) {
+    const th = H * 0.17, tw = th * (im.band.naturalWidth / im.band.naturalHeight || 6);
+    g.globalAlpha = art.band;
+    for (let y = 0; y < H; y += th) for (let x = 0; x < W; x += tw) g.drawImage(im.band, x, y, tw, th);
+    g.globalAlpha = 1;
+  }
+  // 스텁 로제트 — 천공 오른쪽 스텁 안에만
+  if (art.ros && im.ros) {
+    const rh = H * 0.48, rw = rh * (im.ros.naturalWidth / im.ros.naturalHeight || 1);
+    g.globalAlpha = art.ros; g.drawImage(im.ros, W * 0.99 - rw, (H - rh) / 2, rw, rh); g.globalAlpha = 1;
+  }
+
+  // 괘선 · 천공 · 검인 자리 — Ticket.tsx 의 SVG(400×200)를 그대로 옮긴다
+  g.save(); g.scale(W / 400, H / 200);
+  g.strokeStyle = art.ink; g.fillStyle = art.ink;
+  g.globalAlpha = 0.92; g.lineWidth = 6; roundRect(g, 21, 13, 358, 174, 2); g.stroke();
+  g.globalAlpha = 0.5; g.lineWidth = 1.3; roundRect(g, 33, 25, 334, 150, 1); g.stroke();
+  if (art.perf) {
+    g.globalAlpha = art.perf;
+    for (let y = 12; y <= 188; y += 11) { g.beginPath(); g.arc(296, y, 2.3, 0, Math.PI * 2); g.fill(); }
+  }
+  if (art.dash) {
+    g.globalAlpha = 1; g.lineWidth = 3; g.lineCap = 'round'; g.setLineDash([4, 9]);
+    g.beginPath(); g.moveTo(300, 18); g.lineTo(300, 182); g.stroke(); g.setLineDash([]); g.lineCap = 'butt';
+  }
+  if (art.star) {
+    g.globalAlpha = 1;
+    g.fill(new Path2D('M46,74 Q52,94 66,100 Q52,106 46,126 Q40,106 26,100 Q40,94 46,74 Z'));
+    g.fill(new Path2D('M74,66 Q77,80 86,84 Q77,88 74,102 Q71,88 62,84 Q71,80 74,66 Z'));
+  }
+  if (art.bars) {
+    g.globalAlpha = 0.85;
+    [0, 12, 20, 34, 42, 56, 68, 76].forEach((d, i) => { roundRect(g, 300 + d, 66, i % 3 === 0 ? 7 : 4, 68, 1.5); g.fill(); });
+  }
+  if (art.stamp) {
+    g.globalAlpha = 0.4; g.lineWidth = 1.2; g.setLineDash([3, 5]);
+    if (art.east) { roundRect(g, 317, 73, 54, 54, 2); g.stroke(); }
+    else { g.beginPath(); g.arc(344, 100, 27, 0, Math.PI * 2); g.stroke(); }
+    g.setLineDash([]);
+  }
+  g.restore();
+  g.globalAlpha = 1;
+
+  // 손잡이가 미끄러지는 홈
+  const gx = 24 * k, gw = 22 * k, gy = H * 0.12, gh = H * 0.76;
+  const gg = g.createLinearGradient(gx, 0, gx + gw, 0);
+  gg.addColorStop(0, 'rgba(0,0,0,.42)'); gg.addColorStop(0.45, 'rgba(0,0,0,.14)'); gg.addColorStop(1, 'rgba(0,0,0,.42)');
+  roundRect(g, gx, gy, gw, gh, gw / 2); g.fillStyle = gg; g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = k;
+  g.beginPath(); g.moveTo(gx + gw * 0.3, gy + gh - k); g.lineTo(gx + gw * 0.7, gy + gh - k); g.stroke();
+
+  // 표면 조판 — 회차 제목 · 매장 · 번호. 손잡이가 지나가는 왼쪽과 스텁은 비운다(.lbl: 왼쪽 20% · 오른쪽 30%)
+  const cx = W * 0.45, max = W * 0.5;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = art.numc;
+  g.font = '700 ' + 40 * k + 'px ' + t.font; spacing(g, '-0.02em');
+  const lines = wrap(g, t.store, max);
+  const hEv = 13 * 1.25 * k, hB = 40 * 1.15 * k, hNo = 19 * 1.25 * k, gap = 10 * k;
+  let y = H / 2 - (hEv + gap + hB * lines.length + gap + hNo) / 2;
+  g.globalAlpha = 0.7; g.font = '800 ' + 13 * k + 'px ' + t.font; spacing(g, '0.34em');
+  g.fillText(t.title, cx, y + hEv / 2, max); y += hEv + gap;
+  g.globalAlpha = 1; g.font = '700 ' + 40 * k + 'px ' + t.font; spacing(g, '-0.02em');
+  for (const l of lines) { g.fillText(l, cx, y + hB / 2, max); y += hB; }
+  y += gap;
+  g.globalAlpha = 0.62; g.font = '700 ' + 19 * k + 'px ' + art.numFont; spacing(g, '0.12em');
+  g.fillText('NO. ' + t.no, cx, y + hNo / 2, max);
+  g.globalAlpha = 1; spacing(g, '0px');
+  g.restore();
+
+  // 종이 가장자리 — 판 위에서 표가 갈리도록 (Ticket 의 inset 1px 테)
+  if (art.notch) notchPath(g, W, H); else roundRect(g, 0, 0, W, H, Math.max(1, art.radius * k));
+  g.strokeStyle = 'rgba(0,0,0,.42)'; g.lineWidth = 2 * k; g.stroke();
   return c;
 }
 

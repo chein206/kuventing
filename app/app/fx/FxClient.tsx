@@ -4,7 +4,9 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import { THEMES, themeOf } from '@/lib/boardArt';
 import type { DrawResult, Prize } from '@/lib/supabase';
 import { Icon } from '@/lib/Icon';
+import { fontOf } from '@/lib/fonts';
 import ResultView from '../board/[token]/ResultView';
+import OpenView from '../board/[token]/OpenView';
 import type { Tier } from '../board/[token]/grade';
 
 /**
@@ -12,6 +14,7 @@ import type { Tier } from '../board/[token]/grade';
  * 데이터는 가짜다. DB 를 부르지 않으니 표가 줄지 않는다.
  * 주소: /fx?theme=light-west&tier=E  (bare=1 이면 고르는 막대를 숨긴다 — 스크린샷용)
  *       /fx?theme=classic&view=keys  버튼 재질만 모아 본다 (PIN 자판 · 취소 · 남은 시간 · 시작 띠)
+ *       /fx?theme=dark-west&tier=C&view=open  개봉 화면부터 — 다 열면 결과 화면으로 이어진다
  */
 const TIERS: { k: Tier; label: string }[] = [
   { k: 'L', label: '막차' }, { k: 'A', label: '금 A·B' }, { k: 'C', label: '구리 C' }, { k: 'E', label: '은 D 이하' },
@@ -33,12 +36,21 @@ const PRIZES: Prize[] = [
 
 const noop = () => () => {};
 
-export default function FxClient(init: { theme: string | null; tier: string | null; bare: boolean; keys: boolean }) {
+export default function FxClient(init: { theme: string | null; tier: string | null; bare: boolean; view: string | null }) {
   const [st, setSt] = useState(() => ({
     theme: themeOf(init.theme).key as string,
     tier: TIERS.find((t) => t.k === init.tier)?.k ?? ('A' as Tier),
   }));
   const [run, setRun] = useState(0);
+  // 개봉부터 볼 때 — 다 열면 결과, 결과가 끝나면 다시 개봉
+  const [phase, setPhase] = useState<'open' | 'result'>(init.view === 'open' ? 'open' : 'result');
+  // 카운터 화면처럼 결과가 조금 늦게 도착한다(뽑기 요청이 서버에 다녀오는 시간)
+  const [pending, setPending] = useState<DrawResult | null>(null);
+  useEffect(() => {
+    if (phase !== 'open') return;
+    const t = setTimeout(() => setPending(SAMPLE[st.tier]), 350);
+    return () => { clearTimeout(t); setPending(null); };
+  }, [phase, st.tier, run]);
 
   // 테마는 판(html)에 건다. 결과 화면의 3D 는 사진을 받은 뒤 바탕색을 읽으므로 이 효과가 먼저 끝나 있다
   useEffect(() => { document.documentElement.dataset.theme = st.theme; }, [st.theme]);
@@ -53,7 +65,9 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
     history.replaceState(null, '', `?theme=${theme}&tier=${tier}`);
     setSt({ theme, tier });
     setRun((n) => n + 1);
+    if (init.view === 'open') setPhase('open');
   };
+  const again = () => { setRun((n) => n + 1); if (init.view === 'open') setPhase('open'); };
 
   return (
     <div className="bd" style={{
@@ -61,16 +75,23 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
       ['--surface' as string]: def.art.photo ? `url(${def.art.photo.surface})` : 'none',
     }}>
       <div className="bar">
-        <button className="home" onClick={() => setRun((n) => n + 1)} aria-label="다시"><Icon name="ticket" /></button>
+        <button className="home" onClick={again} aria-label="다시"><Icon name="ticket" /></button>
         <div className="nm">라멘집 · 미리보기</div>
         <div className="rt"><b>41</b><i>/80</i><small>남은 티켓</small></div>
       </div>
-      {init.keys ? <Keys /> : <ResultView key={`${st.theme}-${st.tier}-${run}`}
-                  r={SAMPLE[st.tier]} art={def.art} dark={def.dark}
-                  campaignId="00000000-0000-0000-0000-000000000000" prizes={PRIZES}
-                  lastOneImage="/fx/prize-last.jpg" lastOneLabel="막차 보너스"
-                  store="라멘집 · 미리보기" title="10월 뽑기" seconds={60}
-                  onDone={() => setRun((n) => n + 1)} />}
+      {init.view === 'keys' ? <Keys /> : phase === 'open' ? (
+        <OpenView key={`o-${st.theme}-${st.tier}-${run}`} sel={17} pending={pending} art={def.art} dark={def.dark}
+                  title="10월 뽑기" store="라멘집 · 미리보기" font={fontOf(null).stack}
+                  autoOpenSeconds={45} lastOneLabel="막차 보너스"
+                  onOpened={() => setPhase('result')} />
+      ) : (
+        <ResultView key={`r-${st.theme}-${st.tier}-${run}`}
+                    r={SAMPLE[st.tier]} art={def.art} dark={def.dark}
+                    campaignId="00000000-0000-0000-0000-000000000000" prizes={PRIZES}
+                    lastOneImage="/fx/prize-last.jpg" lastOneLabel="막차 보너스"
+                    store="라멘집 · 미리보기" title="10월 뽑기" seconds={60}
+                    onDone={again} />
+      )}
       {!init.bare && (
         <div className="fxpick">
           <select value={st.theme} onChange={(e) => pick(e.target.value, st.tier)}>

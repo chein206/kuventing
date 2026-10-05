@@ -937,3 +937,81 @@
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.3),inset 0 0 0 1px rgba(0,0,0,.42),
     0 1px 0 var(--key2-edge),0 4px 8px -5px var(--key-drop)
 }
+
+/* ============================================================
+   개봉 화면 — 3D 층 위에 글자를 얹는다 (fx3d/open3d)
+   표 · 바닥 · 불꽃 · 빛줄기는 캔버스가 그리고, 글자 층은 표 자리를 비워 둔다.
+   손잡이 · 화살표 · 어둠은 3D 가 매 프레임 옮긴다(transform) — 표가 기울고 카메라가 다가가도 선을 따라간다.
+   WebGL 이 없으면 위의 .peel(평면 판)을 그대로 쓴다.
+   ============================================================ */
+.bd .op3wrap{position:relative;z-index:1}
+.bd .op3{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(28px,5dvh,64px)}
+/* 다 열리면 쪽지가 앞으로 나오며 1.14 배쯤 커진다 — 작은 태블릿에서 가장자리가 잘리지 않게 여백을 둔다 */
+.bd .op3 .tslot{width:min(560px,86vw);aspect-ratio:var(--tk-ratio,2);flex:none}
+.bd .op3 .opfoot{position:relative;width:100%;max-width:460px}
+.bd .op3 .rowbtn{transition:opacity .2s}
+.bd .op3 .rowbtn .big{flex:1;margin-top:0}
+
+/* 손잡이 — 바깥은 자리(3D 가 옮긴다), 안쪽은 생김새와 "밀어 보라"는 흔들림 */
+.bd .knob3{
+  position:absolute;left:0;top:0;z-index:4;width:54px;height:118px;
+  touch-action:none;cursor:grab;will-change:transform;transition:opacity .25s
+}
+.bd .knob3.off{cursor:default}
+.bd .knob3 .kin{
+  position:absolute;inset:0;border-radius:9px;overflow:hidden;display:grid;place-items:center;
+  background:linear-gradient(96deg,#8C6A24 0%,#EFD79B 16%,#C9A24B 46%,#F6E7B8 66%,#A5822F 88%,#7E5F1B 100%);
+  box-shadow:0 10px 20px -8px rgba(0,0,0,.75), inset 0 2px 0 rgba(255,255,255,.6),
+             inset 0 -2px 0 rgba(0,0,0,.34), inset 2px 0 0 rgba(255,255,255,.25);
+  animation:nudge3 2.4s ease-in-out infinite
+}
+.bd .knob3.off .kin{animation:none}
+.bd .knob3 .comb{
+  position:absolute;left:6px;right:6px;top:12px;bottom:12px;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(58,40,8,.34) 0 1.5px,
+             rgba(255,244,214,.42) 1.5px 3px,transparent 3px 7px)
+}
+.bd .knob3 .kin span{
+  position:relative;font-size:30px;font-weight:900;line-height:0;color:#2E2105;
+  text-shadow:0 1px 0 rgba(255,246,220,.6);pointer-events:none
+}
+/* 사진 판 — 황동 레버 사진. 가로로 찍힌 것을 세워 쓴다 */
+.bd .knob3.photo{width:58px;height:122px}
+.bd .knob3.photo .kin{background:none;border-radius:0;overflow:visible;box-shadow:none;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.75))}
+.bd .knob3 .lever{
+  position:absolute;left:50%;top:50%;width:122px;height:58px;margin-left:-61px;margin-top:-29px;
+  transform:rotate(90deg);display:block;pointer-events:none;user-select:none;-webkit-user-drag:none
+}
+@keyframes nudge3{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+
+/* 미는 방향 안내 — 손잡이 오른쪽에서 흘러간다. 글자 구간에 들어서면 사라진다 */
+.bd .arrows3{position:absolute;left:0;top:0;z-index:3;display:flex;gap:6px;pointer-events:none;
+  opacity:0;transition:opacity .3s}
+.bd .arrows3 span{font-size:40px;font-weight:900;line-height:1;color:#E3C57C;
+  text-shadow:0 0 16px rgba(227,197,124,.9);animation:flow 1.5s ease-in-out infinite}
+.bd .arrows3 span:nth-child(2){animation-delay:.16s}
+.bd .arrows3 span:nth-child(3){animation-delay:.32s}
+
+/* 숨죽이는 순간 — 글자 구간에 들어서면 주변이 어두워지고 글자 자리만 비켜 간다(--vx · --vy 는 3D 가 준다) */
+.bd .vig3{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse 58% 40% at var(--vx,56%) var(--vy,48%),
+    transparent 0%,rgba(0,0,0,.5) 55%,rgba(0,0,0,.93) 100%)}
+/* 밝은 판은 까맣게 꺼지면 다른 화면처럼 보인다 — 종이 그늘 정도로만 */
+[data-theme^="light"] .bd .vig3{
+  background:radial-gradient(ellipse 58% 40% at var(--vx,56%) var(--vy,48%),
+    transparent 0%,rgba(48,34,16,.24) 55%,rgba(48,34,16,.58) 100%)}
+
+/* 다 열리면 — 버튼 자리에 등급 */
+.bd .cap3{position:absolute;left:-70px;right:-70px;top:50%;transform:translateY(-50%);z-index:3;
+  text-align:center;pointer-events:none;animation:sIn .5s ease 1s both}
+.bd .cap3 b{display:block;font-size:clamp(34px,4.2dvh,46px);font-weight:900;letter-spacing:-.02em;
+  text-shadow:0 2px 14px rgba(0,0,0,.9)}
+.bd .cap3 span{display:block;margin-top:10px;font-size:19px;font-weight:700;color:var(--ink-dim)}
+[data-theme^="light"] .bd .cap3 b{text-shadow:0 1px 0 rgba(255,255,255,.7),0 6px 16px rgba(255,255,255,.6)}
+
+@media (prefers-reduced-motion:reduce){
+  .bd .knob3 .kin,.bd .arrows3 span{animation:none}
+  .bd .arrows3 span{opacity:.8}
+}

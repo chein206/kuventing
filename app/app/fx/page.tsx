@@ -12,5 +12,5 @@ export default async function FxPage({
 }) {
   const q = await searchParams;
   const one = (k: string) => (typeof q[k] === 'string' ? (q[k] as string) : null);
-  return <FxClient theme={one('theme')} tier={one('tier')} bare={one('bare') === '1'} keys={one('view') === 'keys'} />;
+  return <FxClient theme={one('theme')} tier={one('tier')} bare={one('bare') === '1'} view={one('view')} />;
 }

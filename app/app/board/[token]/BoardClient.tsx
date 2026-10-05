@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sb, getBoard, draw, type Board, type DrawResult, type Prize } from '@/lib/supabase';
 import Ticket from './Ticket';
 import ResultView from './ResultView';
+import OpenView from './OpenView';
 import { gradeColor, isFlat } from './grade';
 import { Icon } from '@/lib/Icon';
 import MotionAd, { buildScenes, scenesDuration, normPos } from './MotionAd';
@@ -35,47 +36,8 @@ type Config = {
 // DB 값이 없을 때(마이그레이션 전) 쓰는 기본값
 const DEF = { idle: 20, slide: 6, result: 40, autoOpen: 45, motion: 6 };
 
-// 오픈 화면 배경에 뿌리는 반짝임. 매 렌더 흔들리지 않게 모듈 수준에서 한 번만 만든다.
-const TWINKLES = Array.from({ length: 60 }, (_, i) => ({
-  left: `${(i * 37 + 11) % 100}%`,
-  top: `${(i * 61 + 7) % 100}%`,
-  s: 3 + ((i * 7) % 5),
-  dur: `${2 + ((i * 13) % 9) * 0.35}s`,
-  delay: `-${((i * 17) % 21) * 0.3}s`,
-}));
-
-// 찢기는 자리에서 튀는 불티
 // 티켓이 돌아 나오는 시간. board.css 의 pullOut 과 같이 움직인다
 const PULL_MS = 1150;
-
-/**
- * 찢는 자리에서 튀는 불티 — 그라인더로 철을 자를 때 나는 그것.
- *
- * 앞서 쓰던 "오른쪽으로 직진하는 굵은 알 18개"는 튀는 느낌만 있고 불꽃이 아니었다.
- * 그라인더 불꽃의 특징은 넷이다.
- *   1. 많고 잘다        — 굵은 알 몇 개가 아니라 잔 불티가 쏟아진다
- *   2. 원뿔로 퍼진다     — 자르는 방향의 반대(왼쪽)로, 뒤·아래로 부챗살처럼
- *   3. 중력으로 휜다     — 직선이 아니라 포물선. 끝에서 아래로 처진다
- *   4. 흰 코어 → 주황    — 갓 튄 것은 흰빛, 식으면서 주황·빨강으로 죽는다
- * 길쭉한 막대로 그려 잔상(궤적)을 만든다. 동그란 점은 눈이 불꽃으로 안 읽는다.
- */
-const TEAR_SPARKS = Array.from({ length: 46 }, (_, i) => {
-  // -1..1 로 퍼지는 부챗살. 가운데가 촘촘하도록 세제곱
-  const spread = ((i % 13) / 6 - 1) ** 3;
-  const speed = 30 + ((i * 17) % 62);          // 멀리 가는 것과 금방 죽는 것을 섞는다
-  return {
-    top: `${((i * 37) % 100)}%`,
-    len: 5 + ((i * 7) % 9),                    // 막대 길이 = 잔상
-    thick: 1.5 + ((i * 3) % 3) * 0.6,
-    dx: -(speed * 0.5) - 8,                    // 자르는 방향의 반대로
-    dy: spread * 46 + 16,                      // 부챗살 + 아래로 처짐
-    fall: 26 + ((i * 11) % 30),                // 끝에서 더 떨어지는 양(중력)
-    rot: spread * 34,
-    dur: `${0.34 + ((i * 13) % 9) * 0.05}s`,
-    delay: `-${((i * 19) % 23) * 0.045}s`,
-    hot: i % 4 === 0,                          // 넷 중 하나는 더 밝고 크게
-  };
-});
 
 type Step = 'attract' | 'pin' | 'list' | 'grid' | 'open' | 'result';
 
@@ -261,26 +223,11 @@ export default function BoardClient({ token }: { token: string }) {
      당기는 동작은 연출이고, 티켓은 이미 이 시점에 확정된다.                        */
   const [snap, setSnap] = useState<Prize[]>([]);
   const [pending, setPending] = useState<DrawResult | null>(null);
-  const [px, setPx] = useState(0);          // 손잡이 위치(px)
-  const [grip, setGrip] = useState(false);  // 손잡이를 잡고 있는 중 = 카드가 떨린다
-  const [revealing, setRevealing] = useState(false);
-  const [slowOpen, setSlowOpen] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-  const startX = useRef(0);
-  const maxX = useRef(1);
-  const finished = useRef(false);
-
-  const KNOB = 62;
-  // 무게감 조절은 이 두 값. 실제 손가락 이동거리 = 카드폭 × (THRESHOLD ÷ DRAG_RATIO)
-  //   1.0 / 0.60 → 0.60배 (가벼움)   0.85 / 0.65 → 0.76배 (지금)   0.62 / 0.78 → 1.26배 (너무 무거움)
-  const DRAG_RATIO = 0.85;   // 손잡이가 손가락을 따라오는 비율. 낮을수록 무겁다
-  const THRESHOLD = 0.65;    // 카드 폭 대비 이만큼 밀면 열린다
-
   // 결과 화면 3D 는 뽑기 흐름에 들어온 뒤에만 받는다 — 대기 화면은 광고가 먼저 떠야 한다.
   // 상품 목록 · 티켓 고르기 동안 렌더러를 만들고 셰이더를 미리 굽고(warm), 개봉 화면에서는 상품 사진을 받아 둔다
   useEffect(() => {
     if (step !== 'list' && step !== 'grid' && step !== 'open') return;
+    import('./fx3d/open3d').then((m) => { m.getOpen()?.warm(); }).catch(() => {});
     import('./fx3d/result3d')
       .then((m) => {
         m.getStage()?.warm();
@@ -314,27 +261,17 @@ export default function BoardClient({ token }: { token: string }) {
     return () => { alive = false; };
   }, [step, pending, sel, pass, board, refresh, goAttract]);
 
-  // 끝까지 열기 — 무겁게 밀려나간 뒤 결과로 넘어간다
-  const finish = useCallback((slow = false) => {
-    if (finished.current || !pending) return;
-    finished.current = true;
-    setSlowOpen(slow);
-    setGrip(false);
-    setRevealing(true);
-    setPx(maxX.current);
-    sfx.grindStop();
-    sfx.snap();
-    setTimeout(() => {
-      setResult(pending);
-      setStep('result');
-      sfx.fanfare(pending.grade, !!pending.isLastOne);
-    }, slow ? 1400 : 950);
+  // 개봉 화면이 다 열고 등급까지 보여 준 뒤 부른다 — 결과 화면으로
+  const opened = useCallback(() => {
+    if (!pending) return;
+    setResult(pending);
+    setStep('result');
+    sfx.fanfare(pending.grade, !!pending.isLastOne);
   }, [pending]);
 
   const resetOpenState = useCallback(() => {
     sfx.grindStop();
-    setPending(null); setPx(0); setRevealing(false); setSlowOpen(false); setGrip(false);
-    finished.current = false; dragging.current = false;
+    setPending(null);
   }, []);
 
   // 초기화면으로 돌아가면 오픈 상태를 비운다
@@ -369,13 +306,6 @@ export default function BoardClient({ token }: { token: string }) {
 
   // 화면이 바뀐 것도 활동으로 친다. 이게 없으면 진입하자마자 유휴 타이머에 걸릴 수 있다
   useEffect(() => { lastTouch.current = Date.now(); }, [step]);
-
-  // 손님이 카드를 열다 말고 가버려도 상품이 사라지지 않게 일정 시간 뒤 자동으로 연다
-  useEffect(() => {
-    if (step !== 'open' || !pending) return;
-    const t = setTimeout(() => finish(true), (cfg?.autoOpenSeconds ?? DEF.autoOpen) * 1000);
-    return () => clearTimeout(t);
-  }, [step, pending, finish, cfg?.autoOpenSeconds]);
 
   /* ================= 렌더 ================= */
   if (!cfg) return <div className="bd" style={{ display: 'grid', placeItems: 'center' }}><div className="spin" /></div>;
@@ -601,126 +531,14 @@ export default function BoardClient({ token }: { token: string }) {
         </div>
       )}
 
-      {step === 'open' && (
-        <div className="page">
-          <h2 className="ttl">
-            {sel}번 티켓
-            <small>{revealing ? '열리는 중…' : '황동 손잡이를 천천히 오른쪽으로 미세요'}</small>
-          </h2>
-          <div className={`openstage ${revealing ? 'firing' : ''}`}>
-            {/* 배경 반짝임 */}
-            <div className="twinkles">
-              {TWINKLES.map((t, i) => (
-                <i key={i} style={{
-                  left: t.left, top: t.top, width: t.s, height: t.s,
-                  animationDuration: t.dur, animationDelay: t.delay,
-                }} />
-              ))}
-            </div>
-            <div
-              className={`peel ${art.photo ? 'photo' : ''} ${revealing ? 'go' : ''} ${slowOpen ? 'slow' : ''} ${grip ? 'grip' : ''}`}
-              ref={cardRef}
-              style={{
-                ['--px' as string]: `${px}px`,
-                // 많이 밀수록 크게 떨린다
-                ['--sh' as string]: Math.min(6, (px / (maxX.current || 1)) * 7).toFixed(2),
-              }}
-            >
-              {/* 아래층 — 미는 만큼 드러난다 */}
-              <div className="under">
-                {pending ? (
-                  <>
-                    <div className={`ug ${pending.image && isFlat(pending.image) ? 'flat' : ''}`}
-                         style={{ background: gradeColor(pending.grade) }}>
-                      {pending.image ? <img src={pending.image} alt="" /> : pending.grade}
-                    </div>
-                    <div className="un">{pending.name}</div>
-                  </>
-                ) : <div className="spin" />}
-              </div>
-
-              {/* 위층 — 티켓 표면 */}
-              <div className="cover">
-                <Ticket art={art} size="big"
-                        num={art.photo && sel ? String(sel) : ''}
-                        sub={art.photo ? cfg.title : undefined} />
-                {/* 미는 방향 안내 화살표 */}
-                <div className="guide"><span>›</span><span>›</span><span>›</span></div>
-                {/* 표면 조판 — 손잡이가 지나가는 왼쪽과 스텁은 비운다.
-                    글자색은 종이 잉크를 따른다. 종이가 크라프트지라 흰 글자는 안 읽힌다 */}
-                {!art.photo && <div className="lbl" style={{ color: art.numc }}>
-                  <span className="ev">{cfg.title}</span>
-                  <b>{cfg.store.name}</b>
-                  <span className="no" style={{ fontFamily: art.numFont }}>NO. {sel}</span>
-                </div>}
-                {/* 손잡이가 미끄러지는 홈 */}
-                <div className="slot" />
-                {/* 사진 판은 천공선이 실제로 뚫려 있다 — 그 자리에서 빛이 샌다 */}
-                {art.photo && (
-                  <div className="perfbeam" style={{ left: `${art.photo.perf * 100}%` }} />
-                )}
-              </div>
-
-              <div
-                className="knob"
-                onPointerDown={(e) => {
-                  if (!pending || finished.current) return;
-                  dragging.current = true;
-                  setGrip(true);
-                  sfx.grindStart();
-                  startX.current = e.clientX - px;
-                  maxX.current = (cardRef.current?.clientWidth ?? 400) - KNOB - 20;
-                  (e.target as HTMLElement).setPointerCapture(e.pointerId);
-                }}
-                onPointerMove={(e) => {
-                  if (!dragging.current) return;
-                  const raw = (e.clientX - startX.current) * DRAG_RATIO;
-                  const v = Math.max(0, Math.min(maxX.current, raw));
-                  setPx(v);
-                  sfx.grindSet(v / Math.max(1, maxX.current));
-                  if (v > maxX.current * THRESHOLD) { dragging.current = false; finish(false); }
-                }}
-                onPointerUp={() => {
-                  if (!dragging.current) return;
-                  dragging.current = false;
-                  setGrip(false);
-                  sfx.grindStop();
-                  if (!finished.current) { setRevealing(false); setPx(0); }
-                }}
-              >
-                {/* 빗살 홈 — 손가락이 걸리는 자리. 동그란 금색 알은 "게임 버튼"으로
-                    읽혀서, 실제로 쥐고 미는 물건의 모양으로 바꿨다 */}
-                {art.photo
-                  ? <img className="lever" src={art.photo.leverSrc} alt="" draggable={false} />
-                  : <><i className="comb" /><span>❯</span></>}
-              </div>
-
-              {/* 찢기는 자리에서 새는 빛 + 그라인더 불꽃 */}
-              <div className="tear">
-                <div className="beam" />
-                <div className="core" />
-                {TEAR_SPARKS.map((s, i) => (
-                  <i key={i} className={s.hot ? 'hot' : ''} style={{
-                    top: s.top, width: s.len, height: s.thick,
-                    ['--dx' as string]: `${s.dx}px`,
-                    ['--dy' as string]: `${s.dy}px`,
-                    ['--fall' as string]: `${s.fall}px`,
-                    ['--rot' as string]: `${s.rot}deg`,
-                    animationDuration: s.dur, animationDelay: s.delay,
-                  }} />
-                ))}
-              </div>
-            </div>
-
-            {/* 이 시점엔 티켓이 이미 확정돼 있다. 되돌아가면 상품을 잃으므로 여는 길만 남긴다 */}
-            <div className="rowbtn" style={{ width: '100%', maxWidth: 460 }}>
-              <button className="big ghost" style={{ flex: 1 }} disabled={!pending || revealing}
-                      onClick={() => finish(false)}>바로 열기</button>
-              <button className="big" style={{ flex: 1 }} disabled={!pending || revealing}
-                      onClick={() => finish(true)}>천천히 열기</button>
-            </div>
-          </div>
-        </div>
+      {step === 'open' && sel !== null && (
+        <OpenView key={sel} sel={sel} pending={pending} art={art} dark={themeOf(cfg.theme).dark}
+                  title={cfg.title}
+                  store={cfg.store.name + (cfg.store.branch ? ` · ${cfg.store.branch}` : '')}
+                  font={fontOf(cfg.font).stack}
+                  autoOpenSeconds={cfg.autoOpenSeconds ?? DEF.autoOpen}
+                  lastOneLabel={cfg.lastOneLabel ?? '마지막 보상'}
+                  onOpened={opened} />
       )}
 
       {step === 'result' && result && (
