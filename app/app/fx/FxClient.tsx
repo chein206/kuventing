@@ -59,6 +59,7 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
   // 소리 — 카운터 화면과 같은 소리를 낸다. 브라우저는 화면을 만지기 전에는 소리를 막으므로 첫 터치에 깨운다
   const [snd, setSnd] = useState<sfx.SoundMode>('soft');
   useEffect(() => { sfx.setMode(snd); }, [snd]);
+  useEffect(() => { sfx.preloadFanfares(); }, []);
 
   // 테마는 판(html)에 건다. 결과 화면의 3D 는 사진을 받은 뒤 바탕색을 읽으므로 이 효과가 먼저 끝나 있다
   useEffect(() => { document.documentElement.dataset.theme = st.theme; }, [st.theme]);

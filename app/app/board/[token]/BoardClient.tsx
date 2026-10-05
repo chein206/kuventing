@@ -231,6 +231,7 @@ export default function BoardClient({ token }: { token: string }) {
     import('./fx3d/result3d')
       .then((m) => {
         m.getStage()?.warm();
+        sfx.preloadFanfares();
         if (step === 'open' && pending) {
           m.preload(pending.isLastOne && pending.lastOneName ? cfg?.lastOneImage ?? null : pending.image);
         }

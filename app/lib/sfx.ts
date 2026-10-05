@@ -64,6 +64,7 @@ export function unlock(next: SoundMode) {
     verb = send;
   }
   master!.gain.value = GAIN[next];
+  decodeClips();   // 오디오가 깨기 전에 받아 둔 팡파레가 있으면 이제 푼다
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
 }
 
@@ -392,9 +393,62 @@ function bell(freq: number, at: number, dur: number, vol: number, send = 0) {
   });
 }
 
-/** 뽑은 결과가 뜰 때. 피날레 보너스면 금색 한 방을 더 얹는다 */
+/* ---------- 결과 팡파레 녹음본 ----------
+   Flow 로 뽑은 1분짜리에서 "빰" 하고 터지는 2~5초를 잘라 둔 것(public/snd). 합성 종소리보다 풍성하다.
+   파일은 뽑기 흐름에 들어온 뒤에만 받는다(대기 화면은 받지 않는다). 못 받았으면 아래 합성 팡파레가 대신 울린다.
+   등급 낙차는 곡 자체(큰 화음 · 경쾌한 소절 · 잔잔한 종)와 음량으로 낸다. */
+type ClipKey = 'finale' | 'gold' | 'copper' | 'silver';
+const CLIP: Record<ClipKey, { src: string; gain: number }> = {
+  finale: { src: '/snd/fanfare-finale.mp3', gain: 1 },
+  gold: { src: '/snd/fanfare-gold.mp3', gain: 0.9 },
+  copper: { src: '/snd/fanfare-copper.mp3', gain: 0.8 },
+  silver: { src: '/snd/fanfare-silver.mp3', gain: 0.72 },
+};
+const clipRaw = new Map<ClipKey, Promise<ArrayBuffer | null>>();
+const clipBuf = new Map<ClipKey, AudioBuffer>();
+
+/** 뽑기 흐름에 들어오면 부른다 — 받기만 하고, 오디오가 깨어 있으면 바로 푼다. 여러 번 불러도 한 번만 받는다 */
+export function preloadFanfares() {
+  for (const k of Object.keys(CLIP) as ClipKey[]) {
+    if (!clipRaw.has(k)) {
+      clipRaw.set(k, fetch(CLIP[k].src).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null));
+    }
+  }
+  decodeClips();
+}
+function decodeClips() {
+  if (!ctx) return;
+  for (const [k, p] of clipRaw) {
+    if (clipBuf.has(k)) continue;
+    p.then((ab) => {
+      if (!ab || !ctx || clipBuf.has(k)) return;
+      // decodeAudioData 는 받은 버퍼를 비워 버린다 — 다시 풀 수 있게 사본을 넘긴다
+      return ctx.decodeAudioData(ab.slice(0)).then((b) => { clipBuf.set(k, b); });
+    }).catch(() => {});
+  }
+}
+
+/** 뽑은 결과가 보이는 순간. 녹음본이 있으면 그것, 없으면 합성. 피날레 보너스면 피날레 */
 export function fanfare(grade: string, isLastOne = false) {
-  if (!on() || !ctx) return;
+  if (!on() || !ctx || !master) return;
+  const G = grade.toUpperCase();
+  const key: ClipKey = isLastOne ? 'finale' : G === 'A' || G === 'B' ? 'gold' : G === 'C' ? 'copper' : 'silver';
+  const clip = clipBuf.get(key);
+  if (clip) {
+    const src = ctx.createBufferSource();
+    src.buffer = clip;
+    const g = ctx.createGain();
+    g.gain.value = CLIP[key].gain;
+    src.connect(g); g.connect(master);
+    src.start(ctx.currentTime + 0.01);
+    return;
+  }
+  synthFanfare(G, isLastOne);
+}
+
+/** 합성 팡파레 — 녹음본을 못 받았을 때 */
+function synthFanfare(grade: string, isLastOne: boolean) {
+  if (!ctx) return;
   const f = FAN[grade.toUpperCase()] ?? FAN.E;
   const t0 = ctx.currentTime + 0.02;
   const step = 0.09;

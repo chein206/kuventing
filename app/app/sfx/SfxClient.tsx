@@ -20,6 +20,7 @@ export default function SfxClient() {
   const wake = () => { sfx.unlock(mode); setReady(true); };
 
   useEffect(() => { if (ready) sfx.setMode(mode); }, [mode, ready]);
+  useEffect(() => { sfx.preloadFanfares(); }, []);
   useEffect(() => () => { sfx.grindStop(); sfx.tensionStop(); }, []);
 
   /**
