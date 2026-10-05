@@ -299,7 +299,14 @@ export default function BoardClient({ token, build }: { token: string; build: st
   // 상품 목록 · 티켓 고르기 동안 렌더러를 만들고 셰이더를 미리 굽고(warm), 개봉 화면에서는 상품 사진을 받아 둔다
   useEffect(() => {
     if (step !== 'list' && step !== 'grid' && step !== 'open') return;
-    import('./fx3d/open3d').then((m) => { m.getOpen()?.warm(); }).catch(() => {});
+    import('./fx3d/open3d').then((m) => {
+      m.getOpen()?.warm();
+      // 결과가 올 때 그리면 개봉 화면 첫머리가 멈칫한다 — 쪽지 바탕 · 등급별 양각을 고르는 동안 미리
+      if (cfg && board) {
+        m.primeSlips(themeOf(cfg.theme).art.photo?.ratio ?? 2, board.prizes.map((p) => p.grade),
+          { store: storeOf(cfg), title: cfg.title, no: 0 });
+      }
+    }).catch(() => {});
     import('./fx3d/result3d')
       .then((m) => {
         m.getStage()?.warm();
@@ -309,7 +316,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
         }
       })
       .catch(() => {});
-  }, [step, pending, cfg?.lastOneImage]);
+  }, [step, pending, cfg, board]);
 
   // 오픈 화면 진입 시 결과 선취득
   useEffect(() => {

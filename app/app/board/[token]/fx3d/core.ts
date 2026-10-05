@@ -158,9 +158,13 @@ export class Confetti {
     const geo = new PlaneGeometry(1, 1);
     this.foil = new InstancedMesh(geo, new MeshStandardMaterial({ metalness: .95, roughness: .24, side: DoubleSide, envMapIntensity: 1.6 }), N);
     this.paper = new InstancedMesh(geo, new MeshStandardMaterial({ metalness: 0, roughness: .7, side: DoubleSide }), N);
+    const white = new Color(1, 1, 1);
     for (const m of [this.foil, this.paper]) {
       m.frustumCulled = false;
       m.instanceMatrix.setUsage(DynamicDrawUsage);
+      // 장마다 색 칸(instanceColor)을 처음부터 만들어 둔다. 없으면 등급 색을 처음 입힐 때(setTier) 셰이더를 새로 구워
+      // 개봉 화면 첫머리 · 결과 화면이 그 순간 100ms 넘게 멈춘다. 있으면 고르는 동안 데우기(warm)가 같이 굽는다
+      for (let i = 0; i < N; i++) m.setColorAt(i, white);
       scene.add(m);
     }
     for (let i = 0; i < N; i++) this.P.push({ p: new Vector3(), v: new Vector3(), q: new Quaternion(),

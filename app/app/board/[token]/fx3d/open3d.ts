@@ -22,6 +22,7 @@ import {
   sstep, TIER, type TierDef, VS_UV,
 } from './core';
 import { letterAt, letterHeight, SLIP_W, slipCanvas, ticketCanvas, type SlipInfo, type TicketInfo } from './paint';
+export { primeSlips } from './paint';
 import type { Art } from '@/lib/boardArt';
 import { tierOf, type Tier } from '../grade';
 
@@ -283,6 +284,8 @@ class OpenScene implements Runner {
   /** 돌아 나온 카드가 멈춘 자리(3D 좌표)와 그때 크기(표 폭 대비) — 없으면 제자리에서 시작 */
   private from3: Vector3 | null = null; private s0 = .88;
   private shownN = 0;
+  /** 들어오는 동작의 시간 — 프레임마다 쌓는다(한 프레임이 길게 멈춰도 건너뛰지 않게) */
+  private it = 0;
   /** 연 정도(0~1) — c 는 지금, target 은 가려는 곳 */
   private c = 0; private target = 0;
   private speed = 0; private acc = 0; private tension = 0; private hb = 0;
@@ -359,7 +362,7 @@ class OpenScene implements Runner {
     this.c = 0; this.target = 0; this.speed = 0; this.acc = 0; this.tension = 0; this.hb = 0;
     this.done = false; this.ft = 0; this.sent = false; this.locked = false; this.auto = null; this.ready = false;
     this.zoom = 1; this.look.set(0, 0, 0); this.shake = 0; this.punch = 0;
-    this.from3 = null; this.s0 = .88; this.shownN = 0;
+    this.from3 = null; this.s0 = .88; this.shownN = 0; this.it = 0;
     this.ticket.position.set(0, 0, 0); this.ticket.rotation.set(0, 0, 0); this.tickU.uOpacity.value = 1;
     this.floor.position.set(0, 0, -3); this.floor.scale.setScalar(1); this.floorU.uFoil.value = 0;
     this.group.rotation.set(0, 0, 0); this.group.scale.setScalar(1);
@@ -502,6 +505,8 @@ class OpenScene implements Runner {
     if (lt < 2.5) this.measure();
     // 둘째 프레임 — 첫 그림이 화면에 올라왔다. 돌아 나온 카드를 걷어도 된다
     if (++this.shownN === 2) o.shown?.();
+    // 들어오는 동작은 프레임마다 쌓은 시간으로 간다 — 태블릿에서 한 프레임이 길게 멈춰도 표가 건너뛰지 않고 이어서 간다
+    this.it += Math.min(dt, 1 / 30);
     this.rays.u.uTime.value = t; this.bok.u.uTime.value = t; this.bok.u.uScale.value = this.gl.uScale;
     this.floorU.uTime.value = t; this.sparks.u.uScale.value = this.gl.uScale;
 
@@ -524,7 +529,7 @@ class OpenScene implements Runner {
     if (!this.done) {
       // 들어올 때 — 판에서 뽑혀 나온 표가 탁자에 눕는다.
       // 돌아 나온 카드 자리에서 시작하면 카드가 걷히는 동안(FROM_HOLD) 그대로 있다가 제자리로 간다
-      const ki = eOutCubic(c01((this.from3 ? lt - FROM_HOLD : lt) / .6));
+      const ki = eOutCubic(c01((this.from3 ? this.it - FROM_HOLD : this.it) / .6));
       // 두근거림 — 글자에 가까울수록 빨라진다. 첫 박(0.1) · 둘째 박(0.28)을 지나면 소리에 알린다
       const ph0 = this.hb % 1;
       this.hb += dt * (1 + 1.9 * k);
@@ -570,7 +575,7 @@ class OpenScene implements Runner {
     this.tickU.uTime.value = t;
     if (!this.done) {
       // 처음 뜰 때는 빛줄기 · 빛 망울이 0.5초에 걸쳐 차오른다 — 첫 프레임에 확 켜지지 않게
-      const glow = eOutCubic(c01(lt / .5));
+      const glow = eOutCubic(c01(this.it / .5));
       this.rays.u.uAmp.value = (.08 + p * .3) * (1 - .85 * k) * this.rayK * glow;
       this.bok.u.uAmp.value = (.35 + p * .3) * (1 - .7 * k) * this.bokK * glow;
     }

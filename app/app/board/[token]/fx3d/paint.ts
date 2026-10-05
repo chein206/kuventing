@@ -60,6 +60,48 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, rat
   const W = SLIP_W, H = Math.round(SLIP_W / ratio), L = letterAt(H);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d')!;
+  g.drawImage(slipPaper(H), 0, 0);
+  roundRect(g, 4, 4, W - 8, H - 8, 34); g.clip();
+  const ink = (a: number) => 'rgba(43,33,24,' + a + ')';
+
+  g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  const fit = (text: string, font: string, max: number) => {
+    // 매장 이름이 길면 줄여서 칸 안에 넣는다
+    let px = parseInt(font, 10);
+    const rest = font.replace(/^\d+px/, '');
+    do { g.font = font.replace(/\d+px/, px + 'px'); px -= 2; } while (g.measureText(text).width > max && px > 16);
+    return rest;
+  };
+  g.fillStyle = ink(0.6); fit('꽝 없는 뽑기 · ' + info.title, '700 34px ' + KO, 640);
+  g.fillText('꽝 없는 뽑기 · ' + info.title, 112, 178);
+  g.fillStyle = ink(0.7); fit(info.store, '600 36px ' + KO, 640); g.fillText(info.store, 112, 408);
+  if (info.no !== null) {
+    g.fillStyle = ink(0.82); g.font = '700 58px ' + SERIF; g.fillText('NO. ' + info.no, 112, 556);
+  }
+
+  if (revealed) {
+    const pal = METAL[metalOf(grade)];
+    const lg = g.createLinearGradient(L.x - 260, L.y - 280, L.x + 260, L.y + 280);
+    pal.forEach((col, i) => lg.addColorStop(i / (pal.length - 1), col));
+    g.font = '700 ' + L.size + 'px ' + SERIF; g.textBaseline = 'middle';
+    g.fillStyle = 'rgba(30,20,8,.45)'; g.fillText(grade, L.x + 7, L.y + 8);
+    g.fillStyle = lg; g.fillText(grade, L.x, L.y);
+  }
+  return c;
+}
+
+/**
+ * 쪽지 바탕 — 종이결 · 잔무늬 · 테두리 · 늘 같은 글자. 등급 · 매장 · 표 번호와 상관없다.
+ * 종이결 점 16,000개가 무거워서(태블릿에서 수백 ms) 쪽지 크기마다 한 번만 그려 두고 쪽지마다 베껴 쓴다.
+ * 결과가 도착하는 순간 그리면 개봉 화면 첫머리가 멈칫한다 — 고르는 동안 primeSlips 가 미리 그린다
+ */
+const paper = new Map<number, HTMLCanvasElement>();
+function slipPaper(H: number) {
+  const hit = paper.get(H);
+  if (hit) return hit;
+  const W = SLIP_W, L = letterAt(H);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d')!;
   roundRect(g, 4, 4, W - 8, H - 8, 34); g.clip();
   const bg = g.createLinearGradient(0, 0, W, H);
   bg.addColorStop(0, '#ECE2CB'); bg.addColorStop(1, '#DCCDAE');
@@ -85,36 +127,40 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, rat
   g.strokeStyle = ink(0.42); g.lineWidth = 2.2; g.strokeRect(62, 62, W - 124, H - 124);
 
   g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  const fit = (text: string, font: string, max: number) => {
-    // 매장 이름이 길면 줄여서 칸 안에 넣는다
-    let px = parseInt(font, 10);
-    const rest = font.replace(/^\d+px/, '');
-    do { g.font = font.replace(/\d+px/, px + 'px'); px -= 2; } while (g.measureText(text).width > max && px > 16);
-    return rest;
-  };
-  g.fillStyle = ink(0.6); fit('꽝 없는 뽑기 · ' + info.title, '700 34px ' + KO, 640);
-  g.fillText('꽝 없는 뽑기 · ' + info.title, 112, 178);
   g.fillStyle = ink(0.92); g.font = '900 110px ' + KO; g.fillText('축 당첨', 104, 320);
-  g.fillStyle = ink(0.7); fit(info.store, '600 36px ' + KO, 640); g.fillText(info.store, 112, 408);
   g.fillStyle = ink(0.3); g.fillRect(112, 456, 600, 2);
-  if (info.no !== null) {
-    g.fillStyle = ink(0.82); g.font = '700 58px ' + SERIF; g.fillText('NO. ' + info.no, 112, 556);
-  }
   g.fillStyle = ink(0.5); g.font = '600 28px ' + KO; g.fillText('모든 표에 상품이 들어 있습니다', 112, 648);
   g.fillStyle = ink(0.26);
   for (let y = 110; y < H - 110; y += 16) g.fillRect(820, y, 3, 8);
   g.fillStyle = ink(0.46); g.font = '700 26px ' + SERIF; g.textAlign = 'center';
   g.fillText('G  R  A  D  E', L.x, H - 92);
-
-  if (revealed) {
-    const pal = METAL[metalOf(grade)];
-    const lg = g.createLinearGradient(L.x - 260, L.y - 280, L.x + 260, L.y + 280);
-    pal.forEach((col, i) => lg.addColorStop(i / (pal.length - 1), col));
-    g.font = '700 ' + L.size + 'px ' + SERIF; g.textBaseline = 'middle';
-    g.fillStyle = 'rgba(30,20,8,.45)'; g.fillText(grade, L.x + 7, L.y + 8);
-    g.fillStyle = lg; g.fillText(grade, L.x, L.y);
-  }
+  paper.set(H, c);
   return c;
+}
+
+/** 브라우저가 한가할 때 — 없으면(옛 사파리) 조금 뒤에 */
+const idle = (fn: () => void) => {
+  const w = window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number };
+  if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 1500 }); else setTimeout(fn, 60);
+};
+
+/**
+ * 티켓을 고르는 동안 미리 그려 둔다 — 쪽지 바탕, 이 판에 있는 등급의 양각 높이,
+ * 그리고 이 매장 글자로 쪽지 한 장(버린다). 한글 글꼴은 캔버스에서 처음 잴 때 한 번 크게 멈춘다(measureText 수백 ms) —
+ * 같은 글자를 미리 한 번 재 두면 결과가 올 때는 바로 그린다.
+ * 한가할 때 하나씩 그린다(한 번에 다 그리면 고르기 화면이 멈칫한다). 이미 그린 것은 건너뛴다
+ */
+const primed = new Set<string>();
+export function primeSlips(ratio: number, grades: string[], info: SlipInfo) {
+  const H = Math.round(SLIP_W / ratio);
+  const words = info.store + '|' + info.title;
+  const jobs = [
+    () => slipPaper(H),
+    () => { if (!primed.has(words)) { slipCanvas('A', info, false, ratio); primed.add(words); } },
+    ...grades.map((gr) => () => letterHeight(gr, ratio)),
+  ];
+  const next = () => { const j = jobs.shift(); if (!j) return; j(); idle(next); };
+  idle(next);
 }
 
 /**
@@ -122,7 +168,12 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, rat
  * 흐리게 그려 가장자리에 비탈을 만든다. 개봉 화면 바닥의 빛 계산이 이 비탈에서 글자 윤곽을 만든다.
  * 쪽지의 금속 글자(slipCanvas revealed)와 자리 · 크기 · 글꼴이 같아야 다 열렸을 때 박이 그 자리를 채운다.
  */
+const heights = new Map<string, HTMLCanvasElement>();
 export function letterHeight(grade: string, ratio = 1.877) {
+  // 흐림(blur 9px)이 무겁다 — 등급 · 비율마다 한 번만. 텍스처는 매번 새로 만들어도 원본 캔버스는 같은 것을 쓴다
+  const key = grade + '|' + ratio;
+  const hit = heights.get(key);
+  if (hit) return hit;
   const L = letterAt(Math.round(SLIP_W / ratio));
   const c = document.createElement('canvas'); c.width = 1024; c.height = Math.round(1024 / ratio);
   const g = c.getContext('2d')!;
@@ -144,6 +195,7 @@ export function letterHeight(grade: string, ratio = 1.877) {
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
     g.drawImage(sm, 0, 0, c.width, c.height);
   }
+  heights.set(key, c);
   return c;
 }
 
