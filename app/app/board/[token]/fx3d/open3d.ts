@@ -125,6 +125,8 @@ const TICKET_FS = `
 /**
  * 바닥 — 표 안쪽 인쇄면. 등급 글자는 높이(hmap)로만 있다.
  * 찢기는 선에서 새는 빛(F)이 바로 옆 바닥을 비스듬히 비춰 양각 가장자리가 그 빛에 걸린다.
+ * 새는 빛의 번짐(spill)도 여기서 바닥 위에만 그린다 — 따로 빛 판을 깔았더니 판의 네모 테두리가
+ * 표 위아래로 드러났다. 바닥 그림 안에서 계산하면 바닥이 보이는 곳에만 빛이 생긴다.
  * 다 열리면(uFoil) 글자 자리가 등급 금속으로 차오르고 광택이 한 줄씩 훑는다
  */
 const FLOOR_FS = `
@@ -154,24 +156,13 @@ const FLOOR_FS = `
     vec3 surf = mix(paper, foil, inside * uFoil);
     float d = uFold - P.x;
     float sh = d > 0.0 ? 1.0 - 0.5 * exp(-d / (55.0 * uK)) : 1.0;
-    gl_FragColor = vec4(surf * (0.45 + 0.65 * diff) * sh + vec3(1.0, 0.8, 0.5) * rim * (0.5 + 0.9 * inside), 1.0);
+    // 열린 쪽 바닥으로 번지는 새는 빛 — 가운데가 밝고 위아래로 사그라진다. 통째로만 숨 쉰다
+    float spill = d > 0.0 ? exp(-d / (80.0 * uK)) * uLeak * 0.09
+      * (0.35 + 0.65 * sin(vUv.y * 3.14159)) * (0.9 + 0.1 * sin(uTime * 23.0)) : 0.0;
+    gl_FragColor = vec4(surf * (0.45 + 0.65 * diff) * sh + vec3(1.0, 0.8, 0.5) * rim * (0.5 + 0.9 * inside)
+      + vec3(1.0, 0.82, 0.55) * spill, 1.0);
     #include <colorspace_fragment>
   }`;
-/**
- * 찢기는 선에서 새는 빛 — 표 밑에서 바닥으로 번진다. 가운데가 뜨겁고 위아래로 사그라진다.
- * 높이마다 다르게 깜빡이게 했더니 가로 줄무늬가 지글거려 화면 오류처럼 보였다 — 통째로만 숨 쉰다
- */
-const LEAK_FS = `
-  uniform float uI; uniform float uTime; varying vec2 vUv;
-  void main(){
-    float x = (vUv.x - 0.5) * 2.0;
-    float core = exp(-x * x * 40.0), wide = exp(-x * x * 4.0) * 0.5;
-    float v = sin(vUv.y * 3.14159);
-    float fl = 0.88 + 0.12 * sin(uTime * 23.0);
-    gl_FragColor = vec4(vec3(1.0, 0.84, 0.55) * (core * 1.5 + wide) * v * fl * uI, 1.0);
-    #include <colorspace_fragment>
-  }`;
-
 /* ------------------------------------------------------------ 불꽃 */
 /** 찢기는 선에서 튀는 불티 — 갓 튄 것은 흰빛, 식으면서 노랑 → 주황 → 빨강. 꼬리(선)로 궤적을 남긴다 */
 class Sparks {
@@ -242,7 +233,7 @@ class OpenScene implements Runner {
   private conf: Confetti;
   private sparks: Sparks;
   private group = new Group();
-  private ticket: Mesh; private floor: Mesh; private leak: Mesh;
+  private ticket: Mesh; private floor: Mesh;
   private ph: CanvasTexture;
   private tickU = {
     map: { value: null as Texture | null }, uC: { value: 0 }, uR: { value: 42 }, uPhi: { value: 2.15 }, uW: { value: 560 }, uK: { value: 1 },
@@ -253,7 +244,6 @@ class OpenScene implements Runner {
     uFold: { value: 0 }, uW: { value: 560 }, uH: { value: 298 }, uLeak: { value: 0 }, uFoil: { value: 0 }, uTime: { value: 0 },
     uK: { value: 1 }, uMetal: { value: new Color('#D9B45C') }, uL: { value: new Vector3(-.45, .5, .75).normalize() },
   };
-  private leakU = { uI: { value: 0 }, uTime: { value: 0 } };
   private tex: Texture[] = [];
   private floorTex: Texture[] = [];
   private warming: Promise<unknown> | null = null;
@@ -294,22 +284,16 @@ class OpenScene implements Runner {
     }));
     this.ticket.renderOrder = 2;
     /*
-     * 바닥 · 새는 빛 · 표는 깊이가 아니라 그리는 순서로 가린다(바닥 → 빛 → 표).
-     * 셋은 몇 px 차이로 겹쳐 있는데, 깊이 버퍼가 16비트인 기기(소프트웨어 렌더 · 일부 태블릿)에서는
+     * 바닥과 표는 깊이가 아니라 그리는 순서로 가린다(바닥 → 표).
+     * 둘은 3px 차이로 겹쳐 있는데, 깊이 버퍼가 16비트인 기기(소프트웨어 렌더 · 일부 태블릿)에서는
      * 그 차이를 못 가려 픽셀마다 앞뒤가 뒤집힌다 — 표 위에 흰 세로 줄무늬가 생기던 원인.
-     * 바닥은 깊이를 남기지 않고, 빛은 표 밑(바닥 쪽)에 깔아 표가 덮게 한다. 빛은 열린 틈으로만 보인다
+     * 바닥은 깊이를 남기지 않는다. 새는 빛은 바닥 셰이더 안에서 그린다(FLOOR_FS 의 spill)
      */
     this.floor = new Mesh(new PlaneGeometry(1, 1), new ShaderMaterial({
       uniforms: this.floorU, vertexShader: VS_UV, fragmentShader: FLOOR_FS, transparent: true, depthWrite: false,
     }));
     this.floor.renderOrder = 1;
-    this.leak = new Mesh(new PlaneGeometry(1, 1), new ShaderMaterial({
-      uniforms: this.leakU, vertexShader: VS_UV, fragmentShader: LEAK_FS,
-      transparent: true, depthWrite: false, blending: AdditiveBlending,
-    }));
-    this.leak.renderOrder = 1.5;
-    this.leak.position.z = -1;
-    this.group.add(this.floor, this.ticket, this.leak);
+    this.group.add(this.floor, this.ticket);
     this.group.visible = false;
     this.scene.add(this.group);
 
@@ -471,7 +455,6 @@ class OpenScene implements Runner {
     swap(this.ticket, new PlaneGeometry(TW, TH, 180, 2));
     // 바닥은 표보다 살짝 작게 — 사진 원판의 들쭉날쭉한 가장자리 밖으로 비어져 나오지 않게
     swap(this.floor, new PlaneGeometry(TW * .985, TH * .985));
-    swap(this.leak, new PlaneGeometry(230 * s, TH + 170 * s));
     this.tickU.uW.value = TW; this.tickU.uR.value = 42 * s; this.tickU.uK.value = s;
     this.floorU.uW.value = TW * .985; this.floorU.uH.value = TH * .985; this.floorU.uK.value = s;
   }
@@ -484,7 +467,7 @@ class OpenScene implements Runner {
     // 처음 몇 초는 글자 층이 자리 잡는 중일 수 있다(글꼴) — 자리를 계속 다시 잰다
     if (lt < 2.5) this.measure();
     this.rays.u.uTime.value = t; this.bok.u.uTime.value = t; this.bok.u.uScale.value = this.gl.uScale;
-    this.leakU.uTime.value = t; this.floorU.uTime.value = t; this.sparks.u.uScale.value = this.gl.uScale;
+    this.floorU.uTime.value = t; this.sparks.u.uScale.value = this.gl.uScale;
 
     // 손 · 자동 열기 — 넘을 선을 넘으면 나머지는 저절로
     if (this.auto) this.target = this.autoAt(t);
@@ -497,7 +480,6 @@ class OpenScene implements Runner {
     const p = this.c, cx = p * TW;
     // 바닥은 표보다 0.75% 안쪽에서 시작한다 — 접히는 자리를 바닥 좌표로 옮긴다
     this.tickU.uC.value = cx; this.floorU.uFold.value = cx - TW * .0075;
-    this.leak.position.x = cx - TW / 2 - 24 * s;
 
     // 글자 구간에 들어서면 숨을 죽인다
     this.tension += ((this.done ? 0 : sstep(.42, .86, p)) - this.tension) * Math.min(1, dt * 5);
@@ -540,7 +522,6 @@ class OpenScene implements Runner {
     this.look.set(this.letterW.x * .8 * k, this.letterW.y * .8 * k, 0);
 
     const live = cx > 2 && cx < TW - 2 && !this.done;
-    this.leakU.uI.value = live ? .5 + Math.min(1.1, this.speed / (600 * s)) + .5 * k : 0;
     this.floorU.uLeak.value = live ? .7 + Math.min(1, this.speed / (500 * s)) + 1.1 * k : 0;
     if (!this.done) {
       this.rays.u.uAmp.value = (.08 + p * .3) * (1 - .85 * k) * this.rayK;
