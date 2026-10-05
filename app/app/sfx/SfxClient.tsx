@@ -20,7 +20,34 @@ export default function SfxClient() {
   const wake = () => { sfx.unlock(mode); setReady(true); };
 
   useEffect(() => { if (ready) sfx.setMode(mode); }, [mode, ready]);
-  useEffect(() => () => { sfx.grindStop(); }, []);
+  useEffect(() => () => { sfx.grindStop(); sfx.peelStop(); }, []);
+
+  /**
+   * 종이 벗기기를 흉내낸다 — 쪼는 손 그대로: 빨리 밀다가, 글자 앞에서 멈칫, 조금씩 쪼다가, 끝은 단숨에.
+   * [초, 빠르기 0~1]
+   */
+  const [peeling, setPeeling] = useState(false);
+  const ptimer = useRef<number | null>(null);
+  function demoPeel() {
+    wake();
+    if (peeling) return;
+    setPeeling(true);
+    const plan: [number, number][] = [[0, .75], [.7, .2], [1.0, 0], [1.6, .12], [1.9, 0], [2.3, .16], [2.6, 0], [3.0, .9], [3.35, 0]];
+    const t0 = performance.now();
+    sfx.peelStart();
+    ptimer.current = window.setInterval(() => {
+      const t = (performance.now() - t0) / 1000;
+      let v = 0;
+      for (const [at, val] of plan) if (t >= at) v = val;
+      sfx.peelSet(v);
+      if (t >= 3.4) {
+        window.clearInterval(ptimer.current!);
+        sfx.peelStop();
+        sfx.snap();
+        setPeeling(false);
+      }
+    }, 30);
+  }
 
   /** 미는 동작을 흉내낸다 — 0에서 1까지 2초 동안 올린다 */
   function demoGrind() {
@@ -62,9 +89,13 @@ export default function SfxClient() {
 
       <section>
         <h2>여는 소리</h2>
-        <button className="row big" onClick={demoGrind} disabled={grinding}>
-          <b>{grinding ? '갈리는 중…' : '지이익 — 확정음까지 한 번에'}</b>
-          <span>손잡이를 끝까지 미는 2초를 그대로 재현합니다</span>
+        <button className="row big" onClick={demoPeel} disabled={peeling}>
+          <b>{peeling ? '벗기는 중…' : '종이 벗기기 — 쪼다가 단숨에, 확정음까지'}</b>
+          <span>3D 개봉 화면. 빨리 밀면 촘촘하게, 멈추면 조용해집니다</span>
+        </button>
+        <button className="row" onClick={demoGrind} disabled={grinding}>
+          <b>{grinding ? '갈리는 중…' : '지이익 — 예전 그라인더'}</b>
+          <span>WebGL 이 안 되는 기기의 평면 개봉 화면에만 남아 있습니다</span>
         </button>
       </section>
 

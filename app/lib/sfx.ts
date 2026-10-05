@@ -138,6 +138,81 @@ export function grindStop() {
   setTimeout(() => { try { src.stop(); } catch { /* 이미 멈춤 */ } }, 220);
 }
 
+/* ---------- 개봉 중(3D): 종이 벗기는 소리 ----------
+   3D 개봉은 종이가 말려 올라간다 — 쇠 갈리는 소리가 아니라 종이 섬유가 끊기는 잔 딱딱 소리다.
+   손가락이 멈추면 소리도 멈춘다(그라인더는 잡고만 있어도 쉬이 소리가 났다).
+   빨리 밀수록 딱딱 소리가 촘촘하고 높아지고, 위에 사각사각 바람 소리가 얹힌다.
+   평면 판(WebGL 없는 기기)은 그대로 그라인더를 쓴다 — 그쪽은 불꽃이 튀는 그림이다. */
+
+let crackleBuf: AudioBuffer | null = null;
+/** 1.6초짜리 종이 섬유 소리 — 드문드문 터지는 짧은 펄스. 크기도 길이도 제각각이다 */
+function crackle() {
+  if (!ctx) return null;
+  if (!crackleBuf) {
+    const sr = ctx.sampleRate, n = Math.round(sr * 1.6);
+    crackleBuf = ctx.createBuffer(1, n, sr);
+    const d = crackleBuf.getChannelData(0);
+    let t = 0;
+    for (;;) {
+      t += Math.max(1, Math.round(sr * (-Math.log(1 - Math.random()) / 190)));   // 평균 초당 190번
+      if (t >= n) break;
+      const amp = (0.25 + Math.random() * 0.75) * (Math.random() < 0.5 ? -1 : 1);
+      const len = Math.round(sr * (0.0006 + Math.random() * 0.0026));
+      for (let i = 0; i < len && t + i < n; i++) d[t + i] += amp * Math.exp(-i / (len * 0.25)) * (0.4 + Math.random() * 0.6);
+    }
+    // 아주 옅은 바탕 — 완전한 정적 위에 딱딱 소리만 있으면 떠 보인다
+    for (let i = 0; i < n; i++) d[i] += (Math.random() * 2 - 1) * 0.015;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = crackleBuf;
+  src.loop = true;
+  return src;
+}
+
+type Peel = { cr: AudioBufferSourceNode; hs: AudioBufferSourceNode; gC: GainNode; gH: GainNode; bp: BiquadFilterNode; v: number };
+let peel: Peel | null = null;
+
+/** 손잡이를 잡을 때 · 저절로 열릴 때 */
+export function peelStart() {
+  if (!on() || peel || !ctx || !master) return;
+  const cr = crackle(), hs = noise();
+  if (!cr || !hs) return;
+  // 딱딱 소리 — 낮은 웅웅거림은 깎고 2.4kHz 언저리를 살린다(종이 소리가 사는 자리)
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 700;
+  const pk = ctx.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 2400; pk.Q.value = 0.7; pk.gain.value = 6;
+  const gC = ctx.createGain(); gC.gain.value = 0;
+  cr.connect(hp); hp.connect(pk); pk.connect(gC); gC.connect(master);
+  // 사각사각 — 빨리 밀 때만 얹힌다
+  const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000; bp.Q.value = 0.9;
+  const gH = ctx.createGain(); gH.gain.value = 0;
+  hs.connect(bp); bp.connect(gH); gH.connect(master);
+  cr.start(); hs.start();
+  peel = { cr, hs, gC, gH, bp, v: -1 };
+}
+
+/** 종이가 말려 올라가는 빠르기(0~1). 멈추면 0 — 소리도 멈춘다 */
+export function peelSet(v: number) {
+  if (!peel || !ctx) return;
+  const k = Math.max(0, Math.min(1, v));
+  if (Math.abs(k - peel.v) < 0.01) return;   // 매 프레임 불려도 달라질 때만 손댄다
+  peel.v = k;
+  const now = ctx.currentTime;
+  // 천천히 쪼는 속도에서도 들리게 낮은 쪽을 들어 올린 곡선(0.15 에서 -34dB · 보통 -28 · 빠르게 -23, 작게 기준)
+  peel.gC.gain.setTargetAtTime(Math.pow(k, 0.55) * 0.9, now, 0.03);
+  peel.gH.gain.setTargetAtTime(k * k * 0.16, now, 0.05);
+  peel.cr.playbackRate.setTargetAtTime(0.7 + 1.6 * k, now, 0.05);
+  peel.bp.frequency.setTargetAtTime(1800 + 2400 * k, now, 0.06);
+}
+
+export function peelStop() {
+  if (!peel || !ctx) return;
+  const { cr, hs, gC, gH } = peel;
+  peel = null;
+  gC.gain.setTargetAtTime(0, ctx.currentTime, 0.04);
+  gH.gain.setTargetAtTime(0, ctx.currentTime, 0.04);
+  setTimeout(() => { try { cr.stop(); hs.stop(); } catch { /* 이미 멈춤 */ } }, 260);
+}
+
 /* ---------- 다 열릴 때: 확정음 ----------
    "티켓이 확정됐다"를 알리는 한 방. 성격이 다른 다섯 가지를 두고 골라 쓴다.
    여는 소리(지익-)가 노이즈라, 확정음은 그와 결이 달라야 끝이 분명해진다. */
