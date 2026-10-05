@@ -6,3 +6,4 @@
 .fxpick select{flex:1 1 220px}
 .fxpick select option{color:#111}
 .fxpick button.on{background:#D2AA55;color:#241A06;border-color:#D2AA55}
+.fxpick .fxsnd{display:flex;gap:6px;margin-left:auto}

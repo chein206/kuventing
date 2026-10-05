@@ -5,6 +5,7 @@ import { THEMES, themeOf } from '@/lib/boardArt';
 import type { DrawResult, Prize } from '@/lib/supabase';
 import { Icon } from '@/lib/Icon';
 import { fontOf } from '@/lib/fonts';
+import * as sfx from '@/lib/sfx';
 import ResultView from '../board/[token]/ResultView';
 import OpenView from '../board/[token]/OpenView';
 import { gradeColor, type Tier } from '../board/[token]/grade';
@@ -55,6 +56,10 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
     return () => { clearTimeout(t); setPending(null); };
   }, [phase, st.tier, run]);
 
+  // 소리 — 카운터 화면과 같은 소리를 낸다. 브라우저는 화면을 만지기 전에는 소리를 막으므로 첫 터치에 깨운다
+  const [snd, setSnd] = useState<sfx.SoundMode>('soft');
+  useEffect(() => { sfx.setMode(snd); }, [snd]);
+
   // 테마는 판(html)에 건다. 결과 화면의 3D 는 사진을 받은 뒤 바탕색을 읽으므로 이 효과가 먼저 끝나 있다
   useEffect(() => { document.documentElement.dataset.theme = st.theme; }, [st.theme]);
 
@@ -65,7 +70,7 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
   const def = themeOf(st.theme);
   const pick = (theme: string, tier: Tier) => {
     document.documentElement.dataset.theme = theme;
-    history.replaceState(null, '', `?theme=${theme}&tier=${tier}`);
+    history.replaceState(null, '', `?theme=${theme}&tier=${tier}${init.view ? `&view=${init.view}` : ''}`);
     setSt({ theme, tier });
     setRun((n) => n + 1);
     if (init.view === 'open') setPhase('open');
@@ -76,7 +81,7 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
     <div className="bd" style={{
       ['--tk-ratio' as string]: String(def.art.photo?.ratio ?? 2),
       ['--surface' as string]: def.art.photo ? `url(${def.art.photo.surface})` : 'none',
-    }}>
+    }} onPointerDownCapture={() => sfx.unlock(snd)}>
       <div className="bar">
         <button className="home" onClick={again} aria-label="다시"><Icon name="ticket" /></button>
         <div className="nm">라멘집 · 미리보기</div>
@@ -86,7 +91,12 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
         <OpenView key={`o-${st.theme}-${st.tier}-${run}`} sel={17} pending={pending} art={def.art} dark={def.dark}
                   title="10월 뽑기" store="라멘집 · 미리보기" font={fontOf(null).stack}
                   autoOpenSeconds={45} lastOneLabel="피날레 보너스"
-                  onOpened={() => setPhase('result')} />
+                  onOpened={() => {
+                    // 카운터 화면(BoardClient)과 같이 — 결과로 넘어가는 순간 팡파레
+                    const r = SAMPLE[st.tier];
+                    sfx.fanfare(r.grade, r.isLastOne && !!r.lastOneName);
+                    setPhase('result');
+                  }} />
       ) : (
         <ResultView key={`r-${st.theme}-${st.tier}-${run}`}
                     r={SAMPLE[st.tier]} art={def.art} dark={def.dark}
@@ -103,6 +113,11 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
           {TIERS.map((t) => (
             <button key={t.k} className={t.k === st.tier ? 'on' : ''} onClick={() => pick(st.theme, t.k)}>{t.label}</button>
           ))}
+          <span className="fxsnd">
+            {([['off', '소리 끔'], ['soft', '작게'], ['loud', '크게']] as const).map(([v, l]) => (
+              <button key={v} className={snd === v ? 'on' : ''} onClick={() => { setSnd(v); sfx.unlock(v); }}>{l}</button>
+            ))}
+          </span>
         </div>
       )}
     </div>
