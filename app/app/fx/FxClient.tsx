@@ -10,14 +10,14 @@ import OpenView from '../board/[token]/OpenView';
 import type { Tier } from '../board/[token]/grade';
 
 /**
- * 결과 화면 미리보기 — 테마 7개 × 판 4개(막차 · 금 · 구리 · 은)를 카운터 화면 그대로 돌려 본다.
+ * 결과 화면 미리보기 — 테마 7개 × 판 4개(피날레 · 금 · 구리 · 은)를 카운터 화면 그대로 돌려 본다.
  * 데이터는 가짜다. DB 를 부르지 않으니 표가 줄지 않는다.
  * 주소: /fx?theme=light-west&tier=E  (bare=1 이면 고르는 막대를 숨긴다 — 스크린샷용)
  *       /fx?theme=classic&view=keys  버튼 재질만 모아 본다 (PIN 자판 · 취소 · 남은 시간 · 시작 띠)
  *       /fx?theme=dark-west&tier=C&view=open  개봉 화면부터 — 다 열면 결과 화면으로 이어진다
  */
 const TIERS: { k: Tier; label: string }[] = [
-  { k: 'L', label: '막차' }, { k: 'A', label: '금 A·B' }, { k: 'C', label: '구리 C' }, { k: 'E', label: '은 D 이하' },
+  { k: 'L', label: '피날레' }, { k: 'A', label: '금 A·B' }, { k: 'C', label: '구리 C' }, { k: 'E', label: '은 D 이하' },
 ];
 const BASE = { code: 'K7Q-2M9', expiresAt: '2026-12-31T00:00:00Z', left: 41, position: 17 };
 const SAMPLE: Record<Tier, DrawResult> = {
@@ -82,13 +82,13 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
       {init.view === 'keys' ? <Keys /> : phase === 'open' ? (
         <OpenView key={`o-${st.theme}-${st.tier}-${run}`} sel={17} pending={pending} art={def.art} dark={def.dark}
                   title="10월 뽑기" store="라멘집 · 미리보기" font={fontOf(null).stack}
-                  autoOpenSeconds={45} lastOneLabel="막차 보너스"
+                  autoOpenSeconds={45} lastOneLabel="피날레 보너스"
                   onOpened={() => setPhase('result')} />
       ) : (
         <ResultView key={`r-${st.theme}-${st.tier}-${run}`}
                     r={SAMPLE[st.tier]} art={def.art} dark={def.dark}
                     campaignId="00000000-0000-0000-0000-000000000000" prizes={PRIZES}
-                    lastOneImage="/fx/prize-last.jpg" lastOneLabel="막차 보너스"
+                    lastOneImage="/fx/prize-last.jpg" lastOneLabel="피날레 보너스"
                     store="라멘집 · 미리보기" title="10월 뽑기" seconds={60}
                     onDone={again} />
       )}

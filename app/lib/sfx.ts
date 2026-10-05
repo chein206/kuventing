@@ -287,7 +287,7 @@ function bell(freq: number, at: number, dur: number, vol: number, send = 0) {
   });
 }
 
-/** 뽑은 결과가 뜰 때. 막차 보너스면 금색 한 방을 더 얹는다 */
+/** 뽑은 결과가 뜰 때. 피날레 보너스면 금색 한 방을 더 얹는다 */
 export function fanfare(grade: string, isLastOne = false) {
   if (!on() || !ctx) return;
   const f = FAN[grade.toUpperCase()] ?? FAN.E;

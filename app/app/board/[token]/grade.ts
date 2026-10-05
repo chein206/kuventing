@@ -15,7 +15,7 @@ export const gradeColor = (g: string) => {
  */
 export const isFlat = (src: string) => /\.svg($|\?)/i.test(src);
 
-/** 결과 연출의 판 크기 — 막차 · 금(A·B) · 구리(C) · 은(D 이하) */
+/** 결과 연출의 판 크기 — 피날레 · 금(A·B) · 구리(C) · 은(D 이하) */
 export type Tier = 'L' | 'A' | 'C' | 'E';
 export const tierOf = (grade: string, isLastOne: boolean): Tier =>
   isLastOne ? 'L' : grade === 'A' || grade === 'B' ? 'A' : grade === 'C' ? 'C' : 'E';

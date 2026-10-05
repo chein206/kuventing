@@ -18,7 +18,7 @@ npm --prefix kuventing/app run img
 |---|---|---|
 | `ad-차슈덮밥.jpg` | 초기화면 광고 슬라이드 | **자르지 않음.** 긴 변 1600px 이내로 축소만 |
 | `prize-a.jpg` | A상 상품 사진 | 1000×1000 정사각 (**원형으로 잘림**) |
-| `prize-last.jpg` | 막차 보너스 | 1000×1000 |
+| `prize-last.jpg` | 피날레 보너스 | 1000×1000 |
 | `ticket-01.jpg` | 티켓 아트 | 배경 제거 → 투명 PNG (현재는 SVG로 대체됨) |
 | `logo.png` | 매장 로고 | 512×512 |
 

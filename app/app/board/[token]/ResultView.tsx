@@ -34,7 +34,7 @@ export default function ResultView({
   const cardRef = useRef<HTMLDivElement>(null);
   const coinRef = useRef<HTMLDivElement>(null);
 
-  // 막차 보너스가 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다
+  // 피날레 보너스가 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다
   const last = r.isLastOne && !!r.lastOneName;
   const tier = tierOf(r.grade, r.isLastOne);
   const front = last ? lastOneImage : r.image;

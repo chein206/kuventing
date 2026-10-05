@@ -425,7 +425,7 @@ function NewStore({
           store: { name: name.trim(), branch: branch.trim(), owner_pin: pins.owner, board_pin: pins.board },
           campaign: {
             title, total_tickets: total, theme, days, board_mode: mode,
-            rate_per_min: 6, last_one_label: '막차 보너스', last_one_name: lastName,
+            rate_per_min: 6, last_one_label: '피날레 보너스', last_one_name: lastName,
           },
           prizes: rows.map((x, i) => ({ ...x, sort: i + 1 })),
           ads: p?.ads ?? [],
@@ -480,7 +480,7 @@ function NewStore({
               <option value="pin">직원 확인 (PIN)</option>
               <option value="open">상시 개방</option>
             </select></label>
-          <label className="f"><span>막차 보너스 상품</span>
+          <label className="f"><span>피날레 보너스 상품</span>
             <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="세트 무료 + 굿즈" /></label>
           <label className="f"><span>카운터 PIN</span>
             <input value={pins.board} maxLength={4}

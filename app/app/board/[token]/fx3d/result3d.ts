@@ -28,7 +28,7 @@ export type PlayOpts = {
   coinSlot: HTMLElement;
   grade: string;
   tier: Tier;
-  /** 카드 앞면 사진 (상품 또는 막차 보너스). 없으면 등급 글자를 크게 찍는다 */
+  /** 카드 앞면 사진 (상품 또는 피날레 보너스). 없으면 등급 글자를 크게 찍는다 */
   front: string | null;
   /** 그림(할인권 SVG)이면 자르지 않는다 */
   flat: boolean;

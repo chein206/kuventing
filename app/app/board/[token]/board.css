@@ -270,7 +270,7 @@
 .bd .pcard .pshot.flat ~ .pbar b{color:var(--ink)}
 .bd .pcard .pshot.flat ~ .pbar span{color:var(--ink-dim)}
 
-/* 막차 보너스는 두 칸을 다 쓴다 */
+/* 피날레 보너스는 두 칸을 다 쓴다 */
 .bd .pcard.last{
   grid-column:1 / -1;--gc:var(--gold);
   background:color-mix(in srgb,var(--gold) 18%,var(--surf));
@@ -746,7 +746,7 @@
   font-weight:700;letter-spacing:.08em;opacity:.55
 }
 
-/* 막차 보너스 검인 — 사진 오른쪽에 눌러 찍는다 */
+/* 피날레 보너스 검인 — 사진 오른쪽에 눌러 찍는다 */
 .bd .pcard .pseal{
   position:absolute;right:18px;top:44%;transform:translateY(-50%);
   height:58%;z-index:2;pointer-events:none;
@@ -827,7 +827,7 @@
 /* 3D 가 실제로 출발할 때까지 글자 연출을 세워 둔다 (ResultView 의 go). 단축 속성 animation 이 재생 상태를 되살리므로 !important */
 .bd .res3.hold,.bd .res3.hold *{animation-play-state:paused!important}
 
-/* 금속 글씨 — 등급에 따라 금 · 구리 · 은, 막차는 붉은 금 */
+/* 금속 글씨 — 등급에 따라 금 · 구리 · 은, 피날레는 붉은 금 */
 .bd .hdl{
   font-size:clamp(42px,4.8dvh,60px);font-weight:900;letter-spacing:.02em;line-height:1.05;padding:0 10px;
   background:linear-gradient(100deg,#9C7A2E 0%,#F6E7B8 20%,#C9A24B 38%,#FFF6DC 50%,#B08A3E 66%,#F0D389 84%,#9C7A2E 100%);
@@ -840,7 +840,7 @@
 .bd .tier-C .hdl{background-image:linear-gradient(100deg,#7A4A2A 0%,#F3C9A2 20%,#C08A5A 38%,#FFE6D2 50%,#9C6A3E 66%,#E2A57A 84%,#7A4A2A 100%)}
 .bd .tier-E .hdl{background-image:linear-gradient(100deg,#6E7682 0%,#F1F4F8 20%,#AEB5C0 38%,#FFFFFF 50%,#8C94A0 66%,#DDE2EA 84%,#6E7682 100%)}
 .bd .tier-L .hdl{font-size:clamp(44px,5.1dvh,64px);background-image:linear-gradient(100deg,#F2C25A 0%,#FFF8E4 20%,#FFD27A 38%,#FFFDF2 50%,#E8A848 66%,#FFF0C2 84%,#F2C25A 100%)}
-/* 막차 판은 뒤가 주황 빛으로 가득 차서 붉은 금 글씨가 묻힌다 — 글씨는 밝은 금으로 올리고 짙은 테두리와 가까운 그늘로 떼어 낸다.
+/* 피날레 판은 뒤가 주황 빛으로 가득 차서 붉은 금 글씨가 묻힌다 — 글씨는 밝은 금으로 올리고 짙은 테두리와 가까운 그늘로 떼어 낸다.
    붉은 기운은 뒤의 빛줄기가 맡는다 */
 .bd .tier-L .hdl{-webkit-text-stroke:2px rgba(90,26,8,.9);
   filter:drop-shadow(0 3px 0 rgba(74,22,8,.9)) drop-shadow(0 0 12px rgba(40,10,0,.75)) drop-shadow(0 8px 22px rgba(0,0,0,.6))}

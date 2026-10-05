@@ -153,7 +153,7 @@ export default function AdminMedia({
                 upload={upload} removeImage={removeImage} onChange={() => load()}
               />
               <div className="mlbl">
-                <b>{d.last_one_name}</b><span>{d.last_one_label ?? '막차 보너스'}</span>
+                <b>{d.last_one_name}</b><span>{d.last_one_label ?? '피날레 보너스'}</span>
               </div>
             </div>
           )}

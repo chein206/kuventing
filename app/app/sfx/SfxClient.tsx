@@ -87,7 +87,7 @@ export default function SfxClient() {
           {['A', 'B', 'C', 'D', 'E'].map((g) => (
             <button key={g} onClick={() => { wake(); sfx.fanfare(g); }}>{g}</button>
           ))}
-          <button className="last" onClick={() => { wake(); sfx.fanfare('A', true); }}>막차 보너스</button>
+          <button className="last" onClick={() => { wake(); sfx.fanfare('A', true); }}>피날레 보너스</button>
         </div>
       </section>
     </div>

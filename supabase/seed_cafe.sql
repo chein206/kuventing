@@ -25,7 +25,7 @@ begin
   values (
     v_store, '오픈 기념 뽑기', 'live', 50, 'warm',
     now(), now() + interval '7 days',
-    '막차 보너스', '딸기케익 + 음료 2잔 세트',
+    '피날레 보너스', '딸기케익 + 음료 2잔 세트',
     'pin', 20, 6, 40, 45
   )
   returning id into v_campaign;

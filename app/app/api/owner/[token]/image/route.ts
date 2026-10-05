@@ -9,7 +9,7 @@ import { storagePath, publicUrl, putImage, dropImage } from '@/lib/storage';
  * 여기서 다시 확인한다. 사장님 PIN을 아는 사람은 라우트를 직접 때릴 수 있다.
  *
  *   target=prize&grade=A   상품 사진
- *   target=last            막차 보너스 사진
+ *   target=last            피날레 보너스 사진
  *   target=slide&index=0      광고 슬라이드 사진
  */
 

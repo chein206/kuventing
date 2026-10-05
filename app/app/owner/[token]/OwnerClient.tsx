@@ -543,7 +543,7 @@ export default function OwnerClient({ token }: { token: string }) {
       )}
 
       {tab === 'use' && (
-        <UseTab call={call} api={api} onDone={load} lastLabel={bd?.last_one_label ?? '막차 보너스'} />
+        <UseTab call={call} api={api} onDone={load} lastLabel={bd?.last_one_label ?? '피날레 보너스'} />
       )}
       {tab === 'prize' && (
         <PrizeTab
@@ -714,11 +714,11 @@ function PrizeTab({
               upload={upload} removeImage={removeImage}
               onChange={setLastImage}
             />
-            <span>막차 보너스 사진</span>
+            <span>피날레 보너스 사진</span>
           </div>
           <div className="lrow">
             <input
-              className="lab" value={label} maxLength={20} placeholder="막차 보너스"
+              className="lab" value={label} maxLength={20} placeholder="피날레 보너스"
               onChange={(e) => { setLabel(e.target.value); setLastMsg(null); }}
             />
             <input
@@ -737,7 +737,7 @@ function PrizeTab({
           {lastMsg && <p className="demo"><b>{lastMsg}</b></p>}
           <p className="demo">
             왼쪽이 화면에 뜨는 <b>이름표</b>, 오른쪽이 <b>상품명</b>입니다.
-            <br />예: <code>막차 보너스</code> / <code>차슈덮밥 세트 무료 + 굿즈</code>
+            <br />예: <code>피날레 보너스</code> / <code>차슈덮밥 세트 무료 + 굿즈</code>
           </p>
         </div>
 
@@ -962,7 +962,7 @@ function UseTab({
           k: 'ok', ic: 'check',
           h: `${r.grade} — ${r.name}`,
           s: r.isLastOne && r.lastOneName
-            // 이름표는 사장님이 정한 문구를 쓴다 (기본 "막차 보너스")
+            // 이름표는 사장님이 정한 문구를 쓴다 (기본 "피날레 보너스")
             ? `사용 처리되었습니다.\n${lastLabel} 「${r.lastOneName}」도 함께 지급해주세요.`
             : '사용 처리되었습니다. 손님에게 제공해주세요.',
         });

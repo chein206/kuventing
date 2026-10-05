@@ -466,8 +466,8 @@ export default function BoardClient({ token }: { token: string }) {
                 {cfg.lastOneImage
                   ? <img className={`pshot ${isFlat(cfg.lastOneImage) ? 'flat' : ''}`} src={cfg.lastOneImage} alt="" />
                   : <span className="pbig"><Icon name="star" /></span>}
-                <span className="pgrade wide">{cfg.lastOneLabel ?? '마지막 보상'}</span>
-                {/* 막차 보너스에만 붙는 황동 검인 — 등급 상품과 한눈에 갈린다 */}
+                <span className="pgrade wide">{cfg.lastOneLabel ?? '피날레 보너스'}</span>
+                {/* 피날레 보너스에만 붙는 황동 검인 — 등급 상품과 한눈에 갈린다 */}
                 <img className="pseal" src="/art/seal-last.svg" alt="" />
                 <div className="pbar">
                   <b>{cfg.lastOneName}</b>
@@ -537,7 +537,7 @@ export default function BoardClient({ token }: { token: string }) {
                   store={cfg.store.name + (cfg.store.branch ? ` · ${cfg.store.branch}` : '')}
                   font={fontOf(cfg.font).stack}
                   autoOpenSeconds={cfg.autoOpenSeconds ?? DEF.autoOpen}
-                  lastOneLabel={cfg.lastOneLabel ?? '마지막 보상'}
+                  lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
                   onOpened={opened} />
       )}
 
@@ -545,7 +545,7 @@ export default function BoardClient({ token }: { token: string }) {
         <ResultView r={result} art={art} dark={themeOf(cfg.theme).dark}
                     campaignId={cfg.campaignId} prizes={snap}
                     lastOneImage={cfg.lastOneImage}
-                    lastOneLabel={cfg.lastOneLabel ?? '마지막 보상'}
+                    lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
                     store={cfg.store.name + (cfg.store.branch ? ` · ${cfg.store.branch}` : '')}
                     title={cfg.title}
                     seconds={cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
