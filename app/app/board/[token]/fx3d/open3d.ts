@@ -106,6 +106,7 @@ const TICKET_VS = `
   }`;
 const TICKET_FS = `
   uniform sampler2D map; uniform vec3 uBack; uniform vec3 uL; uniform float uOpacity;
+  uniform float uC; uniform float uW; uniform float uK; uniform float uSeam; uniform float uTime;
   varying vec2 vUv; varying vec3 vN; varying float vShade;
   void main(){
     vec4 tc = texture2D(map, vUv);
@@ -119,7 +120,13 @@ const TICKET_FS = `
     // 종이는 무광이다 — 넓게 번들거리면 평평한 면 전체에 흰빛이 얹혀 잉크가 회색으로 바랜다.
     // 좁게 잡아 말려 올라간 곡면에만 광택 한 줄이 서게 한다
     float spec = pow(max(dot(n, h), 0.0), 90.0) * 0.2;
-    gl_FragColor = vec4(base * (0.38 + 0.8 * diff) * vShade + spec, uOpacity);
+    // 찢기는 선의 얇은 빛줄기 — 종이가 들리는 주름선에서 빛이 샌다.
+    // 따로 빛 판을 깔면 판의 테두리 · 깊이 다툼이 드러나서(네모 빛 · 세로 줄무늬) 종이 그림 안에 그린다.
+    // 가운데 한 줄은 뜨겁게 가늘고, 둘레는 옅게 번진다. 위아래 끝은 사그라지고, 통째로만 숨 쉰다
+    float dd = uC - vUv.x * uW;
+    float seam = (exp(-pow(dd / (3.5 * uK), 2.0)) * 1.4 + exp(-pow(dd / (16.0 * uK), 2.0)) * 0.22)
+      * uSeam * (0.55 + 0.45 * sin(vUv.y * 3.14159)) * (0.9 + 0.1 * sin(uTime * 23.0));
+    gl_FragColor = vec4(base * (0.38 + 0.8 * diff) * vShade + spec + vec3(1.0, 0.86, 0.6) * seam, uOpacity);
     #include <colorspace_fragment>
   }`;
 /**
@@ -157,10 +164,16 @@ const FLOOR_FS = `
     float d = uFold - P.x;
     float sh = d > 0.0 ? 1.0 - 0.5 * exp(-d / (55.0 * uK)) : 1.0;
     // 열린 쪽 바닥으로 번지는 새는 빛 — 가운데가 밝고 위아래로 사그라진다. 통째로만 숨 쉰다
-    float spill = d > 0.0 ? exp(-d / (80.0 * uK)) * uLeak * 0.09
-      * (0.35 + 0.65 * sin(vUv.y * 3.14159)) * (0.9 + 0.1 * sin(uTime * 23.0)) : 0.0;
+    float breathe = (0.9 + 0.1 * sin(uTime * 23.0)) * (0.35 + 0.65 * sin(vUv.y * 3.14159));
+    float spill = d > 0.0 ? exp(-d / (80.0 * uK)) * uLeak * 0.09 * breathe : 0.0;
+    // 찢기는 선의 빛줄기 — 말린 종이(반지름 42)의 왼쪽 끝 바로 바깥 바닥에 가늘게.
+    // 접는 선 바로 위는 말린 종이가 덮어 안 보인다. 종이와 바닥 사이 틈에서 새는 빛이 보이는 자리는 여기다
+    // 가운데 줄은 말린 끝에서 8px 바깥(그보다 안쪽은 종이 밑이라 가려진다), 둘레로 옅은 번짐
+    float gap = d - 42.0 * uK * 1.2;
+    float seam = (exp(-gap * gap / (64.0 * uK * uK)) * 0.5 + exp(-gap * gap / (625.0 * uK * uK)) * 0.08)
+      * uLeak * breathe;
     gl_FragColor = vec4(surf * (0.45 + 0.65 * diff) * sh + vec3(1.0, 0.8, 0.5) * rim * (0.5 + 0.9 * inside)
-      + vec3(1.0, 0.82, 0.55) * spill, 1.0);
+      + vec3(1.0, 0.82, 0.55) * spill + vec3(1.0, 0.9, 0.7) * seam, 1.0);
     #include <colorspace_fragment>
   }`;
 /* ------------------------------------------------------------ 불꽃 */
@@ -238,6 +251,7 @@ class OpenScene implements Runner {
   private tickU = {
     map: { value: null as Texture | null }, uC: { value: 0 }, uR: { value: 42 }, uPhi: { value: 2.15 }, uW: { value: 560 }, uK: { value: 1 },
     uBack: { value: new Color('#CDBB98') }, uL: { value: new Vector3(-.35, .55, .75).normalize() }, uOpacity: { value: 1 },
+    uSeam: { value: 0 }, uTime: { value: 0 },
   };
   private floorU = {
     map: { value: null as Texture | null }, hmap: { value: null as Texture | null }, uTex: { value: new Vector2(.002, .004) },
@@ -523,6 +537,9 @@ class OpenScene implements Runner {
 
     const live = cx > 2 && cx < TW - 2 && !this.done;
     this.floorU.uLeak.value = live ? .7 + Math.min(1, this.speed / (500 * s)) + 1.1 * k : 0;
+    // 빨리 밀수록, 글자 구간일수록 빛줄기가 밝아진다
+    this.tickU.uSeam.value = live ? .5 + Math.min(1.1, this.speed / (600 * s)) + .5 * k : 0;
+    this.tickU.uTime.value = t;
     if (!this.done) {
       this.rays.u.uAmp.value = (.08 + p * .3) * (1 - .85 * k) * this.rayK;
       this.bok.u.uAmp.value = (.35 + p * .3) * (1 - .7 * k) * this.bokK;
