@@ -286,7 +286,57 @@ export function snapOf(kind: SnapKind) {
   }
 }
 
-/** 화면에서 부르는 확정음. 기본값은 아래 DEFAULT_SNAP */
+/* ---------- 3D 개봉이 다 열린 순간: 휙 + 반짝 ----------
+   화면에서는 표가 날아가고 등급 글자에 박이 차오른다. 코르크 "팡"은 태블릿에서 "뚝"으로 들렸다(사장님).
+   표가 날아가는 바람 소리 위로, 박이 차오르는 0.1~0.65초 동안 높은 종이 위로 흩뿌려진다.
+   금(A·B)은 길고 화려하게, 구리(C)는 중간, 은(D 이하)은 짧게 — 등급 낙차는 결과 팡파레가 이어 받는다. */
+
+/** 휙 — 노이즈를 높은 쪽으로 쓸어 올린다. 앞이 서서히 커져 바람처럼 들린다 */
+function whoosh(t: number, from: number, to: number, dur: number, vol: number) {
+  if (!ctx || !master) return;
+  const src = noise();
+  if (!src) return;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.Q.value = 0.8;
+  bp.frequency.setValueAtTime(from, t);
+  bp.frequency.exponentialRampToValueAtTime(to, t + dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + dur * 0.35);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(bp); bp.connect(g); g.connect(master);
+  src.start(t); src.stop(t + dur + 0.02);
+}
+
+/** 반짝이는 음 — 금은 8음, 구리 5음, 은 3음(5음계로 올라간다) */
+const SPARK: Record<'gold' | 'copper' | 'silver', number[]> = {
+  gold: [1047, 1175, 1319, 1568, 1760, 2093, 2349, 2637],
+  copper: [1047, 1319, 1568, 2093, 2637],
+  silver: [1319, 1760, 2637],
+};
+
+export function reveal(grade: string) {
+  if (!on() || !ctx || !master) return;
+  const g = grade.toUpperCase();
+  const metal = g === 'A' || g === 'B' ? 'gold' : g === 'C' ? 'copper' : 'silver';
+  const t = ctx.currentTime + 0.01;
+  whoosh(t, 500, 4200, 0.34, 0.38);
+  SPARK[metal].forEach((f, i) => bell(f, t + 0.1 + i * 0.055, 0.55, 0.16, 0.45));
+  // 박 위에 남는 고역 — 쉬이
+  const src = noise();
+  if (src) {
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6500;
+    const sg = ctx.createGain();
+    const len = metal === 'gold' ? 0.9 : metal === 'copper' ? 0.65 : 0.45;
+    sg.gain.setValueAtTime(0.0001, t + 0.1);
+    sg.gain.exponentialRampToValueAtTime(0.05, t + 0.2);
+    sg.gain.exponentialRampToValueAtTime(0.0008, t + 0.1 + len);
+    src.connect(hp); hp.connect(sg); sg.connect(master);
+    src.start(t + 0.1); src.stop(t + 0.15 + len);
+  }
+}
+
+/** 화면에서 부르는 확정음(평면 개봉 화면). 3D 개봉은 reveal() */
 let snapKind: SnapKind = 'pop';
 export const setSnap = (k: SnapKind) => { snapKind = k; };
 export function snap() { snapOf(snapKind); }

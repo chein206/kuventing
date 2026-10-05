@@ -66,6 +66,8 @@ function Open3D({
   const lastAct = useRef(0);
   const autoRef = useRef(false);
   const openedRef = useRef(onOpened);
+  // 다 열린 순간의 반짝임은 등급 금속을 따른다 — 결과가 도착하면 적어 둔다
+  const gradeRef = useRef('E');
   const [ready, setReady] = useState(false);
   const [auto, setAuto] = useState(false);
   const [done, setDone] = useState(false);
@@ -117,7 +119,7 @@ function Open3D({
             drag.current = null;
             sfx.grindStop();
             sfx.tensionStop();
-            sfx.snap();
+            sfx.reveal(gradeRef.current);
             setDone(true);
           },
           done: () => { if (alive) openedRef.current(); },
@@ -144,6 +146,7 @@ function Open3D({
     if (!ready || !pending) return;
     // 피날레 연출은 보너스가 정해져 있을 때만 — 등급 글자 자체는 그 표의 실제 등급이다
     const finale = pending.isLastOne && !!pending.lastOneName;
+    gradeRef.current = pending.grade;
     sceneRef.current?.setResult(pending.grade, tierOf(pending.grade, finale), { store, title, no: sel });
   }, [ready, pending, store, title, sel]);
 

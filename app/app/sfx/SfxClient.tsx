@@ -102,7 +102,16 @@ export default function SfxClient() {
       </section>
 
       <section>
-        <h2>확정음 <em>티켓이 확정되는 순간</em></h2>
+        <h2>다 열린 순간 <em>표가 날아가고 글자에 박이 차오른다</em></h2>
+        <div className="grades">
+          {([['A', '금 A·B'], ['C', '구리 C'], ['E', '은 D 이하']] as const).map(([g, l]) => (
+            <button key={g} onClick={() => { wake(); sfx.reveal(g); }}>{l}</button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2>확정음 <em>평면 개봉 화면(WebGL 없는 기기)</em></h2>
         {(Object.keys(sfx.SNAP_LABEL) as sfx.SnapKind[]).map((k) => (
           <button key={k} className="row" onClick={() => { wake(); sfx.snapOf(k); }}>
             <b>{sfx.SNAP_LABEL[k]}</b>
