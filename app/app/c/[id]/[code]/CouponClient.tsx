@@ -6,7 +6,7 @@ import { Icon } from '@/lib/Icon';
 
 type Coupon = {
   grade?: string; name?: string; image?: string | null;
-  code?: string; isLastOne?: boolean;
+  code?: string; isLastOne?: boolean; lastOneLabel?: string | null;
   expiresAt?: string; usedAt?: string | null;
   error?: string;
 };
@@ -43,7 +43,7 @@ export default function CouponClient({ campaignId, code }: { campaignId: string;
     <div className="app">
       <section className="screen">
         <div className="result">
-          {c.isLastOne && <div className="lastone">LAST ONE</div>}
+          {c.isLastOne && <div className="lastone">{c.lastOneLabel ?? '피날레 보너스'}</div>}
           <div className="congrats">내 쿠폰</div>
           <div className="rgrade" style={{ background: gradeColor(c.grade ?? 'E') }}>
             {c.image ? <img src={c.image} alt="" /> : c.grade}

@@ -163,17 +163,22 @@ export default function ResultView({
           </div>
         )}
 
-        <div className="gchips">
-          {prizes.map((p) => {
-            const l = p.grade === r.grade ? p.left - 1 : p.left;
-            return (
-              <div key={p.grade} className={`gchip ${l <= 0 ? 'zero' : ''}`}>
-                <div className="d" style={{ background: gradeColor(p.grade) }}>{p.grade}</div>
-                <div className="n">{Math.max(0, l)}</div>
-              </div>
-            );
-          })}
-        </div>
+        {r.carried ? (
+          // 숨은 피날레가 나와 남은 장이 다음 판으로 갔다 — 이 판의 남은 수량은 이제 의미가 없다
+          <div className="carried">남은 {r.carried}장은 다음 판에 섞였습니다 · 새 판 시작</div>
+        ) : (
+          <div className="gchips">
+            {prizes.map((p) => {
+              const l = p.grade === r.grade ? p.left - 1 : p.left;
+              return (
+                <div key={p.grade} className={`gchip ${l <= 0 ? 'zero' : ''}`}>
+                  <div className="d" style={{ background: gradeColor(p.grade) }}>{p.grade}</div>
+                  <div className="n">{Math.max(0, l)}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       <button className="big" onClick={onDone}>확인 ({sec})</button>
     </div>

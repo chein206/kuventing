@@ -386,6 +386,11 @@ export default function BoardClient({ token, build }: { token: string; build: st
 
   const left = board?.left ?? 0;
   const total = board?.campaign?.total ?? 0;
+  // 끝물 — 남은 장이 모두 같은 등급이면 피날레가 그 안에 숨는다(사장님이 고른 방식일 때)
+  const fin = board?.finale;
+  const finLabel = cfg.lastOneLabel ?? '피날레 보너스';
+  const finHint = left === 1 ? `마지막 1장에 ${finLabel}` : `남은 ${left}장 중 1장에 ${finLabel}`;
+  const carried = fin?.carried?.length ? fin.carried.map((c) => `${c.grade} ${c.n}장`).join(' · ') : null;
   // 티켓 아트는 테마가 정한다 — 판 밝기가 종이색을, 문양이 무늬와 도장을 고른다
   const art = themeOf(cfg.theme).art;
 
@@ -466,6 +471,9 @@ export default function BoardClient({ token, build }: { token: string; build: st
               <div className="railhead">
                 <span>남은 티켓</span><i /><em>{left} / {total}</em>
               </div>
+              {fin?.hidden && (
+                <div className="finline"><img src="/art/seal-last.svg" alt="" />{finHint}</div>
+              )}
               <Mini board={board} art={art} pops={pops} />
             </div>
             <button className="touch" onClick={start}>화면을 눌러 뽑기 시작</button>
@@ -511,7 +519,14 @@ export default function BoardClient({ token, build }: { token: string; build: st
 
       {step === 'list' && board && (
         <div className="page">
-          <h2 className="ttl">{cfg.title}<small>무엇이 남았는지 확인하세요</small></h2>
+          <h2 className="ttl">
+            {cfg.title}
+            <small>
+              {fin?.hidden ? finHint
+                : carried ? `지난 판에서 넘어온 ${carried} 포함`
+                : '무엇이 남았는지 확인하세요'}
+            </small>
+          </h2>
           <div className="pgrid">
             {board.prizes.map((p) => (
               <div
@@ -533,7 +548,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
             ))}
 
             {cfg.lastOneName && (
-              <div className={`pcard last ${cfg.lastOneImage ? 'shot' : 'nopic'}`}>
+              <div className={`pcard last ${cfg.lastOneImage ? 'shot' : 'nopic'} ${fin?.given ? 'out' : ''}`}>
                 {cfg.lastOneImage
                   ? <img className={`pshot ${isFlat(cfg.lastOneImage) ? 'flat' : ''}`} src={cfg.lastOneImage} alt="" />
                   : <span className="pbig"><Icon name="star" /></span>}
@@ -542,7 +557,11 @@ export default function BoardClient({ token, build }: { token: string; build: st
                 <img className="pseal" src="/art/seal-last.svg" alt="" />
                 <div className="pbar">
                   <b>{cfg.lastOneName}</b>
-                  <span>1개</span>
+                  <span>
+                    {fin?.given ? '나감'
+                      : fin?.hidden ? (left === 1 ? '마지막 1장' : `${left}장 중 1장`)
+                      : '1개'}
+                  </span>
                 </div>
               </div>
             )}
@@ -556,7 +575,10 @@ export default function BoardClient({ token, build }: { token: string; build: st
 
       {step === 'grid' && board && (
         <div className="page">
-          <h2 className="ttl">티켓을 선택하세요<small>구멍이 뚫린 칸은 이미 나간 티켓입니다</small></h2>
+          <h2 className="ttl">
+            티켓을 선택하세요
+            <small>{fin?.hidden ? finHint : '구멍이 뚫린 칸은 이미 나간 티켓입니다'}</small>
+          </h2>
           <div className="tgrid">
             {board.board.map((s) => s.grade ? (
               <div key={s.pos} className="tk2 used">

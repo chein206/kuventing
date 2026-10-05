@@ -5,6 +5,7 @@ import { Icon, type IconName } from '@/lib/Icon';
 import PhotoDot, { type Uploader, type Remover } from '@/lib/PhotoDot';
 import { FONTS, fontOf, loadFont } from '@/lib/fonts';
 import { THEMES } from '@/lib/boardArt';
+import type { FinaleState } from '@/lib/supabase';
 
 type Caller = (path: string, init?: RequestInit) => Promise<unknown>;
 
@@ -18,6 +19,7 @@ type BoardInfo = {
   board_token?: string;
   board_mode?: 'pin' | 'open';
   sound?: 'off' | 'soft' | 'loud';
+  endgame?: 'off' | 'hide' | 'carry';
   font?: string;
   theme?: string;
   idle_seconds?: number;
@@ -69,6 +71,21 @@ type Stats = {
   recent10?: number;   // 최근 10분 뽑기 수
   pinFails?: number;   // 최근 10분 PIN 실패 수
   byGrade: Grade[]; pending: Pending[];
+  finale?: FinaleState;   // 025 전에는 없다
+};
+
+// 끝물 — 남은 티켓이 모두 같은 등급(예: E만 7장)이면 손님은 뽑기 전에 결과를 안다
+const ENDGAME = [
+  ['off', '그대로'],
+  ['hide', '피날레 숨기기'],
+  ['carry', '숨기기 + 다음 판'],
+] as const;
+const ENDGAME_NOTE: Record<string, string> = {
+  off: '그대로 둡니다. 마지막 장을 뽑는 손님이 피날레 보너스를 받습니다.',
+  hide: '남은 티켓이 모두 같은 등급이 되면 피날레 보너스가 남은 장 중 1장에 숨습니다. '
+    + '뽑을 때마다 당첨 기회가 있어 끝까지 긴장이 남습니다. 카운터 화면에 "남은 7장 중 1장에 피날레"가 뜹니다.',
+  carry: '피날레 숨기기와 같고, 피날레가 나오면 남은 장을 다음 박스에 섞어 넣고 바로 새 박스를 엽니다. '
+    + '새 박스 열기를 눌러도 남은 장을 버리지 않고 섞어 넣습니다. 다음 박스는 넘어온 장만큼 커집니다.',
 };
 
 const GRADES = 'ABCDEFGH';
@@ -279,12 +296,19 @@ export default function OwnerClient({ token }: { token: string }) {
               className="big"
               disabled={boxBusy}
               onClick={async () => {
-                if (stats && stats.left > 0 &&
-                    !confirm(`아직 ${stats.left}장이 남아 있습니다.\n새 박스를 열면 남은 티켓은 버려집니다. 진행할까요?`)) return;
+                if (stats && stats.left > 0 && !confirm(
+                  bd?.endgame === 'carry'
+                    ? `아직 ${stats.left}장이 남아 있습니다.\n남은 티켓은 새 박스에 섞어 넣습니다. 진행할까요?`
+                    : `아직 ${stats.left}장이 남아 있습니다.\n새 박스를 열면 남은 티켓은 버려집니다.`
+                      + (bd?.last_one_name && !stats.finale?.given ? '\n피날레 보너스도 아직 나가지 않았습니다.' : '')
+                      + '\n진행할까요?'
+                )) return;
                 setBoxBusy(true);
                 const r = (await call(api('newbox'), { method: 'POST' })) as
-                  { ok?: boolean; box?: number; message?: string; error?: string };
-                setBoxMsg(r?.ok ? `${r.box}회차 박스를 열었습니다` : (r?.message ?? r?.error ?? '실패했습니다'));
+                  { ok?: boolean; box?: number; carried?: number; message?: string; error?: string };
+                setBoxMsg(r?.ok
+                  ? `${r.box}회차 박스를 열었습니다${r.carried ? ` · 남은 ${r.carried}장을 섞어 넣었습니다` : ''}`
+                  : (r?.message ?? r?.error ?? '실패했습니다'));
                 setBoxBusy(false);
                 load();
               }}
@@ -292,6 +316,42 @@ export default function OwnerClient({ token }: { token: string }) {
               {boxBusy ? '여는 중…' : '새 박스 열기'}
             </button>
             {boxMsg && <p className="demo" style={{ marginTop: 8 }}><b>{boxMsg}</b></p>}
+
+            {bd && (
+              <div className="soundset">
+                <label>끝물 방식 · 남은 티켓이 모두 같은 등급일 때</label>
+                <div className="modes">
+                  {ENDGAME.map(([v, l]) => (
+                    <button
+                      key={v}
+                      aria-pressed={(bd.endgame ?? 'off') === v}
+                      onClick={async () => {
+                        await call(api('board'), { method: 'POST', body: JSON.stringify({ endgame: v }) });
+                        load();
+                      }}
+                    >{l}</button>
+                  ))}
+                </div>
+                <p className="demo" style={{ marginTop: 8 }}>
+                  {ENDGAME_NOTE[bd.endgame ?? 'off']}
+                  {!bd.last_one_name && bd.endgame && bd.endgame !== 'off' && (
+                    <><br /><b>피날레 보너스 상품을 정해야 작동합니다</b> (상품 탭)</>
+                  )}
+                </p>
+                {stats?.finale?.hidden && (
+                  <p className="demo"><b>지금 남은 {stats.left}장이 모두 같은 등급 — 피날레가 그중 1장에 숨어 있습니다</b></p>
+                )}
+                {stats?.finale?.given && stats.left > 0 && (
+                  <p className="demo"><b>이번 박스 피날레는 이미 나갔습니다 (남은 {stats.left}장)</b></p>
+                )}
+                {!!stats?.finale?.carried?.length && (
+                  <p className="demo">
+                    이번 박스에 지난 박스에서 넘어온{' '}
+                    <b>{stats.finale.carried.map((c) => `${c.grade} ${c.n}장`).join(' · ')}</b>이 섞여 있습니다
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="card">

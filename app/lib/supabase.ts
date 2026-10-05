@@ -34,6 +34,17 @@ export type Prize = {
 
 export type BoardSlot = { pos: number; grade: string | null };
 
+/**
+ * 끝물 방식(025) — 남은 티켓이 모두 같은 등급일 때 피날레를 어떻게 하나
+ * hidden 피날레가 남은 장 중 1장에 숨어 있다 · given 이 판 피날레가 이미 나갔다 · carried 지난 판에서 넘어온 장
+ */
+export type FinaleState = {
+  mode: 'off' | 'hide' | 'carry';
+  given: boolean;
+  hidden: boolean;
+  carried: { grade: string; n: number }[];
+};
+
 export type Board = {
   campaign: {
     id: string;
@@ -49,6 +60,7 @@ export type Board = {
   prizes: Prize[];
   board: BoardSlot[];
   left: number;
+  finale?: FinaleState;   // 025 전에는 없다
 };
 
 export type DrawResult = {
@@ -59,6 +71,8 @@ export type DrawResult = {
   code: string;
   isLastOne: boolean;
   lastOneName: string | null;
+  hidden?: boolean;    // 숨긴 피날레 구간에서 뽑았다
+  carried?: number;    // 피날레가 나와 다음 판으로 넘어간 장 수
   expiresAt: string;
   left: number;
   position: number;

@@ -7,7 +7,7 @@ const THEME_KEYS: string[] = THEMES.map((t) => t.key);
 
 // 문자열 리터럴이어야 supabase-js 가 반환 타입을 추론한다
 const FIELDS =
-  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, motion_seconds, last_one_label, last_one_name, last_one_image, ads, sound, font, theme';
+  'id, board_token, board_mode, idle_seconds, slide_seconds, result_seconds, auto_open_seconds, rate_per_min, motion_seconds, last_one_label, last_one_name, last_one_image, ads, sound, font, theme, endgame';
 
 // 초 단위 값과 허용 범위
 const RANGES: Record<string, [number, number]> = {
@@ -73,6 +73,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
       return Response.json({ error: 'BAD_SOUND' }, { status: 400 });
     }
     patch.sound = body.sound;
+  }
+
+  // 끝물 방식 — 남은 티켓이 모두 같은 등급일 때 피날레를 숨길지, 나오면 남은 장을 다음 판으로 넘길지
+  if (body.endgame !== undefined) {
+    if (!['off', 'hide', 'carry'].includes(String(body.endgame))) {
+      return Response.json({ error: 'BAD_ENDGAME' }, { status: 400 });
+    }
+    patch.endgame = body.endgame;
   }
 
   if (body.mode !== undefined) {
