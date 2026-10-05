@@ -2,13 +2,15 @@
 
 import { useEffect, useReducer, useState } from 'react';
 import BoardClient from '../../board/[token]/BoardClient';
+import { setGrip, type Grip } from '../../board/[token]/OpenView';
 import { setDemoServer } from '@/lib/supabase';
 import { EndgameSim, MODES } from './sim';
 
 // 판은 하나만 — 개발 모드는 첫 렌더를 두 번 돌려 판이 둘 생기고, 조작판과 보드가 서로 다른 판을 보게 된다
 let live: EndgameSim | null = null;
-function liveSim(theme: string, font: string) {
+function liveSim(theme: string, font: string, grip: Grip) {
   if (!live) {
+    setGrip(grip);
     live = new EndgameSim(theme, font);
     setDemoServer(live.client);
   }
@@ -19,10 +21,10 @@ function liveSim(theme: string, font: string) {
  * 끝물 데모 — 실제 카운터 화면 위에 작은 조작판을 띄운다.
  * 판은 메모리에서 돌고(sim.ts), 보드는 그 판을 실제 서버처럼 부른다. DB 에는 아무것도 쓰지 않는다.
  */
-export default function EndgameDemo({ theme, font, build }: { theme: string; font: string; build: string }) {
+export default function EndgameDemo({ theme, font, grip, build }: { theme: string; font: string; grip: Grip; build: string }) {
   // 보드보다 먼저 가짜 서버를 꽂아야 한다 — 보드는 처음 뜰 때 설정을 부른다.
   // 이 주소에서만 쓰는 화면이라 떠날 때 되돌리지 않는다(다른 화면은 새로 읽히며 다시 실제 서버를 잡는다)
-  const [sim] = useState(() => liveSim(theme, font));
+  const [sim] = useState(() => liveSim(theme, font, grip));
   const [, bump] = useReducer((x: number) => x + 1, 0);
   const [open, setOpen] = useState(true);
   useEffect(() => sim.subscribe(bump), [sim]);

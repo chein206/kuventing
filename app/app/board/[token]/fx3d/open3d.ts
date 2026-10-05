@@ -32,6 +32,8 @@ export const OPEN_AT = 0.93;
 const HOLD = 1.9;
 /** 돌아 나온 카드가 겹쳐 걷히는 동안 3D 표가 카드 자리에서 기다리는 시간(초) — board.css .pullwrap.out 과 같이 */
 const FROM_HOLD = .18;
+/** 손잡이 없는 판 — 표 끝이 들썩이는 높이(연 정도) · 주기(초) · 한 번 들썩이는 시간(초) */
+const PEEK = .06, PEEK_EVERY = 3.2, PEEK_FOR = .95;
 /**
  * 다 열리기 전의 빛줄기 · 빛 망울 색 — 모든 등급이 같다.
  * 등급마다 금 · 구리 · 은으로 물들이면 표를 열기도 전에 무엇이 나왔는지 다 보인다(사장님 지적).
@@ -286,6 +288,8 @@ class OpenScene implements Runner {
   private shownN = 0;
   /** 들어오는 동작의 시간 — 프레임마다 쌓는다(한 프레임이 길게 멈춰도 건너뛰지 않게) */
   private it = 0;
+  /** 표 끝 들썩임 — 켠 때부터 PEEK_EVERY 마다 */
+  private peek = false; private peekT0 = 0;
   /** 연 정도(0~1) — c 는 지금, target 은 가려는 곳 */
   private c = 0; private target = 0;
   private speed = 0; private acc = 0; private tension = 0; private hb = 0;
@@ -362,7 +366,7 @@ class OpenScene implements Runner {
     this.c = 0; this.target = 0; this.speed = 0; this.acc = 0; this.tension = 0; this.hb = 0;
     this.done = false; this.ft = 0; this.sent = false; this.locked = false; this.auto = null; this.ready = false;
     this.zoom = 1; this.look.set(0, 0, 0); this.shake = 0; this.punch = 0;
-    this.from3 = null; this.s0 = .88; this.shownN = 0; this.it = 0;
+    this.from3 = null; this.s0 = .88; this.shownN = 0; this.it = 0; this.peek = false;
     this.ticket.position.set(0, 0, 0); this.ticket.rotation.set(0, 0, 0); this.tickU.uOpacity.value = 1;
     this.floor.position.set(0, 0, -3); this.floor.scale.setScalar(1); this.floorU.uFoil.value = 0;
     this.group.rotation.set(0, 0, 0); this.group.scale.setScalar(1);
@@ -406,6 +410,16 @@ class OpenScene implements Runner {
 
   /** 지금 연 정도(0~1) — 손잡이를 다시 잡을 때 여기서부터 잇는다 */
   get progress() { return this.c; }
+
+  /**
+   * 손잡이 없는 판 — 아무도 안 만지면 표 왼쪽 끝이 가끔 살짝 들렸다 내려앉는다. "넘기는 물건"이라는 표시.
+   * 들리는 만큼은 쪽지 왼쪽 여백이라 등급은 안 보인다(등급 글자는 오른쪽 끝). 손이 닿으면 끈다
+   */
+  setPeek(on: boolean) {
+    if (on === this.peek) return;
+    this.peek = on;
+    if (on) this.peekT0 = performance.now() / 1000 + .6;
+  }
 
   /** 손으로 민다 — 연 정도(0~1). OPEN_AT 을 넘으면 나머지는 저절로 열린다 */
   setTarget(p: number) {
@@ -512,6 +526,11 @@ class OpenScene implements Runner {
 
     // 손 · 자동 열기 — 넘을 선을 넘으면 나머지는 저절로
     if (this.auto) this.target = this.autoAt(t);
+    else if (this.peek && this.ready && !this.locked && !this.done) {
+      // 사인 제곱 — 천천히 들렸다 천천히 내려앉는다
+      const e = t - this.peekT0, u = e % PEEK_EVERY;
+      this.target = e > 0 && u < PEEK_FOR ? PEEK * Math.pow(Math.sin(Math.PI * u / PEEK_FOR), 2) : 0;
+    }
     if (!this.done && this.target >= OPEN_AT) { this.locked = true; if (!this.auto) this.target = 1; }
     const prev = this.c;
     this.c += (this.target - this.c) * Math.min(1, dt * 16);

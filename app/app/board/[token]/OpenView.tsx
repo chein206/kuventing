@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as RPE } from 'react';
 import type { DrawResult } from '@/lib/supabase';
 import type { Art } from '@/lib/boardArt';
 import * as sfx from '@/lib/sfx';
@@ -46,6 +46,15 @@ export default function OpenView(props: Props) {
   return mode === '3d' ? <Open3D {...props} fallback={fallback} /> : <Open2D {...props} />;
 }
 
+/**
+ * 여는 손잡이 — 'paper' 면 손잡이 없이 표를 잡아 넘긴다(표 자리 어디든 · 표 끝이 가끔 들썩인다).
+ * 'knob' 은 황동 손잡이. 3D 표 위에 얹은 평면 사진이라 기울기 · 빛이 안 맞아 어색했다(사장님).
+ * 매장 보드는 아직 손잡이 — 끝물 데모(/fx/endgame)에서 먼저 종이로 보고, 확인되면 기본값을 바꾼다
+ */
+export type Grip = 'knob' | 'paper';
+let GRIP: Grip = 'knob';
+export const setGrip = (g: Grip) => { GRIP = g; };
+
 /* ============================================================ 3D 판 */
 
 /**
@@ -75,6 +84,9 @@ function Open3D({
   const [ready, setReady] = useState(false);
   const [auto, setAuto] = useState(false);
   const [done, setDone] = useState(false);
+  const [grip] = useState<Grip>(() => GRIP);
+  // 한 번이라도 잡았으면 더는 들썩이지 않는다(놓은 자리에서 기다린다)
+  const touched = useRef(false);
 
   useEffect(() => { openedRef.current = onOpened; }, [onOpened]);
   // 카드가 멈춘 자리는 처음 뜰 때 한 번만 읽는다 — 카드가 걷혀 값이 사라져도 3D 를 다시 띄우지 않게
@@ -91,7 +103,8 @@ function Open3D({
       kn.style.opacity = f.done ? '0' : '1';
     }
     if (ar) {
-      ar.style.transform = `translate(${f.x + 104}px,${f.y}px) translateY(-50%)`;
+      // 손잡이 판은 손잡이 오른쪽, 종이 판은 표 끝 바로 옆에서 흘러간다
+      ar.style.transform = `translate(${f.x + (grip === 'paper' ? 30 : 104)}px,${f.y}px) translateY(-50%)`;
       ar.style.opacity = !f.done && !autoRef.current && f.p < 0.75 && f.k < 0.3 ? '1' : '0';
     }
     if (vg) {
@@ -104,7 +117,7 @@ function Open3D({
     if ((drag.current || autoRef.current) && !f.done) sfx.grindSet(f.p, f.k);
     if (f.beat > 0) sfx.heartbeat(f.beat);
     sfx.tensionSet(f.done ? 0 : f.k, f.p);
-  }, []);
+  }, [grip]);
 
   // 3D 를 띄운다 — 뽑기 흐름에 들어올 때 미리 받아 둔 모듈을 꺼내 쓴다
   useEffect(() => {
@@ -183,15 +196,46 @@ function Open3D({
   const canPush = ready && !!pending && !auto && !done;
   const last = !!pending?.isLastOne && !!pending?.lastOneName;
 
+  // 종이 판 — 밀 수 있게 되면 표 끝이 가끔 들썩인다. 버튼으로 열거나 손이 닿으면 멈춘다
+  useEffect(() => {
+    if (grip !== 'paper') return;
+    sceneRef.current?.setPeek(canPush && !touched.current);
+  }, [grip, canPush]);
+
+  // 미는 손 — 손잡이 판은 손잡이에, 종이 판은 표 자리에 붙인다
+  const onDown = (e: RPE<HTMLDivElement>) => {
+    const sc = sceneRef.current;
+    if (!sc || !sc.ready || !canPush) return;
+    touched.current = true;
+    sc.setPeek(false);
+    drag.current = { x0: e.clientX, f0: uncurve(sc.progress), w: slotRef.current?.clientWidth || 400 };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    lastAct.current = Date.now();
+    sfx.grindStart();
+  };
+  const onMove = (e: RPE<HTMLDivElement>) => {
+    const d = drag.current, sc = sceneRef.current;
+    if (!d || !sc) return;
+    sc.setTarget(curve(d.f0 + (e.clientX - d.x0) / d.w));
+    lastAct.current = Date.now();
+  };
+  const onUp = () => { if (drag.current) { drag.current = null; sfx.grindStop(); } };
+  const hands = { onPointerDown: onDown, onPointerMove: onMove, onPointerUp: onUp, onPointerCancel: onUp };
+
   return (
     <div className="page op3wrap" ref={wrapRef}>
       <h2 className="ttl">
         {sel}번 티켓
-        <small>{auto || done ? '열리는 중…' : '황동 손잡이를 천천히 오른쪽으로 미세요'}</small>
+        <small>
+          {auto || done ? '열리는 중…'
+            : grip === 'paper' ? '표를 오른쪽으로 천천히 넘기세요' : '황동 손잡이를 천천히 오른쪽으로 미세요'}
+        </small>
       </h2>
       <div className="op3">
-        {/* 표 자리 — 3D 가 이 칸을 재서 앉는다 */}
-        <div className="tslot" ref={slotRef} />
+        {/* 표 자리 — 3D 가 이 칸을 재서 앉는다. 종이 판은 이 칸이 곧 손잡이다 */}
+        {grip === 'paper'
+          ? <div className={`tslot grip ${canPush ? '' : 'off'}`} ref={slotRef} {...hands} />
+          : <div className="tslot" ref={slotRef} />}
         <div className="opfoot">
           {/* 이 시점엔 티켓이 이미 확정돼 있다. 되돌아가면 상품을 잃으므로 여는 길만 남긴다 */}
           <div className="rowbtn" ref={btnsRef}>
@@ -210,38 +254,24 @@ function Open3D({
       {/* 글자 구간에 들어서면 주변이 어두워진다 — 숨죽이는 순간. 글자 자리만 비켜 간다 */}
       <div className="vig3" ref={vigRef} />
       <div className="arrows3" ref={arrowsRef} aria-hidden="true"><span>›</span><span>›</span><span>›</span></div>
-      <div
-        className={`knob3 ${art.photo ? 'photo' : ''} ${canPush ? '' : 'off'}`}
-        ref={knobRef}
-        style={{ opacity: 0 }}
-        role="slider"
-        aria-label="손잡이를 오른쪽으로 밀어 열기"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        onPointerDown={(e) => {
-          const sc = sceneRef.current;
-          if (!sc || !sc.ready || !canPush) return;
-          drag.current = { x0: e.clientX, f0: uncurve(sc.progress), w: slotRef.current?.clientWidth || 400 };
-          e.currentTarget.setPointerCapture(e.pointerId);
-          lastAct.current = Date.now();
-          sfx.grindStart();
-        }}
-        onPointerMove={(e) => {
-          const d = drag.current, sc = sceneRef.current;
-          if (!d || !sc) return;
-          const p = curve(d.f0 + (e.clientX - d.x0) / d.w);
-          sc.setTarget(p);
-          lastAct.current = Date.now();
-        }}
-        onPointerUp={() => { if (drag.current) { drag.current = null; sfx.grindStop(); } }}
-        onPointerCancel={() => { if (drag.current) { drag.current = null; sfx.grindStop(); } }}
-      >
-        <div className="kin">
-          {art.photo
-            ? <img className="lever" src={art.photo.leverSrc} alt="" draggable={false} />
-            : <><i className="comb" /><span>❯</span></>}
+      {grip === 'knob' && (
+        <div
+          className={`knob3 ${art.photo ? 'photo' : ''} ${canPush ? '' : 'off'}`}
+          ref={knobRef}
+          style={{ opacity: 0 }}
+          role="slider"
+          aria-label="손잡이를 오른쪽으로 밀어 열기"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          {...hands}
+        >
+          <div className="kin">
+            {art.photo
+              ? <img className="lever" src={art.photo.leverSrc} alt="" draggable={false} />
+              : <><i className="comb" /><span>❯</span></>}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

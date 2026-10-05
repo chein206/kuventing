@@ -969,6 +969,9 @@
   gap:clamp(28px,5dvh,64px)}
 /* 다 열리면 쪽지가 앞으로 나오며 1.14 배쯤 커진다 — 작은 태블릿에서 가장자리가 잘리지 않게 여백을 둔다 */
 .bd .op3 .tslot{width:min(560px,86vw);aspect-ratio:var(--tk-ratio,2);flex:none}
+/* 종이 판 — 손잡이 없이 표 자리가 손잡이다(OpenView grip='paper') */
+.bd .op3 .tslot.grip{touch-action:none;cursor:grab}
+.bd .op3 .tslot.grip.off{cursor:default}
 .bd .op3 .opfoot{position:relative;width:100%;max-width:460px}
 .bd .op3 .rowbtn{transition:opacity .2s}
 .bd .op3 .rowbtn .big{flex:1;margin-top:0}
