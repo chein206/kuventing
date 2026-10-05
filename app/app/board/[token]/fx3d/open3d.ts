@@ -29,6 +29,8 @@ import { tierOf, type Tier } from '../grade';
 export const OPEN_AT = 0.93;
 /** 다 열린 뒤 등급을 보여 주는 시간(초) — 그다음 결과 화면 */
 const HOLD = 1.9;
+/** 돌아 나온 카드가 겹쳐 걷히는 동안 3D 표가 카드 자리에서 기다리는 시간(초) — board.css .pullwrap.out 과 같이 */
+const FROM_HOLD = .18;
 /**
  * 다 열리기 전의 빛줄기 · 빛 망울 색 — 모든 등급이 같다.
  * 등급마다 금 · 구리 · 은으로 물들이면 표를 열기도 전에 무엇이 나왔는지 다 보인다(사장님 지적).
@@ -74,6 +76,10 @@ export type OpenOpts = {
   done: () => void;
   /** WebGL 이 도중에 죽으면 — 글자 화면으로 */
   lost?: () => void;
+  /** 판에서 돌아 나온 카드가 멈춘 자리(화면 px · 가운데와 폭) — 표가 여기서 시작해 제자리로 간다 */
+  from?: { x: number; y: number; w: number } | null;
+  /** 표가 화면에 처음 그려진 뒤 — 돌아 나온 카드를 걷는다 */
+  shown?: () => void;
 };
 
 /* ------------------------------------------------------------ 셰이더 */
@@ -274,6 +280,9 @@ class OpenScene implements Runner {
   private TW = 0; private TH = 0; private s = 1; private ratio = 2;
   private at = new Vector3();
   private off = { x: 0, y: 0 };
+  /** 돌아 나온 카드가 멈춘 자리(3D 좌표)와 그때 크기(표 폭 대비) — 없으면 제자리에서 시작 */
+  private from3: Vector3 | null = null; private s0 = .88;
+  private shownN = 0;
   /** 연 정도(0~1) — c 는 지금, target 은 가려는 곳 */
   private c = 0; private target = 0;
   private speed = 0; private acc = 0; private tension = 0; private hb = 0;
@@ -337,13 +346,10 @@ class OpenScene implements Runner {
     this.gl.attach(o.host);
 
     const a = o.art;
-    const [photo, band, ros] = await Promise.all([
-      a.photo ? loadImg(a.photo.src) : null,
-      a.band && a.bandSrc ? loadImg(a.bandSrc) : null,
-      a.ros && a.rosSrc ? loadImg(a.rosSrc) : null,
-    ]);
+    // 겉면은 판에서 돌아 나오는 동안 그려 둔 것을 그대로 쓴다 — 카드와 3D 표가 같은 그림이고, 여기서 그리는 시간도 없다
+    const face = await ticketFace(a, o.ticket);
     if (my !== this.token) return;
-    const tt = new CanvasTexture(ticketCanvas(a, o.ticket, { photo, band, ros }));
+    const tt = new CanvasTexture(face);
     tt.colorSpace = SRGBColorSpace; tt.anisotropy = 8;
     this.tex = [tt];
     this.tickU.map.value = tt;
@@ -353,6 +359,7 @@ class OpenScene implements Runner {
     this.c = 0; this.target = 0; this.speed = 0; this.acc = 0; this.tension = 0; this.hb = 0;
     this.done = false; this.ft = 0; this.sent = false; this.locked = false; this.auto = null; this.ready = false;
     this.zoom = 1; this.look.set(0, 0, 0); this.shake = 0; this.punch = 0;
+    this.from3 = null; this.s0 = .88; this.shownN = 0;
     this.ticket.position.set(0, 0, 0); this.ticket.rotation.set(0, 0, 0); this.tickU.uOpacity.value = 1;
     this.floor.position.set(0, 0, -3); this.floor.scale.setScalar(1); this.floorU.uFoil.value = 0;
     this.group.rotation.set(0, 0, 0); this.group.scale.setScalar(1);
@@ -466,6 +473,12 @@ class OpenScene implements Runner {
     this.off.x = c.left - l.left; this.off.y = c.top - l.top;
     const TW = Math.round(b.width);
     if (TW > 40 && Math.abs(TW - this.TW) > 1) this.size(TW);
+    // 돌아 나온 카드가 멈춘 자리 — 같은 화면 좌표를 3D 로(z=0 평면은 3D 1 = CSS 1px)
+    if (o.from && this.TW) {
+      if (!this.from3) this.from3 = new Vector3();
+      this.from3.set(o.from.x - c.left - c.width / 2, c.top + c.height / 2 - o.from.y, 0);
+      this.s0 = o.from.w / this.TW;
+    }
     this.group.position.copy(this.at);
     this.rays.mesh.position.set(this.at.x, this.at.y, -480);
   }
@@ -487,6 +500,8 @@ class OpenScene implements Runner {
     const lt = t - this.t0;
     // 처음 몇 초는 글자 층이 자리 잡는 중일 수 있다(글꼴) — 자리를 계속 다시 잰다
     if (lt < 2.5) this.measure();
+    // 둘째 프레임 — 첫 그림이 화면에 올라왔다. 돌아 나온 카드를 걷어도 된다
+    if (++this.shownN === 2) o.shown?.();
     this.rays.u.uTime.value = t; this.bok.u.uTime.value = t; this.bok.u.uScale.value = this.gl.uScale;
     this.floorU.uTime.value = t; this.sparks.u.uScale.value = this.gl.uScale;
 
@@ -507,8 +522,9 @@ class OpenScene implements Runner {
     const k = this.tension;
 
     if (!this.done) {
-      // 들어올 때 — 판에서 뽑혀 나온 표가 탁자에 눕는다
-      const ki = eOutCubic(c01(lt / .6));
+      // 들어올 때 — 판에서 뽑혀 나온 표가 탁자에 눕는다.
+      // 돌아 나온 카드 자리에서 시작하면 카드가 걷히는 동안(FROM_HOLD) 그대로 있다가 제자리로 간다
+      const ki = eOutCubic(c01((this.from3 ? lt - FROM_HOLD : lt) / .6));
       // 두근거림 — 글자에 가까울수록 빨라진다. 첫 박(0.1) · 둘째 박(0.28)을 지나면 소리에 알린다
       const ph0 = this.hb % 1;
       this.hb += dt * (1 + 1.9 * k);
@@ -517,7 +533,9 @@ class OpenScene implements Runner {
       this.beat = crossed(.1) ? k : crossed(.28) ? .55 * k : 0;
       const beat = Math.exp(-Math.pow((ph - .1) * 22, 2)) + .55 * Math.exp(-Math.pow((ph - .28) * 22, 2));
       this.group.rotation.x = -.24 * ki;
-      this.group.scale.setScalar((.88 + .12 * ki) * (1 + (this.reduce ? 0 : .016) * k * beat));
+      const s0 = this.from3 ? this.s0 : .88;
+      this.group.scale.setScalar((s0 + (1 - s0) * ki) * (1 + (this.reduce ? 0 : .016) * k * beat));
+      if (this.from3 && ki < 1) this.group.position.lerpVectors(this.from3, this.at, ki);
     } else {
       this.ft += dt;
       const k1 = c01(this.ft / .7);
@@ -551,8 +569,10 @@ class OpenScene implements Runner {
     this.tickU.uSeam.value = live ? .5 + Math.min(1.1, this.speed / (600 * s)) + .5 * k : 0;
     this.tickU.uTime.value = t;
     if (!this.done) {
-      this.rays.u.uAmp.value = (.08 + p * .3) * (1 - .85 * k) * this.rayK;
-      this.bok.u.uAmp.value = (.35 + p * .3) * (1 - .7 * k) * this.bokK;
+      // 처음 뜰 때는 빛줄기 · 빛 망울이 0.5초에 걸쳐 차오른다 — 첫 프레임에 확 켜지지 않게
+      const glow = eOutCubic(c01(lt / .5));
+      this.rays.u.uAmp.value = (.08 + p * .3) * (1 - .85 * k) * this.rayK * glow;
+      this.bok.u.uAmp.value = (.35 + p * .3) * (1 - .7 * k) * this.bokK * glow;
     }
 
     // 찢기는 선에서 불꽃 — 빨리 밀수록 많이 튀고, 천천히 쪼면 잦아든다
@@ -607,6 +627,23 @@ class OpenScene implements Runner {
     this.conf.startRain(Math.round(T.rain * (this.gl.lite ? .6 : 1) * (this.reduce ? .5 : 1)));
     this.opts?.finale();
   }
+}
+
+/**
+ * 표 겉면 그림 — 판에서 돌아 나오는 카드(글자 층)와 3D 표가 같은 그림을 쓴다.
+ * 돌아 나오는 1.15초 동안 그려 두면 개봉 화면은 그리는 시간 없이 바로 뜬다. 같은 표는 한 번만 그린다
+ */
+let face: { art: Art; t: TicketInfo; p: Promise<HTMLCanvasElement> } | null = null;
+export function ticketFace(art: Art, t: TicketInfo) {
+  if (face && face.art === art && face.t.no === t.no && face.t.title === t.title
+      && face.t.store === t.store && face.t.font === t.font) return face.p;
+  const p = Promise.all([
+    art.photo ? loadImg(art.photo.src) : null,
+    art.band && art.bandSrc ? loadImg(art.bandSrc) : null,
+    art.ros && art.rosSrc ? loadImg(art.rosSrc) : null,
+  ]).then(([photo, band, ros]) => ticketCanvas(art, t, { photo, band, ros }));
+  face = { art, t: { ...t }, p };
+  return p;
 }
 
 let open: OpenScene | null = null;

@@ -41,6 +41,9 @@ const PULL_MS = 1150;
 
 type Step = 'attract' | 'pin' | 'list' | 'grid' | 'open' | 'result';
 
+/** 표에 찍히는 매장 이름 — 돌아 나오는 카드와 개봉 화면 3D 표가 같은 글자를 써야 같은 겉면 그림을 나눠 쓴다 */
+const storeOf = (c: Config) => c.store.name + (c.store.branch ? ` · ${c.store.branch}` : '');
+
 /** 새 버전 반영 — 묻는 간격 · 손님 없음으로 칠 무동작 · 배포 뒤 기다림 · 실패 뒤 쉼 */
 const UPD = { poll: 5 * 60_000, idle: 60_000, grace: 10 * 60_000, retry: 30 * 60_000 };
 
@@ -51,7 +54,14 @@ export default function BoardClient({ token, build }: { token: string; build: st
   const [pass, setPass] = useState<string | null>(null);
   const [sel, setSel] = useState<number | null>(null);
   // 뽑은 티켓이 돌아 나오는 연출 (칸 위치 → 화면 가운데)
-  const [pull, setPull] = useState<{ dx: number; dy: number; s: number; w: number } | null>(null);
+  // from — 카드가 멈추는 자리(개봉 화면 3D 표가 여기서 시작) · face — 3D 표와 같은 겉면 · fd — 겉면이 올라오는 늦춤(ms)
+  // out — 3D 표가 떠서 겹쳐 걷히는 중
+  const [pull, setPull] = useState<{
+    dx: number; dy: number; s: number; w: number; no: number;
+    from: { x: number; y: number; w: number };
+    face: HTMLCanvasElement | null; fd: number; out: boolean;
+  } | null>(null);
+  const pullTok = useRef(0);
   const [result, setResult] = useState<DrawResult | null>(null);
   const [pin, setPin] = useState('');
   const [pinErr, setPinErr] = useState(false);
@@ -199,6 +209,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
 
   /* ---------- 유휴 복귀 ---------- */
   const goAttract = useCallback(() => {
+    pullTok.current++; setPull(null);
     setStep('attract'); setSel(null); setPass(null); setResult(null);
     setPin(''); setPinErr(false); setMsg(null); setSlide(0);
   }, []);
@@ -316,10 +327,11 @@ export default function BoardClient({ token, build }: { token: string; build: st
         const m = String((e as { message?: string })?.message ?? e);
         if (m.includes('TICKET_TAKEN')) {
           setMsg('방금 나간 티켓입니다. 다른 자리를 골라주세요');
+          pullTok.current++; setPull(null);
           setSel(null); refresh(); setStep('grid');
         } else if (m.includes('PASS_')) {
           setMsg('시간이 지났습니다. 다시 시작해주세요'); goAttract();
-        } else { setMsg('뽑기에 실패했습니다'); setStep('grid'); }
+        } else { pullTok.current++; setPull(null); setMsg('뽑기에 실패했습니다'); setStep('grid'); }
       }
     })();
     return () => { alive = false; };
@@ -352,21 +364,48 @@ export default function BoardClient({ token, build }: { token: string; build: st
    * (좌표를 자바스크립트로 매 프레임 계산하면 태블릿에서 끊긴다)
    */
   const pullOut = useCallback(() => {
-    if (sel === null) return;
+    if (sel === null || !cfg) return;
     const tile = document.querySelector<HTMLElement>(`.tk2[data-pos="${sel}"]`);
     if (!tile) { resetOpenState(); setMsg(null); setStep('open'); return; }
 
     const r = tile.getBoundingClientRect();
     const targetW = Math.min(window.innerWidth * 0.72, 460);
+    const tok = ++pullTok.current;
+    const t0 = performance.now();
     setPull({
       dx: r.left + r.width / 2 - window.innerWidth / 2,
       dy: r.top + r.height / 2 - window.innerHeight / 2,
       s: r.width / targetW,
       w: targetW,
+      no: sel,
+      from: { x: window.innerWidth / 2, y: window.innerHeight / 2, w: targetW },
+      face: null, fd: 0, out: false,
     });
+    // 3D 표와 같은 겉면을 돌아 나오는 동안 그려 둔다. 빨리 도는 사이(0.3초 무렵)에 칸 그림에서 이 그림으로 바뀐다.
+    // 늦게 오면(0.65초 넘어 — 회전이 느려져 바뀌는 게 보인다) 칸 그림 그대로 두고 3D 가 이어받는다
+    import('./fx3d/open3d')
+      .then((m) => m.ticketFace(themeOf(cfg.theme).art, {
+        no: sel, title: cfg.title, store: storeOf(cfg), font: fontOf(cfg.font).stack,
+      }))
+      .then((face) => {
+        const at = performance.now() - t0;
+        if (pullTok.current !== tok || at > 650) return;
+        setPull((p) => (p ? { ...p, face, fd: Math.max(0, 300 - at) } : p));
+      })
+      .catch(() => {});
     setMsg(null);
-    setTimeout(() => { resetOpenState(); setPull(null); setStep('open'); }, PULL_MS);
-  }, [sel, resetOpenState]);
+    // 카드는 남겨 둔 채 개봉 화면으로 — 3D 표가 처음 그려지면(shown) 그때 겹쳐 걷힌다
+    setTimeout(() => { if (pullTok.current === tok) { resetOpenState(); setStep('open'); } }, PULL_MS);
+    // 3D 가 끝내 안 뜨면 카드를 걷는다(평면 판으로 내려가면 그쪽이 바로 걷는다)
+    setTimeout(() => { if (pullTok.current === tok) setPull(null); }, PULL_MS + 6000);
+  }, [sel, cfg, resetOpenState]);
+
+  // 개봉 화면의 3D 표가 처음 그려졌다 — 돌아 나온 카드를 겹쳐 걷는다(3D 는 그동안 카드 자리에서 기다린다)
+  const shown = useCallback(() => {
+    const tok = pullTok.current;
+    setPull((p) => (p && !p.out ? { ...p, out: true } : p));
+    setTimeout(() => { if (pullTok.current === tok) setPull(null); }, 160);
+  }, []);
 
   // 화면이 바뀐 것도 활동으로 친다. 이게 없으면 진입하자마자 유휴 타이머에 걸릴 수 있다
   useEffect(() => { lastTouch.current = Date.now(); }, [step]);
@@ -579,7 +618,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
       )}
 
       {step === 'grid' && board && (
-        <div className="page">
+        <div className={`page ${pull ? 'pulling' : ''}`}>
           <h2 className="ttl">
             티켓을 선택하세요
             <small>{fin?.hidden ? finHint : '구멍이 뚫린 칸은 이미 나간 티켓입니다'}</small>
@@ -608,34 +647,17 @@ export default function BoardClient({ token, build }: { token: string; build: st
             </button>
           </div>
           {msg && <p style={{ textAlign: 'center', color: 'var(--accent)', fontWeight: 700, marginTop: 10 }}>{msg}</p>}
-
-          {/* 고른 티켓이 판에서 돌면서 튀어나온다 */}
-          {pull && (
-            <div className="pullwrap" aria-hidden="true">
-              <div className="pullflash" />
-              <div
-                className="pullcard"
-                style={{
-                  ['--dx' as string]: `${pull.dx}px`,
-                  ['--dy' as string]: `${pull.dy}px`,
-                  ['--s' as string]: pull.s,
-                  ['--w' as string]: `${pull.w}px`,
-                }}
-              >
-                <Ticket art={art} size="tile" num={sel ? String(sel) : ''} />
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {step === 'open' && sel !== null && (
         <OpenView key={sel} sel={sel} pending={pending} art={art} dark={themeOf(cfg.theme).dark}
                   title={cfg.title}
-                  store={cfg.store.name + (cfg.store.branch ? ` · ${cfg.store.branch}` : '')}
+                  store={storeOf(cfg)}
                   font={fontOf(cfg.font).stack}
                   autoOpenSeconds={cfg.autoOpenSeconds ?? DEF.autoOpen}
                   lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
+                  from={pull?.from ?? null} onShown={shown}
                   onOpened={opened} />
       )}
 
@@ -644,9 +666,32 @@ export default function BoardClient({ token, build }: { token: string; build: st
                     campaignId={cfg.campaignId} prizes={snap}
                     lastOneImage={cfg.lastOneImage}
                     lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
-                    store={cfg.store.name + (cfg.store.branch ? ` · ${cfg.store.branch}` : '')}
+                    store={storeOf(cfg)}
                     title={cfg.title}
                     seconds={cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
+      )}
+
+      {/* 고른 티켓이 판에서 돌면서 튀어나온다. 개봉 화면으로 넘어가도 남아 있다가,
+          3D 표가 같은 자리에 처음 그려지면 겹쳐 걷힌다 — 카드가 사라지고 3D 가 뜨기 전의 빈 틈이 없다 */}
+      {pull && (
+        <div className={`pullwrap ${pull.out ? 'out' : ''}`} aria-hidden="true">
+          <div className="pullflash" />
+          <div
+            className="pullcard"
+            style={{
+              ['--dx' as string]: `${pull.dx}px`,
+              ['--dy' as string]: `${pull.dy}px`,
+              ['--s' as string]: pull.s,
+              ['--w' as string]: `${pull.w}px`,
+            }}
+          >
+            <Ticket art={art} size="tile" num={String(pull.no)} />
+            {pull.face && (
+              <div className="pullface" style={{ animationDelay: `${pull.fd}ms` }}
+                   ref={(el) => { if (el && pull.face && el.firstChild !== pull.face) el.replaceChildren(pull.face); }} />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

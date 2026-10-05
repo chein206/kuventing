@@ -34,6 +34,10 @@ type Props = {
   lastOneLabel: string;
   /** 다 열고 등급까지 보여 준 뒤 — 결과 화면으로 */
   onOpened: () => void;
+  /** 판에서 돌아 나온 카드가 멈춘 자리(화면 px) — 3D 표가 여기서 시작한다. 없으면 제자리에서 */
+  from?: { x: number; y: number; w: number } | null;
+  /** 표가 화면에 처음 그려진 뒤 — 돌아 나온 카드를 걷는다 */
+  onShown?: () => void;
 };
 
 export default function OpenView(props: Props) {
@@ -53,7 +57,7 @@ const curve = (f: number) => { const u = Math.min(1, Math.max(0, f / F_END)); re
 const uncurve = (p: number) => F_END * (1.5 - Math.sqrt(Math.max(0, 2.25 - 2 * p)));
 
 function Open3D({
-  sel, pending, art, dark, title, store, font, autoOpenSeconds, lastOneLabel, onOpened, fallback,
+  sel, pending, art, dark, title, store, font, autoOpenSeconds, lastOneLabel, onOpened, fallback, from, onShown,
 }: Props & { fallback: () => void }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const slotRef = useRef<HTMLDivElement>(null);
@@ -73,6 +77,10 @@ function Open3D({
   const [done, setDone] = useState(false);
 
   useEffect(() => { openedRef.current = onOpened; }, [onOpened]);
+  // 카드가 멈춘 자리는 처음 뜰 때 한 번만 읽는다 — 카드가 걷혀 값이 사라져도 3D 를 다시 띄우지 않게
+  const fromRef = useRef(from ?? null);
+  const shownRef = useRef(onShown);
+  useEffect(() => { shownRef.current = onShown; }, [onShown]);
   useEffect(() => { lastAct.current = Date.now(); }, []);
 
   // 매 프레임 3D 가 부른다 — 손잡이 · 화살표 · 어둠 · 버튼을 리액트 상태를 거치지 않고 옮긴다
@@ -113,6 +121,8 @@ function Open3D({
         await s.play({
           host, slot: slotRef.current, layer: wrapRef.current, art, dark,
           ticket: { no: sel, title, store, font },
+          from: fromRef.current,
+          shown: () => { if (alive) shownRef.current?.(); },
           frame: paint,
           finale: () => {
             if (!alive) return;
@@ -282,7 +292,7 @@ const KNOB = 62;
 const DRAG_RATIO = 0.85;   // 손잡이가 손가락을 따라오는 비율. 낮을수록 무겁다
 const THRESHOLD = 0.65;    // 카드 폭 대비 이만큼 밀면 열린다
 
-function Open2D({ sel, pending, art, title, store, autoOpenSeconds, onOpened }: Props) {
+function Open2D({ sel, pending, art, title, store, autoOpenSeconds, onOpened, onShown }: Props) {
   const [px, setPx] = useState(0);          // 손잡이 위치(px)
   const [grip, setGrip] = useState(false);  // 손잡이를 잡고 있는 중 = 카드가 떨린다
   const [revealing, setRevealing] = useState(false);
@@ -315,6 +325,8 @@ function Open2D({ sel, pending, art, title, store, autoOpenSeconds, onOpened }: 
   }, [pending, finish, autoOpenSeconds]);
 
   useEffect(() => () => sfx.grindStop(), []);
+  // 평면 판은 바로 그려진다 — 돌아 나온 카드를 걷는다
+  useEffect(() => { onShown?.(); }, [onShown]);
 
   return (
     <div className="page">
