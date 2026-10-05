@@ -42,6 +42,8 @@ export default function ResultView({
   const tier = tierOf(r.grade, last);
   const front = last ? lastOneImage : r.image;
   const mat = art.photo?.mat;
+  const print = art.photo?.print;
+  const paper = art.photo?.slip;
   const name = last ? (r.lastOneName as string) : r.name;
 
   // 나중에 쓰는 상품은 쿠폰 QR 을 띄운다. 결과 화면은 뽑은 뒤에만 그려지므로(서버에서 안 그림) location 을 바로 쓴다
@@ -91,8 +93,8 @@ export default function ResultView({
         st = s;
         await s.play({
           host, cardSlot: cardRef.current, coinSlot: coinRef.current,
-          grade: r.grade, tier, front, flat: !!front && isFlat(front), mat,
-          slip: { store, title, no: r.position ?? null }, dark,
+          grade: r.grade, tier, front, flat: !!front && isFlat(front), mat, print,
+          slip: { store, title, no: r.position ?? null, paper }, dark,
           onLost: () => { if (alive) setMode('2d'); },
           onReveal: () => { if (alive) fanfare(); },
         });
@@ -103,7 +105,7 @@ export default function ResultView({
       }
     })();
     return () => { alive = false; clearTimeout(late); st?.stop(); };
-  }, [mode, r, tier, front, mat, store, title, dark, fanfare]);
+  }, [mode, r, tier, front, mat, print, paper, store, title, dark, fanfare]);
 
   return (
     <div className="page res3wrap" ref={rootRef}>

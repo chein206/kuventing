@@ -2,7 +2,8 @@
  * 브랜드 테마 원판을 그린다 — 아르벤(전기차 시승) · 뷰티성분사전(팝업).
  *
  * 사진 판(photo-letterpress)과 같은 규칙으로 만든다 — 표(천공이 실제로 뚫린 투명 PNG) · 미니 칸 · 검인 도장 ·
- * 봉인 · 판 바닥(이음새 없는 타일) · 상품 교환권. 사진 대신 SVG 로 그려 크롬으로 굽는다(AI 생성 없음 · 상표 걱정 없음).
+ * 봉인 · 판 바닥(이음새 없는 타일). 사진 대신 SVG 로 그려 크롬으로 굽는다(AI 생성 없음 · 상표 걱정 없음).
+ * 상품 · 광고 사진은 여기서 그리지 않는다 — Flow 로 뽑는다(assets/demo/README.md). 처음엔 교환권 그림을 구웠다가 사진으로 바꿨다.
  * 브랜드는 데모용 가상 브랜드다 — 실제 회사 이름 · 로고를 쓰지 않는다.
  *
  *   node scripts/theme-art.mjs            전부
@@ -18,7 +19,6 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PHOTO = path.join(ROOT, 'public', 'photo');
-const DEMO = path.join(ROOT, 'public', 'demo');
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PERF = 0.76;
 const only = process.argv[2];
@@ -193,62 +193,6 @@ const marble = () => `<svg xmlns="http://www.w3.org/2000/svg" width="1024" heigh
 <rect width="1024" height="1024" filter="url(#v2)" opacity=".45"/>
 <rect width="1024" height="1024" filter="url(#v1)" opacity=".7"/></svg>`;
 
-/* ------------------------------------------------------------ 상품 교환권 — 결과 화면이 자르지 않게 *.flat.png */
-const ICON = {
-  golf: '<rect x="34" y="40" width="52" height="68" rx="12"/><path d="M44 40 V18 M60 40 V10 M76 40 V22"/><circle cx="44" cy="14" r="5"/><circle cx="60" cy="8" r="5"/><path d="M70 22 L82 18"/><path d="M34 62 H86"/>',
-  umbrella: '<path d="M14 58 Q60 6 106 58 Q90 48 76 58 Q62 46 46 58 Q32 48 14 58 Z"/><path d="M60 34 V96 Q60 108 48 106"/>',
-  tumbler: '<path d="M38 22 H82 L76 108 H44 Z"/><path d="M34 22 H86 V14 H34 Z"/><path d="M42 50 H78"/>',
-  charge: '<rect x="30" y="18" width="60" height="88" rx="12"/><path d="M64 34 L48 64 H64 L54 90"/>',
-  coffee: '<path d="M30 46 H86 V72 Q86 96 58 96 Q30 96 30 72 Z"/><path d="M86 54 Q104 54 102 68 Q100 80 86 78"/><path d="M48 18 Q42 28 48 36 M62 14 Q56 26 62 36"/><path d="M24 106 H92"/>',
-  key: '<rect x="30" y="24" width="60" height="78" rx="22"/><circle cx="60" cy="52" r="10"/><path d="M48 80 H72"/><path d="M60 24 V10 H80"/>',
-  set: '<rect x="18" y="44" width="26" height="62" rx="6"/><rect x="48" y="26" width="26" height="80" rx="6"/><rect x="78" y="56" width="26" height="50" rx="6"/><path d="M54 26 V16 H68 V26"/>',
-  bottle: '<path d="M44 46 H76 V104 Q76 110 70 110 H50 Q44 110 44 104 Z"/><path d="M52 46 V30 H68 V46"/><path d="M60 30 V12"/><circle cx="60" cy="10" r="5"/><path d="M50 70 H70"/>',
-  pouch: '<path d="M22 46 H98 L90 104 H30 Z"/><path d="M44 46 Q44 24 60 24 Q76 24 76 46"/><path d="M40 70 H80"/>',
-  sachet: '<rect x="16" y="30" width="26" height="70" rx="4"/><rect x="47" y="22" width="26" height="78" rx="4"/><rect x="78" y="34" width="26" height="66" rx="4"/><path d="M16 42 H42 M47 34 H73 M78 46 H104"/>',
-  tag: '<path d="M22 60 L60 22 H98 V60 L60 98 Z"/><circle cx="80" cy="40" r="7"/><path d="M50 62 L70 52 M48 72 L58 66"/>',
-  gift: '<rect x="20" y="48" width="80" height="58" rx="6"/><rect x="14" y="34" width="92" height="16" rx="4"/><path d="M60 34 V106"/><path d="M60 34 Q40 10 32 26 Q28 36 60 34 Q80 10 88 26 Q92 36 60 34"/>',
-};
-
-const voucher = (b, v) => {
-  const dark = b === 'arven';
-  const c = dark
-    ? { bg0: '#161A21', bg1: '#0C0E12', band: 'url(#bl)', brand: 'ARVEN', brandF: 'Montserrat', brandC: AR.ink, title: '#F3F5F8', sub: AR.dim, icon: AR.blue, edge: AR.blue }
-    : { bg0: '#FBF2EE', bg1: '#F2E1D9', band: 'url(#rg)', brand: '뷰티성분사전', brandF: 'Noto Sans KR', brandC: BE.plum, title: BE.plum, sub: BE.coral, icon: BE.rose, edge: BE.rose };
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560">
-<defs>
-  <linearGradient id="bg" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="${c.bg0}"/><stop offset="1" stop-color="${c.bg1}"/></linearGradient>
-  <linearGradient id="bl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${AR.blueD}"/><stop offset=".5" stop-color="${AR.blue}"/><stop offset="1" stop-color="${AR.blueD}"/></linearGradient>
-  ${beautyDefs}
-  <clipPath id="c"><rect x="14" y="14" width="972" height="532" rx="28"/></clipPath>
-</defs>
-<rect x="14" y="14" width="972" height="532" rx="28" fill="url(#bg)"/>
-<g clip-path="url(#c)"><rect x="14" y="14" width="972" height="16" fill="${c.band}"/></g>
-<rect x="34" y="50" width="932" height="476" rx="18" fill="none" stroke="${c.edge}" stroke-opacity=".4" stroke-width="2"/>
-<text x="76" y="118" font-family="${c.brandF}" font-weight="${dark ? 600 : 900}" font-size="${dark ? 34 : 36}" letter-spacing="${dark ? 11 : 0}" fill="${c.brandC}">${c.brand}</text>
-<text x="76" y="292" font-family="Noto Sans KR" font-weight="900" font-size="${v.title.length > 7 ? 70 : 84}" fill="${c.title}">${v.title}</text>
-<text x="80" y="356" font-family="Montserrat" font-weight="600" font-size="26" letter-spacing="8" fill="${c.sub}">${v.sub}</text>
-<text x="80" y="470" font-family="Noto Sans KR" font-weight="500" font-size="24" fill="${dark ? '#6F7784' : '#A0848E'}">${v.note}</text>
-<g transform="translate(704 130) scale(2.2)" fill="none" stroke="${c.icon}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">${ICON[v.icon]}</g>
-</svg>`;
-};
-
-const ARVEN_PRIZES = [
-  { file: 'a-golfbag', title: '골프백', sub: 'GOLF BAG', note: '아르벤 투어 스탠드백', icon: 'golf' },
-  { file: 'b-umbrella', title: '장우산', sub: 'UMBRELLA', note: '아르벤 자동 장우산', icon: 'umbrella' },
-  { file: 'c-tumbler', title: '텀블러', sub: 'TUMBLER', note: '아르벤 스테인리스 텀블러', icon: 'tumbler' },
-  { file: 'd-charge', title: 'EV 충전 1만원', sub: 'CHARGING CREDIT', note: '아르벤 충전 카드에 바로 적립', icon: 'charge' },
-  { file: 'e-coffee', title: '아메리카노', sub: 'COFFEE', note: '전시장 라운지 커피', icon: 'coffee' },
-  { file: 'finale', title: '주말 시승 1박 2일', sub: 'WEEKEND DRIVE', note: '원하는 아르벤 모델로 주말 내내', icon: 'key' },
-];
-const BEAUTY_PRIZES = [
-  { file: 'a-fullset', title: '본품 풀세트', sub: 'FULL SET', note: '팝업 라인 본품 3종', icon: 'set' },
-  { file: 'b-bottle', title: '본품 택1', sub: 'FULL SIZE', note: '원하는 본품 하나', icon: 'bottle' },
-  { file: 'c-minikit', title: '미니 키트', sub: 'MINI KIT', note: '여행용 미니 4종 파우치', icon: 'pouch' },
-  { file: 'd-sample', title: '샘플 3종', sub: 'SAMPLES', note: '오늘의 성분 샘플', icon: 'sachet' },
-  { file: 'e-coupon', title: '온라인 15% 할인', sub: 'ONLINE COUPON', note: '팝업이 끝나도 온라인몰에서', icon: 'tag' },
-  { file: 'finale', title: '팝업 한정 세트', sub: 'LIMITED EDITION', note: '이번 팝업에서만 파는 세트', icon: 'gift' },
-];
-
 /* ------------------------------------------------------------ 굽기 */
 const jobs = [];
 if (!only || only === 'arven') {
@@ -258,7 +202,6 @@ if (!only || only === 'arven') {
     { out: path.join(PHOTO, 'stamp-arven.png'), w: 300, h: 300, svg: arvenStamp() },
     { out: path.join(PHOTO, 'seal-arven.png'), w: 300, h: 300, svg: arvenSeal() },
     { out: path.join(PHOTO, 'surface-carbon.jpg'), w: 512, h: 512, svg: carbon(), jpg: true },
-    ...ARVEN_PRIZES.map((v) => ({ out: path.join(DEMO, 'arven', `${v.file}.flat.png`), w: 1000, h: 560, svg: voucher('arven', v) })),
   );
 }
 if (!only || only === 'beauty') {
@@ -268,7 +211,6 @@ if (!only || only === 'beauty') {
     { out: path.join(PHOTO, 'stamp-beauty.png'), w: 300, h: 300, svg: beautyStamp() },
     { out: path.join(PHOTO, 'seal-beauty.png'), w: 300, h: 300, svg: beautySeal() },
     { out: path.join(PHOTO, 'surface-marble.jpg'), w: 1024, h: 1024, svg: marble(), jpg: true },
-    ...BEAUTY_PRIZES.map((v) => ({ out: path.join(DEMO, 'beauty', `${v.file}.flat.png`), w: 1000, h: 560, svg: voucher('beauty', v) })),
   );
 }
 

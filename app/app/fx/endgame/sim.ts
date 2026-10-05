@@ -15,6 +15,8 @@ export const MODES: [Mode, string][] = [
 
 /** 업종 데모 한 벌 — 판 · 글꼴 · 매장 · 회차 제목 · 뽑는 조건 · 상품 · 피날레 */
 export type DemoPrize = { grade: string; name: string; qty: number; useWhen: 'now' | 'later'; image: string | null };
+/** 대기 화면 광고 — 사진이 있으면 첫 장이 모션 광고가 된다(MotionAd) */
+export type DemoPromo = { title: string; sub?: string; price?: string; image: string; pos?: string; kicker?: string };
 export type DemoPreset = {
   theme: string;
   font: string;
@@ -23,6 +25,8 @@ export type DemoPreset = {
   store: { name: string; branch: string | null; logo: string | null };
   prizes: DemoPrize[];
   finale: { name: string; image: string | null; label: string };
+  /** 대기 화면 광고 사진 */
+  promos?: DemoPromo[];
   /** 끝물 방식 — 없으면 피날레 넣고 새 판 */
   mode?: Mode;
   /** 처음부터 나간 장 — 빈 판보다 몇 장 빠진 판이 "남은 수"를 보여 준다. 상위 등급은 남긴다 */
@@ -35,9 +39,9 @@ export const FOOD_DEMO: DemoPreset = {
   store: { name: '데모 매장', branch: '끝물 시험', logo: null },
   prizes: [
     { grade: 'A', name: '차슈덮밥 세트 무료', qty: 2, useWhen: 'now', image: '/fx/prize-a.jpg' },
-    { grade: 'B', name: '라멘 1그릇 무료', qty: 5, useWhen: 'now', image: null },
+    { grade: 'B', name: '라멘 1그릇 무료', qty: 5, useWhen: 'now', image: '/demo/food/b-ramen.jpg' },
     { grade: 'C', name: '교자 무료', qty: 5, useWhen: 'now', image: '/fx/prize-c.jpg' },
-    { grade: 'D', name: '음료 무료', qty: 8, useWhen: 'later', image: null },
+    { grade: 'D', name: '음료 무료', qty: 8, useWhen: 'later', image: '/demo/food/d-soda.jpg' },
     { grade: 'E', name: '1,000원 할인', qty: 30, useWhen: 'later', image: '/art/coupon-1000.svg' },
   ],
   finale: { name: '차슈덮밥 세트 + 굿즈', image: '/fx/prize-last.jpg', label: '피날레 보너스' },
@@ -148,7 +152,7 @@ export class EndgameSim {
   // ---------- 서버 응답 ----------
   config() {
     return {
-      campaignId: 'demo', title: this.p.title, status: 'live', theme: this.p.theme, mode: 'open', ads: [],
+      campaignId: 'demo', title: this.p.title, status: 'live', theme: this.p.theme, mode: 'open', ads: this.p.promos ?? [],
       idleSeconds: 120, slideSeconds: 6, resultSeconds: 25, autoOpenSeconds: 45, sound: 'soft', motionSeconds: 6,
       font: this.p.font, drawVerb: this.p.drawVerb,
       lastOneName: this.p.finale.name, lastOneImage: this.p.finale.image, lastOneLabel: this.p.finale.label,

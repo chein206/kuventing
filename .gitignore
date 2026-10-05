@@ -34,3 +34,6 @@ desktop.ini
 
 # 개인 메모용 음성 (앱 자산 아님)
 audio/
+
+# Flow 후보 더미 — 고른 원본만 assets/demo/pick/ 에 남긴다
+assets/demo/_cand/

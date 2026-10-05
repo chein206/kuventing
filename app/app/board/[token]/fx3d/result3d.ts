@@ -34,6 +34,8 @@ export type PlayOpts = {
   flat: boolean;
   /** 그림 둘레 바탕 — 테마가 정한다(밝은 교환권은 밝은 바탕에) */
   mat?: string;
+  /** 사진 밝기(1 = 그대로) — 밝은 판의 밝은 사진이 바래지 않게 테마가 낮춘다 */
+  print?: number;
   slip: SlipInfo;
   /** 밝은 판이면 빛줄기를 줄이고 빛 망울은 끈다 — 밝은 바탕에 더한 빛은 바래 보인다 */
   dark: boolean;
@@ -161,6 +163,9 @@ class Stage implements Runner {
 
     const K = this.kit, T = this.T, metal = new Color(T.metal);
     K.fm.map = front; K.fm.emissiveMap = front; K.bm.map = back;
+    // 밝기는 값(uniform)만 바꾼다 — 셰이더를 다시 굽지 않는다
+    const gain = o.print ?? 1;
+    K.fm.color.setScalar(gain); K.fm.emissiveIntensity = .5 * gain;
     K.cm.map = face; K.cm.bumpMap = face;
     // 카드 테두리는 판(피날레면 피날레 금), 메달은 등급 — 피날레의 D 메달은 은이다
     K.edge.color.copy(metal);

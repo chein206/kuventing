@@ -46,7 +46,13 @@ function contain(g: CanvasRenderingContext2D, img: HTMLImageElement | HTMLCanvas
   g.drawImage(img, x + (w - iw * k) / 2, y + (h - ih * k) / 2, iw * k, ih * k);
 }
 
-export type SlipInfo = { store: string; title: string; no: number | null };
+/**
+ * 쪽지 종이 — 브랜드 판은 자기 종이를 쓴다(lib/boardArt.ts Photo.slip). 없으면 크라프트.
+ * 색은 'r,g,b' — 알파를 그릴 때마다 붙인다. ink 는 글자 · 테두리, grain 은 종이결 점, line 은 잔무늬
+ */
+export type SlipPaper = { from: string; to: string; ink: string; grain: string; line: string };
+const KRAFT: SlipPaper = { from: '#ECE2CB', to: '#DCCDAE', ink: '43,33,24', grain: '70,52,30', line: '58,46,34' };
+export type SlipInfo = { store: string; title: string; no: number | null; paper?: SlipPaper };
 
 /** 등급 글자 자리 — 쪽지 높이(표 비율)에 맞춘다. 활판 1.877 · 황동 1.891 · 벡터 표 2 */
 export const letterAt = (H: number) => ({ x: LETTER.x, y: Math.round(H * (LETTER.y / SLIP_H)), size: LETTER.size });
@@ -60,9 +66,10 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, rat
   const W = SLIP_W, H = Math.round(SLIP_W / ratio), L = letterAt(H);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d')!;
-  g.drawImage(slipPaper(H), 0, 0);
+  const p = info.paper ?? KRAFT;
+  g.drawImage(slipPaper(H, p), 0, 0);
   roundRect(g, 4, 4, W - 8, H - 8, 34); g.clip();
-  const ink = (a: number) => 'rgba(43,33,24,' + a + ')';
+  const ink = (a: number) => 'rgba(' + p.ink + ',' + a + ')';
 
   g.textAlign = 'left'; g.textBaseline = 'alphabetic';
   const fit = (text: string, font: string, max: number) => {
@@ -95,25 +102,26 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, rat
  * 종이결 점 16,000개가 무거워서(태블릿에서 수백 ms) 쪽지 크기마다 한 번만 그려 두고 쪽지마다 베껴 쓴다.
  * 결과가 도착하는 순간 그리면 개봉 화면 첫머리가 멈칫한다 — 고르는 동안 primeSlips 가 미리 그린다
  */
-const paper = new Map<number, HTMLCanvasElement>();
-function slipPaper(H: number) {
-  const hit = paper.get(H);
+const paper = new Map<string, HTMLCanvasElement>();
+function slipPaper(H: number, p: SlipPaper = KRAFT) {
+  const key = H + '|' + p.from + '|' + p.ink;
+  const hit = paper.get(key);
   if (hit) return hit;
   const W = SLIP_W, L = letterAt(H);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d')!;
   roundRect(g, 4, 4, W - 8, H - 8, 34); g.clip();
   const bg = g.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, '#ECE2CB'); bg.addColorStop(1, '#DCCDAE');
+  bg.addColorStop(0, p.from); bg.addColorStop(1, p.to);
   g.fillStyle = bg; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 16000; i++) {
-    g.fillStyle = 'rgba(70,52,30,' + (Math.random() * 0.06).toFixed(3) + ')';
+    g.fillStyle = 'rgba(' + p.grain + ',' + (Math.random() * 0.06).toFixed(3) + ')';
     g.fillRect(Math.random() * W, Math.random() * H, 1 + Math.random() * 2, 1);
   }
   // 위조 방지 잔무늬 — 사인 곡선을 겹쳐 그린다
   g.lineWidth = 1.3;
   for (let k = 0; k < 28; k++) {
-    g.strokeStyle = 'rgba(58,46,34,' + (k % 4 ? 0.06 : 0.1) + ')';
+    g.strokeStyle = 'rgba(' + p.line + ',' + (k % 4 ? 0.06 : 0.1) + ')';
     g.beginPath();
     for (let x = 0; x <= W; x += 5) {
       const y = H * 0.5 + Math.sin((x / W) * Math.PI * 7 + k * 0.45) * H * 0.2
@@ -122,7 +130,7 @@ function slipPaper(H: number) {
     }
     g.stroke();
   }
-  const ink = (a: number) => 'rgba(43,33,24,' + a + ')';
+  const ink = (a: number) => 'rgba(' + p.ink + ',' + a + ')';
   g.strokeStyle = ink(0.72); g.lineWidth = 7; g.strokeRect(44, 44, W - 88, H - 88);
   g.strokeStyle = ink(0.42); g.lineWidth = 2.2; g.strokeRect(62, 62, W - 124, H - 124);
 
@@ -134,7 +142,7 @@ function slipPaper(H: number) {
   for (let y = 110; y < H - 110; y += 16) g.fillRect(820, y, 3, 8);
   g.fillStyle = ink(0.46); g.font = '700 26px ' + SERIF; g.textAlign = 'center';
   g.fillText('G  R  A  D  E', L.x, H - 92);
-  paper.set(H, c);
+  paper.set(key, c);
   return c;
 }
 
@@ -153,9 +161,9 @@ const idle = (fn: () => void) => {
 const primed = new Set<string>();
 export function primeSlips(ratio: number, grades: string[], info: SlipInfo) {
   const H = Math.round(SLIP_W / ratio);
-  const words = info.store + '|' + info.title;
+  const words = info.store + '|' + info.title + '|' + (info.paper?.from ?? '');
   const jobs = [
-    () => slipPaper(H),
+    () => slipPaper(H, info.paper),
     () => { if (!primed.has(words)) { slipCanvas('A', info, false, ratio); primed.add(words); } },
     ...grades.map((gr) => () => letterHeight(gr, ratio)),
   ];

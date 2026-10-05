@@ -52,10 +52,20 @@ export type Photo = {
   surface: string;
   /** 개봉 화면에서 말려 올라간 표 뒷면 색. 없으면 크라프트지 */
   back?: string;
+  /**
+   * 등급 쪽지 종이(개봉 화면 바닥 · 결과 카드 뒷면). 없으면 크라프트.
+   * 카본 판에 크라프트 쪽지는 남의 물건 같았다(10-05) — 색은 'r,g,b', fx3d/paint.ts SlipPaper
+   */
+  slip?: { from: string; to: string; ink: string; grain: string; line: string };
   /** 쓴 칸 덮개. 없으면 어둡게 — 밝은 판에서 검은 덮개는 판에 구멍이 난 것처럼 무겁다 */
   dim?: string;
   /** 결과 카드에서 그림(교환권) 둘레 바탕. 없으면 먹색 — 밝은 교환권을 먹색에 앉히면 액자만 보인다 */
   mat?: string;
+  /**
+   * 결과 카드 사진 밝기(1 = 그대로). 밝은 판은 주변 빛(envLight)이 세서 흰 대리석 같은 밝은 사진이
+   * 하얗게 바랬다(뷰티 10-05) — 그 판만 낮춘다
+   */
+  print?: number;
 };
 
 export type Art = {
@@ -93,6 +103,11 @@ export type Art = {
    * 뭉개진다. 그래서 미니 칸 전용 원판을 따로 둔다.
    */
   photo?: Photo;
+  /**
+   * 피날레 보너스 검인. 없으면 황동 검인(/art/seal-last.svg), null 이면 안 찍는다.
+   * 황동은 활판 · 크라프트 판의 말이다 — 브랜드 판(아르벤 · 뷰티)에서는 금단추처럼 떠 보였다(사장님 10-05)
+   */
+  finSeal?: string | null;
 
   /* ── 처음 만든 판이 쓰는 것들 ── */
   /** 뜯는 자리를 천공 대신 점선으로 */
@@ -216,6 +231,7 @@ const PHOTO_ARVEN: Photo = {
   stampSrc: '/photo/stamp-arven.png', stampAt: { x: 0.88, y: 0.5, d: 0.22 },
   sealSrc: '/photo/seal-arven.png', leverSrc: '/photo/handle-brass.png',
   surface: '/photo/surface-carbon.jpg', back: '#1A1E25',
+  slip: { from: '#262B35', to: '#15181E', ink: '226,232,242', grain: '255,255,255', line: '110,145,215' },
 };
 /** 뷰티성분사전 — 팝업. 블러시 성분 카드 · 로즈골드 · 흰 대리석 바닥(채널 화면 톤) */
 const PHOTO_BEAUTY: Photo = {
@@ -223,12 +239,13 @@ const PHOTO_BEAUTY: Photo = {
   stampSrc: '/photo/stamp-beauty.png', stampAt: { x: 0.88, y: 0.5, d: 0.22 },
   sealSrc: '/photo/seal-beauty.png', leverSrc: '/photo/handle-brass.png',
   surface: '/photo/surface-marble.jpg', back: '#EAD2C8',
-  dim: 'rgba(74,35,56,.32)', mat: '#E4C9BF',
+  dim: 'rgba(74,35,56,.32)', mat: '#E4C9BF', print: 0.8,
+  slip: { from: '#FBF3EF', to: '#EFDBD2', ink: '74,35,56', grain: '120,72,86', line: '168,98,112' },
 };
 const BRAND_ART = (photo: Photo, pap: string, numc: string, numFont: string): Art => ({
   pap, ink: numc, numc, numFont, radius: 5,
   band: 0, bandSrc: '', ros: 0, rosSrc: '', grain: 0, grainSrc: '', perf: 0, stamp: 0,
-  photo,
+  photo, finSeal: null,
 });
 
 const PHOTO_ART = (photo: Photo, ink: string, radius: number): Art => ({

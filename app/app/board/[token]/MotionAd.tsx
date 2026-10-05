@@ -82,6 +82,8 @@ export function normPos(v?: string | null): AdPos {
 type AdIn = {
   title?: string; sub?: string | null; price?: string | null;
   image?: string | null; pos?: string | null;
+  /** 제목 위 금색 머리말. 없으면 「오늘의 메뉴」 — 음식점 밖(시승 · 팝업)은 행사가 정한다 */
+  kicker?: string | null;
 };
 
 /**
@@ -112,7 +114,7 @@ export function buildScenes(
     dur: i === 0 ? cut + 0.5 : cut,
     photo: a.image as string,
     cam: CAMS[i % CAMS.length],
-    kicker: '오늘의 메뉴',
+    kicker: a.kicker || '오늘의 메뉴',
     title: a.title ?? '',
     desc: a.sub ?? null,
     price: a.price ?? null,

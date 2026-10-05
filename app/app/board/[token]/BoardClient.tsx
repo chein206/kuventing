@@ -15,6 +15,7 @@ import { themeOf, type Art } from '@/lib/boardArt';
 type Ad = {
   title: string; sub?: string; price?: string; image?: string | null;
   pos?: string | null;   // 자막 위치(tl/tr/ml/mr/bl/br). 사진마다 접시 자리가 다르다
+  kicker?: string | null; // 제목 위 머리말. 없으면 「오늘의 메뉴」
 };
 type Config = {
   campaignId: string; title: string; status: string; theme: string;
@@ -306,8 +307,9 @@ export default function BoardClient({ token, build }: { token: string; build: st
       m.getOpen()?.warm();
       // 결과가 올 때 그리면 개봉 화면 첫머리가 멈칫한다 — 쪽지 바탕 · 등급별 양각을 고르는 동안 미리
       if (cfg && board) {
-        m.primeSlips(themeOf(cfg.theme).art.photo?.ratio ?? 2, board.prizes.map((p) => p.grade),
-          { store: storeOf(cfg), title: cfg.title, no: 0 });
+        const ph = themeOf(cfg.theme).art.photo;
+        m.primeSlips(ph?.ratio ?? 2, board.prizes.map((p) => p.grade),
+          { store: storeOf(cfg), title: cfg.title, no: 0, paper: ph?.slip });
       }
     }).catch(() => {});
     import('./fx3d/result3d')
@@ -447,6 +449,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
     : fin?.mode === 'skip' ? `${low}만 남으면 ${finLabel} 없이 새 판` : null;
   // 티켓 아트는 테마가 정한다 — 판 밝기가 종이색을, 문양이 무늬와 도장을 고른다
   const art = themeOf(cfg.theme).art;
+  const finSeal = art.finSeal === undefined ? '/art/seal-last.svg' : art.finSeal;
 
   return (
     <div
@@ -527,7 +530,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
                 <span>남은 티켓</span><i /><em>{left} / {total}</em>
               </div>
               {fin?.hidden && (
-                <div className="finline"><img src="/art/seal-last.svg" alt="" />{finHint}</div>
+                <div className="finline">{finSeal && <img src={finSeal} alt="" />}{finHint}</div>
               )}
               <Mini board={board} art={art} pops={pops} />
             </div>
@@ -608,8 +611,8 @@ export default function BoardClient({ token, build }: { token: string; build: st
                   ? <img className={`pshot ${isFlat(cfg.lastOneImage) ? 'flat' : ''}`} src={cfg.lastOneImage} alt="" />
                   : <span className="pbig"><Icon name="star" /></span>}
                 <span className="pgrade wide">{cfg.lastOneLabel ?? '피날레 보너스'}</span>
-                {/* 피날레 보너스에만 붙는 황동 검인 — 등급 상품과 한눈에 갈린다 */}
-                <img className="pseal" src="/art/seal-last.svg" alt="" />
+                {/* 피날레 보너스에만 붙는 황동 검인 — 등급 상품과 한눈에 갈린다. 브랜드 판은 사진만 */}
+                {finSeal && <img className="pseal" src={finSeal} alt="" />}
                 <div className="pbar">
                   <b>{cfg.lastOneName}</b>
                   <span>
@@ -747,7 +750,7 @@ function AdSlide({ ad }: { ad: Ad }) {
   if (!ad.image) {
     return (
       <div className="slide promo">
-        <div className="kind">오늘의 메뉴</div>
+        <div className="kind">{ad.kicker || '오늘의 메뉴'}</div>
         <h1>{ad.title}</h1>
         {ad.sub && <p className="sub">{ad.sub}</p>}
         {ad.price && <div className="price">{ad.price}</div>}
@@ -762,7 +765,7 @@ function AdSlide({ ad }: { ad: Ad }) {
         <img className="main" src={ad.image} alt="" />
       </div>
       <div className="cap">
-        <div className="kind">오늘의 메뉴</div>
+        <div className="kind">{ad.kicker || '오늘의 메뉴'}</div>
         <h1>{ad.title}</h1>
         {ad.sub && <p className="sub">{ad.sub}</p>}
         {ad.price && <div className="price">{ad.price}</div>}

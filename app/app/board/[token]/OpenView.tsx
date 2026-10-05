@@ -170,8 +170,8 @@ function Open3D({
     // 피날레 연출은 보너스가 정해져 있을 때만 — 등급 글자 자체는 그 표의 실제 등급이다
     const finale = pending.isLastOne && !!pending.lastOneName;
     gradeRef.current = pending.grade;
-    sceneRef.current?.setResult(pending.grade, tierOf(pending.grade, finale), { store, title, no: sel });
-  }, [ready, pending, store, title, sel]);
+    sceneRef.current?.setResult(pending.grade, tierOf(pending.grade, finale), { store, title, no: sel, paper: art.photo?.slip });
+  }, [ready, pending, store, title, sel, art]);
 
   const start = useCallback((slow: boolean) => {
     const sc = sceneRef.current;
