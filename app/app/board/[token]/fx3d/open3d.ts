@@ -168,9 +168,9 @@ const FLOOR_FS = `
     float spill = d > 0.0 ? exp(-d / (80.0 * uK)) * uLeak * 0.09 * breathe : 0.0;
     // 찢기는 선의 빛줄기 — 말린 종이(반지름 42)의 왼쪽 끝 바로 바깥 바닥에 가늘게.
     // 접는 선 바로 위는 말린 종이가 덮어 안 보인다. 종이와 바닥 사이 틈에서 새는 빛이 보이는 자리는 여기다
-    // 가운데 줄은 말린 끝에서 8px 바깥(그보다 안쪽은 종이 밑이라 가려진다), 둘레로 옅은 번짐
-    float gap = d - 42.0 * uK * 1.2;
-    float seam = (exp(-gap * gap / (64.0 * uK * uK)) * 0.5 + exp(-gap * gap / (625.0 * uK * uK)) * 0.08)
+    // 가운데 줄은 말린 끝에서 13px 바깥, 폭 12px(그보다 안쪽은 종이 밑이라 가려진다). 둘레로 옅은 번짐
+    float gap = d - 42.0 * uK * 1.3;
+    float seam = (exp(-gap * gap / (144.0 * uK * uK)) * 0.55 + exp(-gap * gap / (1024.0 * uK * uK)) * 0.1)
       * uLeak * breathe;
     gl_FragColor = vec4(surf * (0.45 + 0.65 * diff) * sh + vec3(1.0, 0.8, 0.5) * rim * (0.5 + 0.9 * inside)
       + vec3(1.0, 0.82, 0.55) * spill + vec3(1.0, 0.9, 0.7) * seam, 1.0);
