@@ -75,9 +75,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     patch.sound = body.sound;
   }
 
-  // 끝물 방식 — 남은 티켓이 모두 같은 등급일 때 피날레를 숨길지, 나오면 남은 장을 다음 판으로 넘길지
+  // 끝물 방식 — 가장 낮은 등급만 남았을 때 판을 어떻게 끝낼지(026)
   if (body.endgame !== undefined) {
-    if (!['off', 'hide', 'carry'].includes(String(body.endgame))) {
+    if (!['off', 'end', 'carry', 'skip'].includes(String(body.endgame))) {
       return Response.json({ error: 'BAD_ENDGAME' }, { status: 400 });
     }
     patch.endgame = body.endgame;
@@ -121,5 +121,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const { error } = await getAdmin().from('campaigns').update(patch).eq('id', r.ctx.campaignId);
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
+  // 끝물 방식을 바꾸면 지금 박스에 바로 적용할 게 있는지 본다
+  // (가장 낮은 등급만 남았는데 '피날레 없이 새 판' · 다 뽑힌 박스인데 자동 방식)
+  if (patch.endgame !== undefined) {
+    const { data: applied } = await getAdmin().rpc('endgame_apply', { p_campaign: r.ctx.campaignId });
+    return Response.json({ ok: true, ...patch, applied });
+  }
   return Response.json({ ok: true, ...patch });
 }

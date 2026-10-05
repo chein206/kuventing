@@ -163,9 +163,11 @@ export default function ResultView({
           </div>
         )}
 
-        {r.carried ? (
-          // 숨은 피날레가 나와 남은 장이 다음 판으로 갔다 — 이 판의 남은 수량은 이제 의미가 없다
-          <div className="carried">남은 {r.carried}장은 다음 판에 섞였습니다 · 새 판 시작</div>
+        {r.newBox ? (
+          // 이 뽑기로 판이 끝나 새 판이 열렸다 — 이 판의 남은 수량은 이제 의미가 없다
+          <div className="nextbox">
+            {r.carried ? `남은 ${r.carried}장은 다음 판에 섞였습니다 · 새 판 시작` : '이 판은 여기서 끝 · 새 판 시작'}
+          </div>
         ) : (
           <div className="gchips">
             {prizes.map((p) => {

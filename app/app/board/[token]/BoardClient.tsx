@@ -386,11 +386,16 @@ export default function BoardClient({ token, build }: { token: string; build: st
 
   const left = board?.left ?? 0;
   const total = board?.campaign?.total ?? 0;
-  // 끝물 — 남은 장이 모두 같은 등급이면 피날레가 그 안에 숨는다(사장님이 고른 방식일 때)
+  // 끝물 — 가장 낮은 등급만 남으면 사장님이 고른 방식대로(피날레 숨기기 · 바로 새 판)
   const fin = board?.finale;
   const finLabel = cfg.lastOneLabel ?? '피날레 보너스';
   const finHint = left === 1 ? `마지막 1장에 ${finLabel}` : `남은 ${left}장 중 1장에 ${finLabel}`;
   const carried = fin?.carried?.length ? fin.carried.map((c) => `${c.grade} ${c.n}장`).join(' · ') : null;
+  // 방식을 미리 알린다 — 피날레가 숨거나 안 나갈 수 있으면 손님이 뽑기 전에 알아야 한다(표시광고법).
+  // 이름표를 사장님이 바꾸면 받침이 달라지므로 조사를 붙이지 않는다
+  const low = fin?.low ?? '가장 낮은 등급';
+  const finRule = fin?.mode === 'end' || fin?.mode === 'carry' ? `${low}만 남으면 그중 1장에 ${finLabel} · 나오면 새 판`
+    : fin?.mode === 'skip' ? `${low}만 남으면 ${finLabel} 없이 새 판` : null;
   // 티켓 아트는 테마가 정한다 — 판 밝기가 종이색을, 문양이 무늬와 도장을 고른다
   const art = themeOf(cfg.theme).art;
 
@@ -524,7 +529,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
             <small>
               {fin?.hidden ? finHint
                 : carried ? `지난 판에서 넘어온 ${carried} 포함`
-                : '무엇이 남았는지 확인하세요'}
+                : finRule ?? '무엇이 남았는지 확인하세요'}
             </small>
           </h2>
           <div className="pgrid">

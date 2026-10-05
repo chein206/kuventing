@@ -19,7 +19,7 @@ type BoardInfo = {
   board_token?: string;
   board_mode?: 'pin' | 'open';
   sound?: 'off' | 'soft' | 'loud';
-  endgame?: 'off' | 'hide' | 'carry';
+  endgame?: 'off' | 'end' | 'carry' | 'skip';
   font?: string;
   theme?: string;
   idle_seconds?: number;
@@ -74,18 +74,24 @@ type Stats = {
   finale?: FinaleState;   // 025 전에는 없다
 };
 
-// 끝물 — 남은 티켓이 모두 같은 등급(예: E만 7장)이면 손님은 뽑기 전에 결과를 안다
+// 끝물 — 가장 낮은 등급(예: E)만 남으면 손님은 뽑기 전에 결과를 안다. 그때 박스를 어떻게 끝낼지
 const ENDGAME = [
-  ['off', '그대로'],
-  ['hide', '피날레 숨기기'],
-  ['carry', '숨기기 + 다음 판'],
+  ['off', '끝까지'],
+  ['end', '피날레 넣고 새 판'],
+  ['carry', '새 판 + 남은 장'],
+  ['skip', '피날레 없이 새 판'],
 ] as const;
 const ENDGAME_NOTE: Record<string, string> = {
-  off: '그대로 둡니다. 마지막 장을 뽑는 손님이 피날레 보너스를 받습니다.',
-  hide: '남은 티켓이 모두 같은 등급이 되면 피날레 보너스가 남은 장 중 1장에 숨습니다. '
-    + '뽑을 때마다 당첨 기회가 있어 끝까지 긴장이 남습니다. 카운터 화면에 "남은 7장 중 1장에 피날레"가 뜹니다.',
-  carry: '피날레 숨기기와 같고, 피날레가 나오면 남은 장을 다음 박스에 섞어 넣고 바로 새 박스를 엽니다. '
-    + '새 박스 열기를 눌러도 남은 장을 버리지 않고 섞어 넣습니다. 다음 박스는 넘어온 장만큼 커집니다.',
+  off: '끝까지 뽑습니다. 마지막 장을 뽑은 손님이 피날레 보너스를 받고, 새 박스는 직접 엽니다.',
+  end: '가장 낮은 등급만 남으면 피날레 보너스가 그중 1장에 숨습니다. '
+    + '뽑히는 순간 이 박스는 끝나고 새 박스가 열립니다. 남은 장은 정리합니다.',
+  carry: '피날레 넣고 새 판과 같고, 남은 장은 새 박스에 섞어 넣습니다. '
+    + '새 박스는 넘어온 장만큼 커지고 버리는 티켓이 없습니다.',
+  skip: '가장 낮은 등급만 남으면 피날레 없이 바로 새 박스를 엽니다. 남은 장은 정리합니다. '
+    + '카운터 화면에 "E만 남으면 피날레 없이 새 판"이 미리 뜹니다.',
+};
+const APPLY_FAIL: Record<string, string> = {
+  QTY_MISMATCH: '상품 수량 합이 총 티켓 수와 달라 새 박스를 열지 못했습니다',
 };
 
 const GRADES = 'ABCDEFGH';
@@ -102,6 +108,12 @@ export default function OwnerClient({ token }: { token: string }) {
   const [pinInput, setPinInput] = useState('');
   const [tab, setTab] = useState<'home' | 'use' | 'prize' | 'ad'>('home');
   const [stats, setStats] = useState<Stats | null>(null);
+  // '피날레 없이 새 판'일 때 피날레가 나가는 박스 비율(10개 중) — 마지막 장이 가장 낮은 등급이 아닐 확률
+  const lowRow = [...(stats?.byGrade ?? [])].filter((g) => g.qty > 0)
+    .sort((a, b) => a.grade.localeCompare(b.grade)).pop();
+  const qtySum = (stats?.byGrade ?? []).reduce((a, g) => a + g.qty, 0);
+  const lowGrade = lowRow?.grade ?? 'E';
+  const finaleShare = lowRow && qtySum ? Math.round((1 - lowRow.qty / qtySum) * 10) : null;
   const [err, setErr] = useState<string | null>(null);
   const [bd, setBd] = useState<BoardInfo | null>(null);
   const [bpin, setBpin] = useState('');
@@ -326,7 +338,16 @@ export default function OwnerClient({ token }: { token: string }) {
                       key={v}
                       aria-pressed={(bd.endgame ?? 'off') === v}
                       onClick={async () => {
-                        await call(api('board'), { method: 'POST', body: JSON.stringify({ endgame: v }) });
+                        const r = (await call(api('board'), { method: 'POST', body: JSON.stringify({ endgame: v }) })) as
+                          { applied?: { ok?: boolean; newBox?: boolean; box?: number; dropped?: number; reason?: string } };
+                        const a = r?.applied;
+                        if (a?.newBox) {
+                          setBoxMsg(a.dropped
+                            ? `가장 낮은 등급만 남아 있어 바로 ${a.box}회차 박스를 열었습니다 (남은 ${a.dropped}장 정리)`
+                            : `${a.box}회차 박스를 열었습니다`);
+                        } else if (a && a.ok === false) {
+                          setBoxMsg(APPLY_FAIL[a.reason ?? ''] ?? '새 박스를 열지 못했습니다');
+                        }
                         load();
                       }}
                     >{l}</button>
@@ -334,8 +355,13 @@ export default function OwnerClient({ token }: { token: string }) {
                 </div>
                 <p className="demo" style={{ marginTop: 8 }}>
                   {ENDGAME_NOTE[bd.endgame ?? 'off']}
-                  {!bd.last_one_name && bd.endgame && bd.endgame !== 'off' && (
-                    <><br /><b>피날레 보너스 상품을 정해야 작동합니다</b> (상품 탭)</>
+                  {bd.endgame && bd.endgame !== 'off' && <><br />박스가 끝나면 새 박스가 저절로 열립니다.</>}
+                  {!bd.last_one_name && (bd.endgame === 'end' || bd.endgame === 'carry') && (
+                    <><br /><b>피날레 보너스 상품을 정해야 숨길 수 있습니다</b> (상품 탭)</>
+                  )}
+                  {bd.endgame === 'skip' && finaleShare !== null && (
+                    <><br /><b>지금 구성이면 피날레는 박스 10개 중 약 {finaleShare}개에서만 나갑니다</b>
+                      {' '}(마지막 장이 {lowGrade}가 아닐 때)</>
                   )}
                 </p>
                 {stats?.finale?.hidden && (

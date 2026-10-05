@@ -139,8 +139,8 @@
 .bd .railhead span{font-size:11px;font-weight:800;letter-spacing:.22em;color:var(--ink-dim)}
 .bd .railhead i{flex:1;height:1px;background:linear-gradient(90deg,var(--hair),transparent)}
 .bd .railhead em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-dim)}
-/* 결과 — 숨은 피날레가 나와 남은 장이 다음 판으로 넘어갔을 때 등급 칩 자리에 */
-.bd .res3 .carried{margin-top:18px;text-align:center;font-size:16px;font-weight:800;color:var(--gold)}
+/* 결과 — 이 뽑기로 판이 끝나 새 판이 열렸을 때 등급 칩 자리에 */
+.bd .res3 .nextbox{margin-top:18px;text-align:center;font-size:16px;font-weight:800;color:var(--gold)}
 /* 끝물 — 남은 장이 모두 같은 등급이라 피날레가 그 안에 숨어 있다 */
 .bd .finline{display:flex;align-items:center;justify-content:center;gap:8px;
   font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--gold)}
