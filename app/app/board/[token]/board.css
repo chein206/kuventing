@@ -1012,8 +1012,12 @@
 /* 미는 방향 안내 — 손잡이 오른쪽에서 흘러간다. 글자 구간에 들어서면 사라진다 */
 .bd .arrows3{position:absolute;left:0;top:0;z-index:3;display:flex;gap:6px;pointer-events:none;
   opacity:0;transition:opacity .3s}
-.bd .arrows3 span{font-size:40px;font-weight:900;line-height:1;color:#E3C57C;
-  text-shadow:0 0 16px rgba(227,197,124,.9);animation:flow 1.5s ease-in-out infinite}
+/* 크라프트 종이 위에 놓인다 — 연한 금빛은 종이에 묻혔다(사장님). 진한 호박금 + 짙은 테 + 금빛 번짐.
+   테는 text-shadow 로(테두리 text-stroke 는 쓰지 않는다 — 결과 제목 조각 났던 일) */
+.bd .arrows3 span{font-size:44px;font-weight:900;line-height:1;color:#F5B630;
+  text-shadow:0 0 1px rgba(46,26,2,.95),0 0 1px rgba(46,26,2,.95),0 2px 0 rgba(46,26,2,.85),0 0 14px rgba(255,190,70,.6);
+  animation:flow3 1.5s ease-in-out infinite}
+@keyframes flow3{0%,100%{opacity:.5;transform:translateX(-6px)}45%{opacity:1;transform:translateX(5px)}}
 .bd .arrows3 span:nth-child(2){animation-delay:.16s}
 .bd .arrows3 span:nth-child(3){animation-delay:.32s}
 
@@ -1036,5 +1040,5 @@
 
 @media (prefers-reduced-motion:reduce){
   .bd .knob3 .kin,.bd .arrows3 span{animation:none}
-  .bd .arrows3 span{opacity:.8}
+  .bd .arrows3 span{opacity:1}
 }
