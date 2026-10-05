@@ -268,8 +268,7 @@ export default function BoardClient({ token }: { token: string }) {
     if (!pending) return;
     setResult(pending);
     setStep('result');
-    // 피날레 팡파레는 보너스가 있을 때만
-    sfx.fanfare(pending.grade, !!pending.isLastOne && !!pending.lastOneName);
+    // 팡파레는 결과 화면이 카드가 뒤집히는 순간에 직접 울린다(ResultView)
   }, [pending]);
 
   const resetOpenState = useCallback(() => {

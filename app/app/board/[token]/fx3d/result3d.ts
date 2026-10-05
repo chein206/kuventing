@@ -37,6 +37,8 @@ export type PlayOpts = {
   dark: boolean;
   /** WebGL 이 도중에 죽으면 부른다 — 글자 화면으로 내려간다 */
   onLost?: () => void;
+  /** 카드가 뒤집혀 상품이 보이는 순간 — 팡파레를 여기에 맞춘다 */
+  onReveal?: () => void;
 };
 
 /**
@@ -253,6 +255,7 @@ class Stage implements Runner {
 
     if (!this.revealed && lt >= 1.12) {
       this.revealed = true;
+      this.opts?.onReveal?.();
       this.punch = 1; this.shake = this.reduce ? 0 : T.shake;
       // 카드 뒤 테두리 안쪽에서 고리로 터뜨린다 — 뒤집혀 나온 상품을 덮지 않고 둘레로 쏟아진다
       this.conf.burst(new Vector3(this.cardAt.x, this.cardAt.y, -30), T.burst, T.power, this.cardSize);

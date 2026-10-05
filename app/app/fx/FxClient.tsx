@@ -91,12 +91,7 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
         <OpenView key={`o-${st.theme}-${st.tier}-${run}`} sel={17} pending={pending} art={def.art} dark={def.dark}
                   title="10월 뽑기" store="라멘집 · 미리보기" font={fontOf(null).stack}
                   autoOpenSeconds={45} lastOneLabel="피날레 보너스"
-                  onOpened={() => {
-                    // 카운터 화면(BoardClient)과 같이 — 결과로 넘어가는 순간 팡파레
-                    const r = SAMPLE[st.tier];
-                    sfx.fanfare(r.grade, r.isLastOne && !!r.lastOneName);
-                    setPhase('result');
-                  }} />
+                  onOpened={() => setPhase('result')} />
       ) : (
         <ResultView key={`r-${st.theme}-${st.tier}-${run}`}
                     r={SAMPLE[st.tier]} art={def.art} dark={def.dark}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as sfx from '@/lib/sfx';
 import qrcode from 'qrcode-generator';
 import type { DrawResult, Prize } from '@/lib/supabase';
 import type { Art } from '@/lib/boardArt';
@@ -58,6 +59,20 @@ export default function ResultView({
   }, []);
   useEffect(() => { if (sec === 0) onDone(); }, [sec, onDone]);
 
+  /*
+   * 팡파레는 상품이 보이는 순간에 한 번 — 3D 는 카드가 뒤집히는 순간, 평면은 화면이 뜨는 순간.
+   * 예전엔 결과 화면이 뜨자마자 울려서 카드가 뒤집히기 1초쯤 전에 끝나 버렸다
+   */
+  const played = useRef(false);
+  const fanfare = useCallback(() => {
+    if (played.current) return;
+    played.current = true;
+    sfx.fanfare(r.grade, last);
+  }, [r.grade, last]);
+  useEffect(() => { if (mode === '2d') fanfare(); }, [mode, fanfare]);
+  // 3D 가 늦어져도(사진을 늦게 받는 등) 3초 안에는 울린다
+  useEffect(() => { const t = setTimeout(fanfare, 3000); return () => clearTimeout(t); }, [fanfare]);
+
   // 3D 층 — 뽑기를 시작할 때 미리 받아 둔 모듈을 꺼내 쓴다
   useEffect(() => {
     if (mode !== '3d') return;
@@ -78,6 +93,7 @@ export default function ResultView({
           grade: r.grade, tier, front, flat: !!front && isFlat(front),
           slip: { store, title, no: r.position ?? null }, dark,
           onLost: () => { if (alive) setMode('2d'); },
+          onReveal: () => { if (alive) fanfare(); },
         });
         if (!alive) { s.stop(); return; }
         setGo(true);
@@ -86,7 +102,7 @@ export default function ResultView({
       }
     })();
     return () => { alive = false; clearTimeout(late); st?.stop(); };
-  }, [mode, r, tier, front, store, title, dark]);
+  }, [mode, r, tier, front, store, title, dark, fanfare]);
 
   return (
     <div className="page res3wrap" ref={rootRef}>
