@@ -41,7 +41,10 @@ const PULL_MS = 1150;
 
 type Step = 'attract' | 'pin' | 'list' | 'grid' | 'open' | 'result';
 
-export default function BoardClient({ token }: { token: string }) {
+/** 새 버전 반영 — 묻는 간격 · 손님 없음으로 칠 무동작 · 배포 뒤 기다림 · 실패 뒤 쉼 */
+const UPD = { poll: 5 * 60_000, idle: 60_000, grace: 10 * 60_000, retry: 30 * 60_000 };
+
+export default function BoardClient({ token, build }: { token: string; build: string }) {
   const [cfg, setCfg] = useState<Config | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
   const [step, setStep] = useState<Step>('attract');
@@ -123,16 +126,72 @@ export default function BoardClient({ token }: { token: string }) {
   );
 
   const slideCount = 1 + (cfg?.ads?.length ?? 0);
+
+  /* ---------- 새 버전 — 손님이 없을 때 한 번 새로고침 ----------
+     보드는 한 페이지 안에서 화면만 바뀐다. 새로고침하기 전까지 새로 배포한 게 안 들어간다.
+     5분마다 "지금 배포 번호"만 묻는다(화면은 그대로). 다르면 표시만 해 두고, 아래가 다 맞을 때만 바꾼다.
+     - 대기(광고) 화면 — 여기로 올 때 손님 상태(PIN · 뽑기권 · 고른 칸 · 결과)는 이미 다 지웠다
+     - 마지막 터치 후 60초 — 광고를 보다 다가온 손님 손 밑에서 바뀌지 않게
+     - 새 버전을 알고 10분 뒤 — 잘못 배포해도 그 안에 되돌리면 매장까지 안 간다
+     - 새 보드 페이지가 정상으로 열린다
+     그리고 광고 슬라이드가 넘어가는 순간에 바꾼다. 원래 화면이 바뀌는 때라 덜 튄다. */
+  const upd = useRef<{ v: string; seen: number; ok: boolean; checking: boolean; failAt: number } | null>(null);
+
+  const tryReload = useCallback(() => {
+    const u = upd.current;
+    if (!u?.ok || stepRef.current !== 'attract' || Date.now() - lastTouch.current < UPD.idle) return false;
+    // 방금 같은 버전으로 새로고침했는데 또 다르다고 나오면(캐시 등) 30분은 다시 안 한다 — 끝없이 돌지 않게
+    try {
+      const last = JSON.parse(sessionStorage.getItem('kuvt-reload') ?? 'null') as { v: string; at: number } | null;
+      if (last?.v === u.v && Date.now() - last.at < UPD.retry) { u.ok = false; u.failAt = Date.now(); return false; }
+      sessionStorage.setItem('kuvt-reload', JSON.stringify({ v: u.v, at: Date.now() }));
+    } catch { /* 저장소를 못 쓰는 기기 — 그냥 바꾼다 */ }
+    location.reload();
+    return true;
+  }, []);
+
+  useEffect(() => {
+    const ask = async () => {
+      try {
+        const r = await fetch('/api/version', { cache: 'no-store' });
+        const { v } = (await r.json()) as { v?: string };
+        if (!v) return;
+        // 되돌리기로 내 번호가 다시 최신이 됐으면 기다리던 것도 거둔다
+        if (v === build) { upd.current = null; return; }
+        if (upd.current?.v !== v) upd.current = { v, seen: Date.now(), ok: false, checking: false, failAt: 0 };
+      } catch { /* 오프라인 — 다음에 다시 묻는다 */ }
+    };
+    ask();
+    const poll = setInterval(ask, UPD.poll);
+    const vis = () => { if (document.visibilityState === 'visible') ask(); };
+    document.addEventListener('visibilitychange', vis);
+    // 5초마다 — 바꿀 때가 됐나. 새 페이지가 정상으로 열리는지 먼저 본다(고장 난 배포로 매장 화면을 넘기지 않게)
+    const tick = setInterval(() => {
+      const u = upd.current, now = Date.now();
+      if (!u || u.checking) return;
+      if (u.ok) { if (slideCount <= 1) tryReload(); return; }   // 넘길 광고가 없으면 기다리지 않는다
+      if (stepRef.current !== 'attract' || now - lastTouch.current < UPD.idle) return;
+      if (now - u.seen < UPD.grace || now - u.failAt < UPD.retry) return;
+      u.checking = true;
+      fetch(location.pathname, { cache: 'no-store' })
+        .then((r) => { u.ok = r.ok; if (!r.ok) u.failAt = Date.now(); })
+        .catch(() => { u.failAt = Date.now(); })
+        .finally(() => { u.checking = false; });
+    }, 5000);
+    return () => { clearInterval(poll); clearInterval(tick); document.removeEventListener('visibilitychange', vis); };
+  }, [build, tryReload, slideCount]);
+
   useEffect(() => {
     if (step !== 'attract' || slideCount <= 1) return;
     // 모션 광고는 씬 길이의 합만큼 머문다. 중간에 잘리면 사인 컷을 못 본다
     const ms = slide === 0 && scenes.length
       ? scenesDuration(scenes) * 1000
       : (cfg?.slideSeconds ?? DEF.slide) * 1000;
-    const t = setTimeout(() => setSlide((s) => (s + 1) % slideCount), ms);
+    // 새 버전이 기다리고 있으면 넘기는 대신 바꾼다
+    const t = setTimeout(() => { if (!tryReload()) setSlide((s) => (s + 1) % slideCount); }, ms);
     return () => clearTimeout(t);
     // slide 가 바뀔 때마다 타이머를 다시 건다 = 손으로 넘기면 대기시간도 초기화된다
-  }, [step, slideCount, cfg?.slideSeconds, slide, scenes]);
+  }, [step, slideCount, cfg?.slideSeconds, slide, scenes, tryReload]);
 
   // 손으로 넘기기
   const swipeX = useRef<number | null>(null);
@@ -164,12 +223,18 @@ export default function BoardClient({ token }: { token: string }) {
   // 고른 글꼴만 내려받는다. 기본값은 받지 않으므로 첫 화면이 늦어지지 않는다
   useEffect(() => { loadFont(cfg?.font); }, [cfg?.font]);
 
-  /* ---------- 화면 꺼짐 방지 ---------- */
+  /* ---------- 화면 꺼짐 방지 ----------
+     화면이 꺼졌다 켜지거나 다른 앱에 다녀오면 브라우저가 잠금을 풀어 버린다 — 다시 보일 때마다 다시 건다 */
   useEffect(() => {
     let lock: { release: () => Promise<void> } | null = null;
     const nav = navigator as Navigator & { wakeLock?: { request: (t: string) => Promise<typeof lock> } };
-    nav.wakeLock?.request('screen').then((l) => { lock = l; }).catch(() => {});
-    return () => { lock?.release().catch(() => {}); };
+    const grab = () => {
+      if (document.visibilityState !== 'visible') return;
+      nav.wakeLock?.request('screen').then((l) => { lock = l; }).catch(() => {});
+    };
+    grab();
+    document.addEventListener('visibilitychange', grab);
+    return () => { document.removeEventListener('visibilitychange', grab); lock?.release().catch(() => {}); };
   }, []);
 
   /* ---------- 세션 열기 ---------- */
@@ -209,10 +274,6 @@ export default function BoardClient({ token }: { token: string }) {
 
   function start() {
     if (!cfg) return;
-    // 전체화면은 사용자 제스처 안에서만 요청할 수 있다
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {});
-    }
     if (board && board.left === 0) { setMsg('티켓이 모두 소진되었습니다'); return; }
     if (cfg.mode === 'pin') { setPin(''); setPinErr(false); setStep('pin'); }
     else openSession();
@@ -342,6 +403,13 @@ export default function BoardClient({ token }: { token: string }) {
         lastTouch.current = Date.now();
         // 브라우저는 사용자가 만지기 전에는 소리를 못 내게 막는다. 여기서만 깨울 수 있다
         sfx.unlock(cfg.sound ?? 'off');
+      }}
+      onPointerUp={() => {
+        // 전체화면은 사용자 손짓 안에서만 걸 수 있다(터치는 손을 뗄 때). 크롬 탭으로 띄운 태블릿은
+        // 새로고침하면 풀리므로, 대기 화면에서는 시작 버튼이 아니어도 아무 데나 만지면 다시 건다
+        if (stepRef.current === 'attract' && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.({ navigationUI: 'hide' }).catch(() => {});
+        }
       }}
     >
       <div className="bar">

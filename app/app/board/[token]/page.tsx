@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { BUILD } from '@/lib/build';
 import BoardClient from './BoardClient';
 import './board.css';
 import './motion-ad.css';
@@ -18,5 +19,5 @@ export async function generateMetadata(
 // 카운터 옆 상시 화면. 주소: /board/<보드토큰>
 export default async function Page({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  return <BoardClient token={token} />;
+  return <BoardClient token={token} build={BUILD} />;
 }
