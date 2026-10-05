@@ -848,20 +848,22 @@
   font-size:clamp(42px,4.8dvh,60px);font-weight:900;letter-spacing:.02em;line-height:1.05;padding:0 10px;
   background:linear-gradient(100deg,#9C7A2E 0%,#F6E7B8 20%,#C9A24B 38%,#FFF6DC 50%,#B08A3E 66%,#F0D389 84%,#9C7A2E 100%);
   background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
-  /* 금 빛줄기 위에 금 글씨라 획이 바탕에 묻힌다 — 가는 짙은 테두리로 떼어 낸다 */
-  -webkit-text-stroke:1px rgba(50,32,8,.55);
-  filter:drop-shadow(0 3px 0 rgba(60,40,10,.7)) drop-shadow(0 8px 22px rgba(0,0,0,.8));
+  /* 금 빛줄기 위에 금 글씨라 획이 바탕에 묻힌다 — 짙은 그늘 테(첫 drop-shadow)로 떼어 낸다.
+     테두리(-webkit-text-stroke)는 쓰지 않는다: 명조(Noto Serif KR)처럼 획 윤곽이 겹친 채 남은 가변 글꼴은
+     겹친 안쪽 선까지 테가 그려져 글자가 조각나 보인다(사장님, 멘야 코바야시). 그늘은 글자 바깥 윤곽만 따른다 */
+  filter:drop-shadow(0 0 .6px rgba(40,26,6,.95)) drop-shadow(0 3px 0 rgba(60,40,10,.7)) drop-shadow(0 8px 22px rgba(0,0,0,.8));
   animation:hdlIn .8s cubic-bezier(.2,1.25,.35,1) .35s both,hdlSheen 2.4s linear 1.2s infinite
 }
 .bd .tier-C .hdl{background-image:linear-gradient(100deg,#7A4A2A 0%,#F3C9A2 20%,#C08A5A 38%,#FFE6D2 50%,#9C6A3E 66%,#E2A57A 84%,#7A4A2A 100%)}
 .bd .tier-E .hdl{background-image:linear-gradient(100deg,#6E7682 0%,#F1F4F8 20%,#AEB5C0 38%,#FFFFFF 50%,#8C94A0 66%,#DDE2EA 84%,#6E7682 100%)}
 .bd .tier-L .hdl{font-size:clamp(44px,5.1dvh,64px);background-image:linear-gradient(100deg,#F2C25A 0%,#FFF8E4 20%,#FFD27A 38%,#FFFDF2 50%,#E8A848 66%,#FFF0C2 84%,#F2C25A 100%)}
-/* 피날레 판은 뒤가 주황 빛으로 가득 차서 붉은 금 글씨가 묻힌다 — 글씨는 밝은 금으로 올리고 짙은 테두리와 가까운 그늘로 떼어 낸다.
+/* 피날레 판은 뒤가 주황 빛으로 가득 차서 붉은 금 글씨가 묻힌다 — 글씨는 밝은 금으로 올리고 짙은 그늘 테와 가까운 그늘로 떼어 낸다.
    붉은 기운은 뒤의 빛줄기가 맡는다 */
-.bd .tier-L .hdl{-webkit-text-stroke:2px rgba(90,26,8,.9);
-  filter:drop-shadow(0 3px 0 rgba(74,22,8,.9)) drop-shadow(0 0 12px rgba(40,10,0,.75)) drop-shadow(0 8px 22px rgba(0,0,0,.6))}
+.bd .tier-L .hdl{
+  filter:drop-shadow(0 0 .8px rgba(90,26,8,1)) drop-shadow(0 0 .8px rgba(90,26,8,1)) drop-shadow(0 3px 0 rgba(74,22,8,.9))
+    drop-shadow(0 0 12px rgba(40,10,0,.75)) drop-shadow(0 8px 22px rgba(0,0,0,.6))}
 /* 밝은 판 — 밝은 금은 크림색 바탕에서 안 읽힌다. 한 단 짙게, 그늘은 가볍게 */
-[data-theme^="light"] .bd .hdl{-webkit-text-stroke:0;
+[data-theme^="light"] .bd .hdl{
   background-image:linear-gradient(100deg,#5E4210 0%,#B8892F 22%,#7A5A1A 40%,#D9B45C 52%,#6B4C14 68%,#A57A28 86%,#5E4210 100%);
   filter:drop-shadow(0 1px 0 rgba(255,255,255,.7)) drop-shadow(0 6px 14px rgba(80,55,25,.35))
 }

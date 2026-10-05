@@ -44,7 +44,7 @@ export class EndgameSim {
   private subs = new Set<() => void>();     // 데모 조작판
   private boards = new Set<() => void>();   // 보드 화면(실시간 알림 대신)
 
-  constructor(readonly theme: string) {
+  constructor(readonly theme: string, readonly font = 'system') {
     this.t = this.fresh();
   }
 
@@ -123,7 +123,7 @@ export class EndgameSim {
     return {
       campaignId: 'demo', title: '오픈 기념 뽑기', status: 'live', theme: this.theme, mode: 'open', ads: [],
       idleSeconds: 120, slideSeconds: 6, resultSeconds: 25, autoOpenSeconds: 45, sound: 'soft', motionSeconds: 6,
-      font: 'system',
+      font: this.font,
       lastOneName: FINALE.name, lastOneImage: FINALE.image, lastOneLabel: FINALE.label,
       store: STORE,
     };
