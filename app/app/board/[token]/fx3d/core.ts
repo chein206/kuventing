@@ -326,7 +326,8 @@ export class Gl {
     this.cur?.resize();
   }
   fitCam(cam: PerspectiveCamera) {
-    cam.aspect = this.W / this.H; cam.near = 10; cam.far = this.D * 8;
+    // 가까운 면을 너무 가깝게 두면 깊이 정밀도가 그만큼 떨어진다(16비트 깊이 버퍼 기기). 카메라 50px 앞까지는 비어 있다
+    cam.aspect = this.W / this.H; cam.near = 50; cam.far = this.D * 8;
     cam.updateProjectionMatrix();
   }
 

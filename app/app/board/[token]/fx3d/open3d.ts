@@ -30,6 +30,12 @@ export const OPEN_AT = 0.93;
 /** 다 열린 뒤 등급을 보여 주는 시간(초) — 그다음 결과 화면 */
 const HOLD = 1.9;
 /**
+ * 다 열리기 전의 빛줄기 · 빛 망울 색 — 모든 등급이 같다.
+ * 등급마다 금 · 구리 · 은으로 물들이면 표를 열기도 전에 무엇이 나왔는지 다 보인다(사장님 지적).
+ * 다 열리는 순간에야 등급 색으로 바뀐다
+ */
+const PLAIN_RAY = '#FFE2B8', PLAIN_BOKEH = '#FFE4C4';
+/**
  * 천천히 열기 · 방치 시 자동 개봉 — 글자 앞까지는 빨리, 글자 구간은 멈칫거리며 아주 천천히, 끝은 한 번에.
  * [밀리초, 연 정도]
  */
@@ -151,14 +157,17 @@ const FLOOR_FS = `
     gl_FragColor = vec4(surf * (0.45 + 0.65 * diff) * sh + vec3(1.0, 0.8, 0.5) * rim * (0.5 + 0.9 * inside), 1.0);
     #include <colorspace_fragment>
   }`;
-/** 찢기는 선에서 새는 빛 — 가운데가 뜨겁고 위아래로 사그라진다. 지글거리며 떨린다 */
+/**
+ * 찢기는 선에서 새는 빛 — 표 밑에서 바닥으로 번진다. 가운데가 뜨겁고 위아래로 사그라진다.
+ * 높이마다 다르게 깜빡이게 했더니 가로 줄무늬가 지글거려 화면 오류처럼 보였다 — 통째로만 숨 쉰다
+ */
 const LEAK_FS = `
   uniform float uI; uniform float uTime; varying vec2 vUv;
   void main(){
     float x = (vUv.x - 0.5) * 2.0;
-    float core = exp(-x * x * 40.0), wide = exp(-x * x * 5.0) * 0.4;
+    float core = exp(-x * x * 40.0), wide = exp(-x * x * 4.0) * 0.5;
     float v = sin(vUv.y * 3.14159);
-    float fl = 0.8 + 0.2 * sin(uTime * 37.0 + vUv.y * 9.0);
+    float fl = 0.88 + 0.12 * sin(uTime * 23.0);
     gl_FragColor = vec4(vec3(1.0, 0.84, 0.55) * (core * 1.5 + wide) * v * fl * uI, 1.0);
     #include <colorspace_fragment>
   }`;
@@ -265,6 +274,8 @@ class OpenScene implements Runner {
   private auto: { k: [number, number][]; t0: number; first: boolean } | null = null;
   private letterL = new Vector3(); private letterW = new Vector3(); private v = new Vector3();
   private rayK = 1; private bokK = 1;
+  private plainRay = new Color(PLAIN_RAY); private plainBok = new Color(PLAIN_BOKEH);
+  private tierRay = new Color(PLAIN_RAY); private tierBok = new Color(PLAIN_BOKEH);
   private reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(private gl: Gl) {
@@ -282,15 +293,22 @@ class OpenScene implements Runner {
       uniforms: this.tickU, vertexShader: TICKET_VS, fragmentShader: TICKET_FS, side: DoubleSide, transparent: true,
     }));
     this.ticket.renderOrder = 2;
+    /*
+     * 바닥 · 새는 빛 · 표는 깊이가 아니라 그리는 순서로 가린다(바닥 → 빛 → 표).
+     * 셋은 몇 px 차이로 겹쳐 있는데, 깊이 버퍼가 16비트인 기기(소프트웨어 렌더 · 일부 태블릿)에서는
+     * 그 차이를 못 가려 픽셀마다 앞뒤가 뒤집힌다 — 표 위에 흰 세로 줄무늬가 생기던 원인.
+     * 바닥은 깊이를 남기지 않고, 빛은 표 밑(바닥 쪽)에 깔아 표가 덮게 한다. 빛은 열린 틈으로만 보인다
+     */
     this.floor = new Mesh(new PlaneGeometry(1, 1), new ShaderMaterial({
-      uniforms: this.floorU, vertexShader: VS_UV, fragmentShader: FLOOR_FS, transparent: true,
+      uniforms: this.floorU, vertexShader: VS_UV, fragmentShader: FLOOR_FS, transparent: true, depthWrite: false,
     }));
     this.floor.renderOrder = 1;
     this.leak = new Mesh(new PlaneGeometry(1, 1), new ShaderMaterial({
       uniforms: this.leakU, vertexShader: VS_UV, fragmentShader: LEAK_FS,
       transparent: true, depthWrite: false, blending: AdditiveBlending,
     }));
-    this.leak.renderOrder = 3;
+    this.leak.renderOrder = 1.5;
+    this.leak.position.z = -1;
     this.group.add(this.floor, this.ticket, this.leak);
     this.group.visible = false;
     this.scene.add(this.group);
@@ -336,6 +354,7 @@ class OpenScene implements Runner {
     this.floor.position.set(0, 0, -3); this.floor.scale.setScalar(1); this.floorU.uFoil.value = 0;
     this.group.rotation.set(0, 0, 0); this.group.scale.setScalar(1);
     this.rays.u.uAmp.value = 0; this.bok.u.uAmp.value = 0;
+    this.rays.u.uCol.value.set(PLAIN_RAY); this.bok.u.uCol.value.set(PLAIN_BOKEH);
     this.rayK = o.dark ? 1 : .45; this.bokK = o.dark ? 1 : 0;
     this.sparks.clear(); this.conf.parkAll();
 
@@ -361,8 +380,7 @@ class OpenScene implements Runner {
     this.floorU.map.value = map; this.floorU.hmap.value = hmap;
     this.floorU.uTex.value.set(2.2 / hc.width, 2.2 / hc.height);
     this.floorU.uMetal.value.set(this.T.metal);
-    this.rays.u.uCol.value.set(this.T.ray);
-    this.bok.u.uCol.value.set(this.T.bokeh);
+    // 빛 색은 여기서 바꾸지 않는다 — 다 열리기 전에 등급이 새지 않게(fin 에서 바꾼다)
     this.conf.setTier(this.T);
     // 글자 가운데 — 쪽지 위의 비율로 들고 있다가 표 크기가 정해지면 좌표로 바꾼다
     const H = Math.round(SLIP_W / this.ratio), L = letterAt(H);
@@ -479,7 +497,7 @@ class OpenScene implements Runner {
     const p = this.c, cx = p * TW;
     // 바닥은 표보다 0.75% 안쪽에서 시작한다 — 접히는 자리를 바닥 좌표로 옮긴다
     this.tickU.uC.value = cx; this.floorU.uFold.value = cx - TW * .0075;
-    this.leak.position.x = cx - TW / 2;
+    this.leak.position.x = cx - TW / 2 - 24 * s;
 
     // 글자 구간에 들어서면 숨을 죽인다
     this.tension += ((this.done ? 0 : sstep(.42, .86, p)) - this.tension) * Math.min(1, dt * 5);
@@ -510,6 +528,9 @@ class OpenScene implements Runner {
       this.floor.position.y = k2 >= 1 ? Math.sin(this.ft * 1.3) * 5 : 0;
       this.rays.u.uAmp.value = T.rayAmp * eOutCubic(k2) * this.rayK;
       this.bok.u.uAmp.value = .6 * eOutCubic(k2) * this.bokK;
+      const kc = c01(this.ft / .35);
+      this.rays.u.uCol.value.copy(this.plainRay).lerp(this.tierRay, kc);
+      this.bok.u.uCol.value.copy(this.plainBok).lerp(this.tierBok, kc);
       if (!this.sent && this.ft >= HOLD) { this.sent = true; o.done(); }
     }
     this.group.updateMatrixWorld(true);
@@ -564,6 +585,7 @@ class OpenScene implements Runner {
   private fin() {
     this.done = true; this.ft = 0; this.auto = null;
     const T = this.T, o = this.letterW, s = this.s;
+    this.tierRay.set(T.ray); this.tierBok.set(T.bokeh);
     this.shake = this.reduce ? 0 : Math.max(.35, T.shake); this.punch = .6;
     const n = Math.round(260 * (this.gl.lite ? .6 : 1) * (this.reduce ? .4 : 1));
     for (let i = 0; i < n; i++) {
