@@ -137,7 +137,9 @@ function Open3D({
   // 결과가 오면 바닥에 등급 쪽지를 깐다 — 그때부터 밀 수 있다
   useEffect(() => {
     if (!ready || !pending) return;
-    sceneRef.current?.setResult(pending.grade, tierOf(pending.grade, pending.isLastOne), { store, title, no: sel });
+    // 피날레 연출은 보너스가 정해져 있을 때만 — 등급 글자 자체는 그 표의 실제 등급이다
+    const finale = pending.isLastOne && !!pending.lastOneName;
+    sceneRef.current?.setResult(pending.grade, tierOf(pending.grade, finale), { store, title, no: sel });
   }, [ready, pending, store, title, sel]);
 
   const start = useCallback((slow: boolean) => {

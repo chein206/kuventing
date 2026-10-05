@@ -21,7 +21,8 @@ const TIERS: { k: Tier; label: string }[] = [
 ];
 const BASE = { code: 'K7Q-2M9', expiresAt: '2026-12-31T00:00:00Z', left: 41, position: 17 };
 const SAMPLE: Record<Tier, DrawResult> = {
-  L: { ...BASE, grade: 'A', name: '차슈덮밥 세트 무료', useWhen: 'now', image: '/fx/prize-a.jpg', isLastOne: true, lastOneName: '차슈덮밥 세트 + 굿즈' },
+  // 피날레는 등급이 아니다 — 마지막 표가 D 였고 그 위에 보너스가 얹힌 경우
+  L: { ...BASE, grade: 'D', name: '음료 무료', useWhen: 'now', image: null, isLastOne: true, lastOneName: '차슈덮밥 세트 + 굿즈' },
   A: { ...BASE, grade: 'A', name: '차슈덮밥 세트 무료', useWhen: 'now', image: '/fx/prize-a.jpg', isLastOne: false, lastOneName: null },
   C: { ...BASE, grade: 'C', name: '교자 무료', useWhen: 'now', image: '/fx/prize-c.jpg', isLastOne: false, lastOneName: null },
   E: { ...BASE, grade: 'E', name: '1,000원 할인', useWhen: 'later', image: '/art/coupon-1000.svg', isLastOne: false, lastOneName: null },

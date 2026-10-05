@@ -23,7 +23,7 @@ import {
 } from './core';
 import { letterAt, letterHeight, SLIP_W, slipCanvas, ticketCanvas, type SlipInfo, type TicketInfo } from './paint';
 import type { Art } from '@/lib/boardArt';
-import type { Tier } from '../grade';
+import { tierOf, type Tier } from '../grade';
 
 /** 이만큼 열면 나머지는 저절로 열린다 — 글자는 87% 쯤에서 다 드러나고, 그 뒤는 빈 여백이다 */
 export const OPEN_AT = 0.93;
@@ -380,7 +380,8 @@ class OpenScene implements Runner {
     this.floorTex = [map, hmap];
     this.floorU.map.value = map; this.floorU.hmap.value = hmap;
     this.floorU.uTex.value.set(2.2 / hc.width, 2.2 / hc.height);
-    this.floorU.uMetal.value.set(this.T.metal);
+    // 글자에 차오르는 박은 그 표의 등급 금속 — 피날레여도 D 는 은이다(결과 카드 뒷면 쪽지와 같은 색)
+    this.floorU.uMetal.value.set(TIER[tierOf(grade, false)].metal);
     // 빛 색은 여기서 바꾸지 않는다 — 다 열리기 전에 등급이 새지 않게(fin 에서 바꾼다)
     this.conf.setTier(this.T);
     // 글자 가운데 — 쪽지 위의 비율로 들고 있다가 표 크기가 정해지면 좌표로 바꾼다

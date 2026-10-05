@@ -35,8 +35,10 @@ export default function ResultView({
   const coinRef = useRef<HTMLDivElement>(null);
 
   // 피날레 보너스가 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다
+  // 피날레는 등급이 아니다 — 마지막 표를 뽑은 손님에게 그 표의 등급 상품 위에 얹어 주는 보너스.
+  // 보너스를 정하지 않은 캠페인의 마지막 표는 평범한 등급 연출이다
   const last = r.isLastOne && !!r.lastOneName;
-  const tier = tierOf(r.grade, r.isLastOne);
+  const tier = tierOf(r.grade, last);
   const front = last ? lastOneImage : r.image;
   const name = last ? (r.lastOneName as string) : r.name;
 

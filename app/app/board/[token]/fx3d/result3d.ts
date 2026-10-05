@@ -16,7 +16,7 @@ import {
   type TierDef,
 } from './core';
 import { cardBackCanvas, coinCanvas, printCanvas, shadowCanvas, type SlipInfo } from './paint';
-import type { Tier } from '../grade';
+import { tierOf, type Tier } from '../grade';
 
 export { preload } from './core';
 
@@ -151,7 +151,10 @@ class Stage implements Runner {
     const K = this.kit, T = this.T, metal = new Color(T.metal);
     K.fm.map = front; K.fm.emissiveMap = front; K.bm.map = back;
     K.cm.map = face; K.cm.bumpMap = face;
-    for (const m of [K.edge, K.cm, K.side]) m.color.copy(metal);
+    // 카드 테두리는 판(피날레면 피날레 금), 메달은 등급 — 피날레의 D 메달은 은이다
+    K.edge.color.copy(metal);
+    const medal = new Color(TIER[tierOf(o.grade, false)].metal);
+    for (const m of [K.cm, K.side]) m.color.copy(medal);
     K.coin.scale.setScalar(.001);
 
     this.rays.u.uCol.value.set(T.ray); this.rays2.u.uCol.value.set(T.ray2);

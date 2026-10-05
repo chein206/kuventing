@@ -231,7 +231,9 @@ export default function BoardClient({ token }: { token: string }) {
     import('./fx3d/result3d')
       .then((m) => {
         m.getStage()?.warm();
-        if (step === 'open' && pending) m.preload(pending.isLastOne ? cfg?.lastOneImage ?? null : pending.image);
+        if (step === 'open' && pending) {
+          m.preload(pending.isLastOne && pending.lastOneName ? cfg?.lastOneImage ?? null : pending.image);
+        }
       })
       .catch(() => {});
   }, [step, pending, cfg?.lastOneImage]);
@@ -266,7 +268,8 @@ export default function BoardClient({ token }: { token: string }) {
     if (!pending) return;
     setResult(pending);
     setStep('result');
-    sfx.fanfare(pending.grade, !!pending.isLastOne);
+    // 피날레 팡파레는 보너스가 있을 때만
+    sfx.fanfare(pending.grade, !!pending.isLastOne && !!pending.lastOneName);
   }, [pending]);
 
   const resetOpenState = useCallback(() => {
