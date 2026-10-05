@@ -101,7 +101,8 @@
 .ow .modes{display:flex;gap:8px;margin-top:10px}
 .ow .modes button{
   flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--surf2);
-  font-size:13px;font-weight:700;color:var(--dim)
+  font-size:13px;font-weight:700;color:var(--dim);
+  word-break:keep-all   /* 한글은 글자마다 끊긴다 — "피날레 넣 / 고 새 판" 이 되지 않게 띄어쓰기에서만 */
 }
 .ow .modes button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
 

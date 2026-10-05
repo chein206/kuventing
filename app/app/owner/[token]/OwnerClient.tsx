@@ -88,7 +88,7 @@ const ENDGAME_NOTE: Record<string, string> = {
   carry: '피날레 넣고 새 판과 같고, 남은 장은 새 박스에 섞어 넣습니다. '
     + '새 박스는 넘어온 장만큼 커지고 버리는 티켓이 없습니다.',
   skip: '가장 낮은 등급만 남으면 피날레 없이 바로 새 박스를 엽니다. 남은 장은 정리합니다. '
-    + '카운터 화면에 "E만 남으면 피날레 없이 새 판"이 미리 뜹니다.',
+    + '카운터 화면에 이 규칙이 미리 뜹니다.',
 };
 const APPLY_FAIL: Record<string, string> = {
   QTY_MISMATCH: '상품 수량 합이 총 티켓 수와 달라 새 박스를 열지 못했습니다',
@@ -331,7 +331,7 @@ export default function OwnerClient({ token }: { token: string }) {
 
             {bd && (
               <div className="soundset">
-                <label>끝물 방식 · 남은 티켓이 모두 같은 등급일 때</label>
+                <label>끝물 방식 · 가장 낮은 등급만 남았을 때</label>
                 <div className="modes">
                   {ENDGAME.map(([v, l]) => (
                     <button
