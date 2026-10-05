@@ -599,8 +599,8 @@ class OpenScene implements Runner {
       this.bok.u.uAmp.value = (.35 + p * .3) * (1 - .7 * k) * this.bokK * glow;
     }
 
-    // 찢기는 선에서 불꽃 — 빨리 밀수록 많이 튀고, 천천히 쪼면 잦아든다
-    if (live) {
+    // 찢기는 선에서 불꽃 — 빨리 밀수록 많이 튀고, 천천히 쪼면 잦아든다. 표 끝이 혼자 들썩일 때(peek)는 튀지 않는다
+    if (live && !this.peek) {
       this.acc += dt * (22 + Math.min(700, this.speed * 1.1 / s)) * (this.gl.lite ? .6 : 1) * (this.reduce ? .4 : 1);
       while (this.acc >= 1) {
         this.acc -= 1;
