@@ -7,7 +7,8 @@ import { Icon } from '@/lib/Icon';
 import { fontOf } from '@/lib/fonts';
 import ResultView from '../board/[token]/ResultView';
 import OpenView from '../board/[token]/OpenView';
-import type { Tier } from '../board/[token]/grade';
+import { gradeColor, type Tier } from '../board/[token]/grade';
+import Ticket from '../board/[token]/Ticket';
 
 /**
  * 결과 화면 미리보기 — 테마 7개 × 판 4개(피날레 · 금 · 구리 · 은)를 카운터 화면 그대로 돌려 본다.
@@ -15,6 +16,7 @@ import type { Tier } from '../board/[token]/grade';
  * 주소: /fx?theme=light-west&tier=E  (bare=1 이면 고르는 막대를 숨긴다 — 스크린샷용)
  *       /fx?theme=classic&view=keys  버튼 재질만 모아 본다 (PIN 자판 · 취소 · 남은 시간 · 시작 띠)
  *       /fx?theme=dark-west&tier=C&view=open  개봉 화면부터 — 다 열면 결과 화면으로 이어진다
+ *       /fx?theme=photo-letterpress&view=grid  티켓 고르기 판(50칸, 나간 칸 섞어서)
  */
 const TIERS: { k: Tier; label: string }[] = [
   { k: 'L', label: '피날레' }, { k: 'A', label: '금 A·B' }, { k: 'C', label: '구리 C' }, { k: 'E', label: '은 D 이하' },
@@ -80,7 +82,7 @@ export default function FxClient(init: { theme: string | null; tier: string | nu
         <div className="nm">라멘집 · 미리보기</div>
         <div className="rt"><b>41</b><i>/80</i><small>남은 티켓</small></div>
       </div>
-      {init.view === 'keys' ? <Keys /> : phase === 'open' ? (
+      {init.view === 'keys' ? <Keys /> : init.view === 'grid' ? <Grid art={def.art} /> : phase === 'open' ? (
         <OpenView key={`o-${st.theme}-${st.tier}-${run}`} sel={17} pending={pending} art={def.art} dark={def.dark}
                   title="10월 뽑기" store="라멘집 · 미리보기" font={fontOf(null).stack}
                   autoOpenSeconds={45} lastOneLabel="피날레 보너스"
@@ -125,6 +127,31 @@ function Keys() {
       <button className="big cd">티켓 고르기<i className="cdbar" style={{ width: '62%' }} /><em className="cdnum">19</em></button>
       <div className="rowbtn"><button className="big ghost">취소</button><button className="big" disabled>뽑는 중</button></div>
       <div className="foot" style={{ padding: '0' }}><button className="touch">화면을 눌러 뽑기 시작</button></div>
+    </div>
+  );
+}
+
+/** 티켓 고르기 판 — 카운터 화면과 같은 class · 같은 Ticket. 나간 칸은 등급을 섞어 둔다 */
+const USED: Record<number, string> = {
+  1: 'D', 2: 'E', 3: 'E', 6: 'E', 7: 'E', 8: 'A', 9: 'D', 10: 'E', 13: 'B', 14: 'B', 17: 'D', 20: 'E',
+  21: 'E', 22: 'E', 23: 'C', 24: 'B', 25: 'C', 27: 'E', 28: 'E', 29: 'E', 30: 'A', 31: 'C', 33: 'E', 34: 'E',
+  37: 'E', 38: 'D', 39: 'B', 40: 'D', 41: 'D', 42: 'C', 43: 'D', 45: 'E', 48: 'E', 49: 'E',
+};
+function Grid({ art }: { art: Parameters<typeof Ticket>[0]['art'] }) {
+  return (
+    <div className="page">
+      <h2 className="ttl">티켓을 선택하세요<small>구멍이 뚫린 칸은 이미 나간 티켓입니다</small></h2>
+      <div className="tgrid">
+        {Array.from({ length: 50 }, (_, i) => i + 1).map((pos) => USED[pos] ? (
+          <div key={pos} className="tk2 used">
+            <Ticket art={art} size="tile" used num={USED[pos]} gradeColor={gradeColor(USED[pos])} />
+          </div>
+        ) : (
+          <div key={pos} className={`tk2 ${pos === 18 ? 'sel' : ''}`}>
+            <Ticket art={art} size="tile" num={String(pos)} sel={pos === 18} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -44,7 +44,8 @@ export default function Ticket({
   // 밝은 판·어두운 판 위에서 같은 규칙 하나로 합성돼야 한다. 불투명 검정으로 박으면
   // 밝은 판에서 위계가 뒤집힌다.
   const ink = used ? 'rgba(255,255,255,.30)' : art.ink;
-  const fs = size === 'big' ? 74 : size === 'mini' ? 15 : 26;
+  // 티켓 고르기 칸(tile)의 번호 · 나간 칸의 등급 글자 — 카운터 앞에서 읽히게 26 → 29(사장님 요청 +2pt)
+  const fs = size === 'big' ? 74 : size === 'mini' ? 15 : 29;
   const kids: React.ReactNode[] = [];
 
   /* ── 사진 원판이 있으면 그것을 깐다 ── */
@@ -302,7 +303,8 @@ function PhotoTicket({
     position: 'absolute', left: 0, width: `${half}%`, top: '50%',
     transform: 'translateY(-50%)', textAlign: 'center', lineHeight: 1, zIndex: 2,
     fontFamily: art.numFont, fontWeight: 700,
-    fontSize: `${P(used ? 74 : 78)}px`, letterSpacing: '-.02em',
+    // 고르기 칸(tile)은 3px(약 2pt) 더 — 번호와 나간 칸의 등급 글자 모두
+    fontSize: `${P(used ? 74 : 78) + (size === 'tile' ? 3 : 0)}px`, letterSpacing: '-.02em',
     color: used ? (gradeColor || '#7C8492') : art.numc,
     textShadow: used ? '0 1px 4px rgba(0,0,0,.9)' : 'none',
   }}>{num}</span>);
