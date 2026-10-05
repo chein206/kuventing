@@ -19,7 +19,8 @@
 export type ThemeKey =
   | 'dark-west' | 'dark-east' | 'light-west' | 'light-east'
   | 'photo-letterpress' | 'photo-brass'
-  | 'classic';
+  | 'classic'
+  | 'photo-arven' | 'light-beauty';
 
 /**
  * 사진 원판 한 벌.
@@ -49,6 +50,8 @@ export type Photo = {
   leverSrc: string;
   /** 판 표면 — 이음새 없이 반복된다 */
   surface: string;
+  /** 개봉 화면에서 말려 올라간 표 뒷면 색. 없으면 크라프트지 */
+  back?: string;
 };
 
 export type Art = {
@@ -198,6 +201,31 @@ const PHOTO_BRASS: Photo = {
   ...PHOTO_BASE, src: '/photo/ticket-brass.png', ratio: 1.891, perf: 0.756,
 };
 
+/* ------------------------------------------------------------
+   브랜드 판 — 업종 데모용 가상 브랜드. 사진 대신 SVG 로 그려 구운 원판(scripts/theme-art.mjs).
+   규칙은 사진 판과 같다(천공 76% · 미니 칸 · 검인 · 봉인 · 이음새 없는 바닥).
+   사장님 화면의 테마 고르기에는 안 나온다(brand) — 행사를 맡을 때 우리가 붙인다.
+------------------------------------------------------------ */
+/** 아르벤 — 전기차 시승. 블랙 키 카드 · 일렉트릭 블루 · 카본 바닥 */
+const PHOTO_ARVEN: Photo = {
+  src: '/photo/ticket-arven.png', miniSrc: '/photo/ticket-arven-mini.png', ratio: 1400 / 757, perf: 0.76,
+  stampSrc: '/photo/stamp-arven.png', stampAt: { x: 0.88, y: 0.5, d: 0.22 },
+  sealSrc: '/photo/seal-arven.png', leverSrc: '/photo/handle-brass.png',
+  surface: '/photo/surface-carbon.jpg', back: '#1A1E25',
+};
+/** 뷰티성분사전 — 팝업. 블러시 성분 카드 · 로즈골드 · 흰 대리석 바닥(채널 화면 톤) */
+const PHOTO_BEAUTY: Photo = {
+  src: '/photo/ticket-beauty.png', miniSrc: '/photo/ticket-beauty-mini.png', ratio: 1400 / 757, perf: 0.76,
+  stampSrc: '/photo/stamp-beauty.png', stampAt: { x: 0.88, y: 0.5, d: 0.22 },
+  sealSrc: '/photo/seal-beauty.png', leverSrc: '/photo/handle-brass.png',
+  surface: '/photo/surface-marble.jpg', back: '#EAD2C8',
+};
+const BRAND_ART = (photo: Photo, pap: string, numc: string, numFont: string): Art => ({
+  pap, ink: numc, numc, numFont, radius: 5,
+  band: 0, bandSrc: '', ros: 0, rosSrc: '', grain: 0, grainSrc: '', perf: 0, stamp: 0,
+  photo,
+});
+
 const PHOTO_ART = (photo: Photo, ink: string, radius: number): Art => ({
   pap: '#D3C1A1',
   ink,
@@ -218,6 +246,8 @@ export type ThemeDef = {
   note: string;
   dark: boolean;
   art: Art;
+  /** 브랜드 판 — 사장님 테마 고르기에는 안 나온다 */
+  brand?: boolean;
 };
 
 export const THEMES: ThemeDef[] = [
@@ -269,6 +299,22 @@ export const THEMES: ThemeDef[] = [
     note: '남색 바탕에 금선. 무늬 없이 단순하다',
     dark: true,
     art: CLASSIC,
+  },
+  {
+    key: 'photo-arven',
+    label: '브랜드 · 아르벤 EV 시승',
+    note: '블랙 키 카드 · 일렉트릭 블루 · 카본 바닥 (데모 가상 브랜드)',
+    dark: true,
+    art: BRAND_ART(PHOTO_ARVEN, '#14171C', '#EEF1F6', "'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif"),
+    brand: true,
+  },
+  {
+    key: 'light-beauty',
+    label: '브랜드 · 뷰티성분사전 팝업',
+    note: '블러시 성분 카드 · 로즈골드 · 흰 대리석 바닥',
+    dark: false,
+    art: BRAND_ART(PHOTO_BEAUTY, '#F3E3DC', '#4A2338', "Georgia,'Times New Roman',serif"),
+    brand: true,
   },
 ];
 

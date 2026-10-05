@@ -451,7 +451,7 @@ export default function OwnerClient({ token }: { token: string }) {
                 <div className="soundset">
                   <label>화면 테마</label>
                   <div className="themelist">
-                    {THEMES.map((t) => (
+                    {THEMES.filter((t) => !t.brand).map((t) => (
                       <button
                         key={t.key}
                         aria-pressed={(bd.theme ?? 'dark-west') === t.key}

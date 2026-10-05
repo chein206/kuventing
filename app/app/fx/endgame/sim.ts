@@ -13,16 +13,35 @@ export const MODES: [Mode, string][] = [
   ['skip', '피날레 없이 새 판'],
 ];
 
+/** 업종 데모 한 벌 — 판 · 글꼴 · 매장 · 회차 제목 · 뽑는 조건 · 상품 · 피날레 */
+export type DemoPrize = { grade: string; name: string; qty: number; useWhen: 'now' | 'later'; image: string | null };
+export type DemoPreset = {
+  theme: string;
+  font: string;
+  title: string;
+  drawVerb: string;
+  store: { name: string; branch: string | null; logo: string | null };
+  prizes: DemoPrize[];
+  finale: { name: string; image: string | null; label: string };
+  /** 끝물 방식 — 없으면 피날레 넣고 새 판 */
+  mode?: Mode;
+  /** 처음부터 나간 장 — 빈 판보다 몇 장 빠진 판이 "남은 수"를 보여 준다. 상위 등급은 남긴다 */
+  drawn?: number;
+};
+
 // 멘야 코바야시와 같은 구성(50장). 사진은 /fx 데모 것을 쓴다
-const PRIZES = [
-  { grade: 'A', name: '차슈덮밥 세트 무료', qty: 2, useWhen: 'now', image: '/fx/prize-a.jpg' },
-  { grade: 'B', name: '라멘 1그릇 무료', qty: 5, useWhen: 'now', image: null },
-  { grade: 'C', name: '교자 무료', qty: 5, useWhen: 'now', image: '/fx/prize-c.jpg' },
-  { grade: 'D', name: '음료 무료', qty: 8, useWhen: 'later', image: null },
-  { grade: 'E', name: '1,000원 할인', qty: 30, useWhen: 'later', image: '/art/coupon-1000.svg' },
-];
-const FINALE = { name: '차슈덮밥 세트 + 굿즈', image: '/fx/prize-last.jpg', label: '피날레 보너스' };
-const STORE = { name: '데모 매장', branch: '끝물 시험', logo: null };
+export const FOOD_DEMO: DemoPreset = {
+  theme: 'dark-west', font: 'system', title: '오픈 기념 뽑기', drawVerb: '주문',
+  store: { name: '데모 매장', branch: '끝물 시험', logo: null },
+  prizes: [
+    { grade: 'A', name: '차슈덮밥 세트 무료', qty: 2, useWhen: 'now', image: '/fx/prize-a.jpg' },
+    { grade: 'B', name: '라멘 1그릇 무료', qty: 5, useWhen: 'now', image: null },
+    { grade: 'C', name: '교자 무료', qty: 5, useWhen: 'now', image: '/fx/prize-c.jpg' },
+    { grade: 'D', name: '음료 무료', qty: 8, useWhen: 'later', image: null },
+    { grade: 'E', name: '1,000원 할인', qty: 30, useWhen: 'later', image: '/art/coupon-1000.svg' },
+  ],
+  finale: { name: '차슈덮밥 세트 + 굿즈', image: '/fx/prize-last.jpg', label: '피날레 보너스' },
+};
 
 const shuffle = <X,>(a: X[]) => {
   for (let i = a.length - 1; i > 0; i--) {
@@ -35,7 +54,7 @@ const CODE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const code = () => Array.from({ length: 6 }, () => CODE[Math.floor(Math.random() * CODE.length)]).join('');
 
 export class EndgameSim {
-  mode: Mode = 'end';
+  mode: Mode;
   box = 1;
   t: Tk[] = [];
   given = false;      // 이 판 피날레가 나갔다
@@ -44,14 +63,21 @@ export class EndgameSim {
   private subs = new Set<() => void>();     // 데모 조작판
   private boards = new Set<() => void>();   // 보드 화면(실시간 알림 대신)
 
-  constructor(readonly theme: string, readonly font = 'system') {
+  constructor(readonly p: DemoPreset) {
+    this.mode = p.mode ?? 'end';
     this.t = this.fresh();
+    // 처음부터 몇 장 빠진 판 — 아래 등급부터 고르게(상위 등급은 손님이 뽑을 몫으로 남긴다)
+    if (p.drawn) {
+      const low = shuffle(this.t.filter((x) => x.grade >= 'C'));
+      for (const x of low.slice(0, p.drawn)) x.drawn = true;
+    }
   }
+  get theme() { return this.p.theme; }
 
   // ---------- 판 ----------
   private fresh(carried: { grade: string; from: number }[] = []): Tk[] {
     const all = [
-      ...PRIZES.flatMap((p) => Array.from({ length: p.qty }, () => ({ grade: p.grade, from: null as number | null }))),
+      ...this.p.prizes.flatMap((p) => Array.from({ length: p.qty }, () => ({ grade: p.grade, from: null as number | null }))),
       ...carried,
     ];
     return shuffle(all).map((x, i) => ({ pos: i + 1, grade: x.grade, drawn: false, from: x.from }));
@@ -101,17 +127,18 @@ export class EndgameSim {
       if (next) { carried = this.open(carry); newBox = true; dropped = left - carried; }
     }
 
-    const p = PRIZES.find((x) => x.grade === tk.grade)!;
+    const p = this.p.prizes.find((x) => x.grade === tk.grade)!;
+    const F = this.p.finale;
     const c = code();
-    this.say(`${box}회차 ${pos}번 ${tk.grade}${isLast ? ` + ${FINALE.label}` : ''}`
+    this.say(`${box}회차 ${pos}번 ${tk.grade}${isLast ? ` + ${F.label}` : ''}`
       + (newBox ? ` → ${this.box}회차 새 판${carried ? ` (남은 ${carried}장 섞음)` : dropped ? ` (남은 ${dropped}장 정리)` : ''}` : ''));
     this.changed(hidden);
     return {
       grade: tk.grade, name: p.name, useWhen: p.useWhen, image: p.image,
       code: `${c.slice(0, 3)}-${c.slice(3)}`,
       isLastOne: isLast,
-      lastOneName: isLast ? FINALE.name : null,
-      lastOneLabel: isLast ? FINALE.label : null,
+      lastOneName: isLast ? F.name : null,
+      lastOneLabel: isLast ? F.label : null,
       hidden, newBox, carried, dropped,
       expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
       left, position: pos,
@@ -121,11 +148,11 @@ export class EndgameSim {
   // ---------- 서버 응답 ----------
   config() {
     return {
-      campaignId: 'demo', title: '오픈 기념 뽑기', status: 'live', theme: this.theme, mode: 'open', ads: [],
+      campaignId: 'demo', title: this.p.title, status: 'live', theme: this.p.theme, mode: 'open', ads: [],
       idleSeconds: 120, slideSeconds: 6, resultSeconds: 25, autoOpenSeconds: 45, sound: 'soft', motionSeconds: 6,
-      font: this.font,
-      lastOneName: FINALE.name, lastOneImage: FINALE.image, lastOneLabel: FINALE.label,
-      store: STORE,
+      font: this.p.font, drawVerb: this.p.drawVerb,
+      lastOneName: this.p.finale.name, lastOneImage: this.p.finale.image, lastOneLabel: this.p.finale.label,
+      store: this.p.store,
     };
   }
 
@@ -135,11 +162,11 @@ export class EndgameSim {
     for (const x of this.t) if (x.from !== null) carried.set(x.grade, (carried.get(x.grade) ?? 0) + 1);
     return {
       campaign: {
-        id: 'demo', title: '오픈 기념 뽑기', status: 'live', theme: this.theme,
+        id: 'demo', title: this.p.title, status: 'live', theme: this.p.theme,
         total: this.t.length, endsAt: null, box: this.box,
-        lastOneName: FINALE.name, lastOneImage: FINALE.image, store: STORE,
+        lastOneName: this.p.finale.name, lastOneImage: this.p.finale.image, store: this.p.store,
       },
-      prizes: PRIZES.map((p) => ({ ...p, left: s.rest.filter((x) => x.grade === p.grade).length })),
+      prizes: this.p.prizes.map((p) => ({ ...p, left: s.rest.filter((x) => x.grade === p.grade).length })),
       board: [...this.t].sort((a, b) => a.pos - b.pos).map((x) => ({ pos: x.pos, grade: x.drawn ? x.grade : null })),
       left: s.left,
       finale: {

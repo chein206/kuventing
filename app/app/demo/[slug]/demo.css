@@ -1,0 +1,5 @@
+/* 업종 데모 — 오른쪽 아래 작은 띠. 손님 화면을 가리지 않게 작고 옅게 */
+.demo-tag{position:fixed;right:12px;bottom:12px;z-index:300;display:flex;align-items:center;gap:8px;
+  padding:6px 6px 6px 12px;border-radius:99px;background:rgba(14,14,16,.72);color:#EDEAE4;
+  font:600 12px/1 system-ui,sans-serif;backdrop-filter:blur(6px)}
+.demo-tag button{padding:6px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.22);color:inherit;font:inherit;cursor:pointer}

@@ -29,6 +29,8 @@ type Config = {
   lastOneName: string | null;
   lastOneImage: string | null;
   lastOneLabel: string | null;   // "라스트원상"은 특정 브랜드 용어라 쓰지 않는다
+  /** 뽑는 조건 — "주문"하시면 · "시승"하시면 · "체험"하시면. 027 전에는 없다 → 주문 */
+  drawVerb?: string | null;
   store: { name: string; branch: string | null; logo: string | null };
   error?: string;
 };
@@ -130,9 +132,10 @@ export default function BoardClient({ token, build }: { token: string; build: st
       board?.left ?? 0,
       board?.campaign?.total ?? 0,
       cfg?.motionSeconds ?? DEF.motion,
+      cfg?.drawVerb || '주문',
     ),
     [cfg?.ads, cfg?.store.name, cfg?.store.branch, board?.left, board?.campaign?.total,
-     cfg?.motionSeconds],
+     cfg?.motionSeconds, cfg?.drawVerb],
   );
 
   const slideCount = 1 + (cfg?.ads?.length ?? 0);
@@ -498,7 +501,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
             ) : slide === 0 || !cfg.ads?.length ? (
               <div className="slide kuji" key="k">
                 <div className="eyebrow">꽝 없는 뽑기</div>
-                <h1>주문하시면<br /><em>한 장</em> 뽑습니다</h1>
+                <h1>{cfg.drawVerb || '주문'}하시면<br /><em>한 장</em> 뽑습니다</h1>
                 <p className="lead">모든 티켓에 상품이 들어있습니다.<br />남은 티켓은 아래에서 직접 확인하세요.</p>
                 <div className="hero"><b>{left}</b><span>장 남음</span></div>
               </div>
@@ -537,7 +540,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
         <div className="page">
           <h2 className="ttl">
             직원 확인
-            <small>{pinErr ? (msg ?? 'PIN이 맞지 않습니다') : '주문하신 손님만 뽑을 수 있습니다'}</small>
+            <small>{pinErr ? (msg ?? 'PIN이 맞지 않습니다') : `${cfg.drawVerb || '주문'}하신 손님만 뽑을 수 있습니다`}</small>
           </h2>
           <div className="pin">
             <div className="pindots">

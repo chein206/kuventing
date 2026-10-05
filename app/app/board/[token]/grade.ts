@@ -13,7 +13,8 @@ export const gradeColor = (g: string) => {
  * 그림은 자르면 안 된다 — 안에 이미 글자와 테두리가 들어 있다.
  * 광고 사진을 자르지 않는 것과 같은 이유다.
  */
-export const isFlat = (src: string) => /\.svg($|\?)/i.test(src);
+// 평면 그림(교환권 · 쿠폰)은 자르지 않는다 — SVG, 또는 글꼴을 살리려고 PNG 로 구운 *.flat.png
+export const isFlat = (src: string) => /(\.svg|\.flat\.png)($|\?)/i.test(src);
 
 /** 결과 연출의 판 크기 — 피날레 · 금(A·B) · 구리(C) · 은(D 이하) */
 export type Tier = 'L' | 'A' | 'C' | 'E';

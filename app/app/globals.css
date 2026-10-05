@@ -122,6 +122,43 @@ input{font:inherit;color:inherit}
   --glow:none;
 }
 
+/* ── 브랜드 · 아르벤 EV 시승 — 카본 바닥 · 블랙 키 카드 · 일렉트릭 블루 (데모 가상 브랜드) ── */
+[data-theme="photo-arven"]{
+  --stamp-pap:#14171C; --stamp-ink:#DCE0E6;
+  --page:#0A0B0E; --surf:#14161B; --surf-2:#1B1E24;
+  --ink:#F3F5F8; --ink-dim:#8A919C; --line:#262A31;
+  --accent:#3C78FF; --accent-2:#1E50F0; --accent-ink:#FFFFFF; --gold:#7FA6FF;
+  --rail:#0E1014; --hair:rgba(60,120,255,.32);
+  --radius:10px; --radius-sm:6px;
+  --shadow:0 12px 30px -18px rgba(0,0,0,.9);
+  --tk-face:linear-gradient(160deg,#1D222B,#11141A);
+  --tk-ink:#E9ECF1; --tk-used:#0E1014; --tk-used-ink:#4A515C;
+  --font-strong:700; --grid-gap:6px;
+  --ga:#D9B45C; --gb:#9FA6B2; --gc:#C08A5A; --gd:#6FA8C7; --ge:#6C7380;
+  --gf:#8FD694; --gg:#C98ACB; --gh:#7E8798;
+  --key-hi:#7FA6FF; --key-mid:#3C78FF; --key-lo:#1E50F0; --key-edge:#0E2A80; --key-ink:#FFFFFF; --key-ink-hi:rgba(10,30,90,.45);
+  --key2-hi:#2A2F37; --key2-mid:#1B1E24; --key2-lo:#111318; --key2-edge:#040506; --key2-ink:#EEF1F6; --key2-ink-hi:rgba(0,0,0,.6); --key-drop:rgba(0,0,0,.75);
+  --glow:none;
+}
+/* ── 브랜드 · 뷰티성분사전 팝업 — 흰 대리석 바닥 · 블러시 성분 카드 · 로즈골드 · 플럼 (채널 색) ── */
+[data-theme="light-beauty"]{
+  --stamp-pap:#F3E2DA; --stamp-ink:#4A2338;
+  --page:#F6F2EF; --surf:#FFFCFA; --surf-2:#F6ECE7;
+  --ink:#3A1F2E; --ink-dim:#8E7480; --line:#EAD9D1;
+  --accent:#D9735E; --accent-2:#B9533F; --accent-ink:#FFF7F3; --gold:#C98D76;
+  --rail:#EFE6E1; --hair:rgba(150,90,100,.26);
+  --radius:10px; --radius-sm:6px;
+  --shadow:0 2px 0 rgba(150,100,100,.10), 0 10px 24px -14px rgba(90,50,60,.38);
+  --tk-face:linear-gradient(150deg,#F7E6DF,#EED6CC);
+  --tk-ink:#4A2338; --tk-used:#E9DCD6; --tk-used-ink:#A48D96;
+  --font-strong:800; --grid-gap:6px;
+  --ga:#B8892F; --gb:#7E8794; --gc:#A2673B; --gd:#4E7C8C; --ge:#9B8790;
+  --gf:#7C8B5E; --gg:#8C6A86; --gh:#6F7A86;
+  --key-hi:#EE9A86; --key-mid:#D9735E; --key-lo:#B9533F; --key-edge:#7A2E20; --key-ink:#FFF7F3; --key-ink-hi:rgba(90,25,15,.45);
+  --key2-hi:#FFFDFB; --key2-mid:#F5EAE5; --key2-lo:#E2CFC7; --key2-edge:#BFA49A; --key2-ink:#3A1F2E; --key2-ink-hi:rgba(255,255,255,.85); --key-drop:rgba(90,50,60,.32);
+  --glow:none;
+}
+
 .app{width:100%;max-width:430px;flex:1;display:flex;flex-direction:column;position:relative}
 .screen{display:flex;flex-direction:column;flex:1;padding:0 14px 28px;animation:fadeUp .32s cubic-bezier(.2,.7,.3,1)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}

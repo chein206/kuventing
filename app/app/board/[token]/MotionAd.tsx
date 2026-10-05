@@ -101,6 +101,7 @@ export function buildScenes(
   left: number,
   total: number,
   cut = 3,                      // 컷 하나의 길이(초). 사장님이 조절한다
+  verb = '주문',                 // 뽑는 조건 — 주문 · 시승 · 체험 …
 ): MotionScene[] {
   const shots = ads.filter((a) => a.image);
   if (!shots.length) return [];
@@ -128,7 +129,7 @@ export function buildScenes(
     store: store.name + (store.branch ? ` · ${store.branch}` : ''),
     tagline: total > 0 ? `${total}장 중 ${left}장 남았습니다` : '꽝 없는 뽑기',
     // 2.5초짜리 컷이다. 한 줄만 남긴다 — 세 줄이면 아무것도 안 읽힌다
-    info: '주문하시면 한 장 뽑습니다',
+    info: `${verb}하시면 한 장 뽑습니다`,
     top: 880,
   });
 

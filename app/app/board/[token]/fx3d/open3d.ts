@@ -361,7 +361,7 @@ class OpenScene implements Runner {
     this.tex = [tt];
     this.tickU.map.value = tt;
     // 말려 올라간 뒷면 — 사진 판은 크라프트지, 그 밖은 종이색 그대로
-    this.tickU.uBack.value.set(a.photo ? '#CDBB98' : a.pap);
+    this.tickU.uBack.value.set(a.photo ? (a.photo.back ?? '#CDBB98') : a.pap);
 
     this.c = 0; this.target = 0; this.speed = 0; this.acc = 0; this.tension = 0; this.hb = 0;
     this.done = false; this.ft = 0; this.sent = false; this.locked = false; this.auto = null; this.ready = false;

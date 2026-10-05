@@ -4,14 +4,14 @@ import { useEffect, useReducer, useState } from 'react';
 import BoardClient from '../../board/[token]/BoardClient';
 import { setGrip, type Grip } from '../../board/[token]/OpenView';
 import { setDemoServer } from '@/lib/supabase';
-import { EndgameSim, MODES } from './sim';
+import { EndgameSim, FOOD_DEMO, MODES } from './sim';
 
 // 판은 하나만 — 개발 모드는 첫 렌더를 두 번 돌려 판이 둘 생기고, 조작판과 보드가 서로 다른 판을 보게 된다
 let live: EndgameSim | null = null;
 function liveSim(theme: string, font: string, grip: Grip) {
   if (!live) {
     setGrip(grip);
-    live = new EndgameSim(theme, font);
+    live = new EndgameSim({ ...FOOD_DEMO, theme, font });
     setDemoServer(live.client);
   }
   return live;
