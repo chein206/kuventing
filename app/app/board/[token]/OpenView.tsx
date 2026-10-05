@@ -90,8 +90,7 @@ function Open3D({
       vg.style.setProperty('--vy', `${f.ly.toFixed(0)}px`);
     }
     if (bt) bt.style.opacity = f.done ? '0' : (1 - f.k).toFixed(3);
-    // 종이 벗기는 소리는 손가락이 아니라 종이가 실제로 움직이는 빠르기를 따른다
-    sfx.peelSet(f.done ? 0 : f.v);
+    if (autoRef.current && !f.done) sfx.grindSet(f.p);
   }, []);
 
   // 3D 를 띄운다 — 뽑기 흐름에 들어올 때 미리 받아 둔 모듈을 꺼내 쓴다
@@ -113,7 +112,7 @@ function Open3D({
           finale: () => {
             if (!alive) return;
             drag.current = null;
-            sfx.peelStop();
+            sfx.grindStop();
             sfx.snap();
             setDone(true);
           },
@@ -131,7 +130,7 @@ function Open3D({
       alive = false;
       sceneRef.current = null;
       sc?.stop();
-      sfx.peelStop();
+      sfx.grindStop();
     };
   }, [sel, art, dark, title, store, font, paint, fallback]);
 
@@ -149,7 +148,7 @@ function Open3D({
     drag.current = null;
     autoRef.current = true;
     setAuto(true);
-    sfx.peelStart();
+    sfx.grindStart();
     sc.autoOpen(slow);
   }, []);
 
@@ -207,17 +206,18 @@ function Open3D({
           drag.current = { x0: e.clientX, f0: uncurve(sc.progress), w: slotRef.current?.clientWidth || 400 };
           e.currentTarget.setPointerCapture(e.pointerId);
           lastAct.current = Date.now();
-          sfx.peelStart();
+          sfx.grindStart();
         }}
         onPointerMove={(e) => {
           const d = drag.current, sc = sceneRef.current;
           if (!d || !sc) return;
           const p = curve(d.f0 + (e.clientX - d.x0) / d.w);
           sc.setTarget(p);
+          sfx.grindSet(p);
           lastAct.current = Date.now();
         }}
-        onPointerUp={() => { if (drag.current) { drag.current = null; sfx.peelStop(); } }}
-        onPointerCancel={() => { if (drag.current) { drag.current = null; sfx.peelStop(); } }}
+        onPointerUp={() => { if (drag.current) { drag.current = null; sfx.grindStop(); } }}
+        onPointerCancel={() => { if (drag.current) { drag.current = null; sfx.grindStop(); } }}
       >
         <div className="kin">
           {art.photo

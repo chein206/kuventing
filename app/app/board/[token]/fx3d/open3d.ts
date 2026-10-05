@@ -50,8 +50,6 @@ export type OpenFrame = {
   p: number;
   /** 숨죽임 0~1 — 글자 구간에 들어서면 오른다 */
   k: number;
-  /** 종이가 말려 올라가는 빠르기 0~1 — 소리가 따라간다 */
-  v: number;
   done: boolean;
 };
 
@@ -582,7 +580,7 @@ class OpenScene implements Runner {
     const x = (this.v.x * .5 + .5) * g.W + this.off.x, y = (-this.v.y * .5 + .5) * g.H + this.off.y;
     this.v.copy(this.letterW).project(this.cam);
     const lx = (this.v.x * .5 + .5) * g.W + this.off.x, ly = (-this.v.y * .5 + .5) * g.H + this.off.y;
-    o.frame({ x, y, lx, ly, p, k, v: Math.min(1, this.speed / (900 * s)), done: this.done });
+    o.frame({ x, y, lx, ly, p, k, done: this.done });
   }
 
   /** 다 열렸다 — 표가 날아가고, 글자에 박이 차오르고, 불꽃과 색종이가 터진다 */
