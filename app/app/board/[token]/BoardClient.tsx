@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import qrcode from 'qrcode-generator';
 import { sb, getBoard, draw, type Board, type DrawResult, type Prize } from '@/lib/supabase';
 import Ticket from './Ticket';
+import ResultView from './ResultView';
+import { gradeColor, isFlat } from './grade';
 import { Icon } from '@/lib/Icon';
 import MotionAd, { buildScenes, scenesDuration, normPos } from './MotionAd';
 import * as sfx from '@/lib/sfx';
@@ -77,19 +78,6 @@ const TEAR_SPARKS = Array.from({ length: 46 }, (_, i) => {
 });
 
 type Step = 'attract' | 'pin' | 'list' | 'grid' | 'open' | 'result';
-
-/**
- * 사진이 아니라 그림(할인권 SVG 같은 것)인지.
- * 그림은 자르면 안 된다 — 안에 이미 글자와 테두리가 들어 있다.
- * 광고 사진을 자르지 않는 것과 같은 이유다.
- */
-const isFlat = (src: string) => /\.svg($|\?)/i.test(src);
-
-const GRADES = 'ABCDEFGH';
-const gradeColor = (g: string) => {
-  const i = GRADES.indexOf(g.toUpperCase());
-  return i >= 0 ? `var(--g${GRADES[i].toLowerCase()})` : 'var(--gh)';
-};
 
 export default function BoardClient({ token }: { token: string }) {
   const [cfg, setCfg] = useState<Config | null>(null);
@@ -288,6 +276,18 @@ export default function BoardClient({ token }: { token: string }) {
   //   1.0 / 0.60 → 0.60배 (가벼움)   0.85 / 0.65 → 0.76배 (지금)   0.62 / 0.78 → 1.26배 (너무 무거움)
   const DRAG_RATIO = 0.85;   // 손잡이가 손가락을 따라오는 비율. 낮을수록 무겁다
   const THRESHOLD = 0.65;    // 카드 폭 대비 이만큼 밀면 열린다
+
+  // 결과 화면 3D 는 뽑기 흐름에 들어온 뒤에만 받는다 — 대기 화면은 광고가 먼저 떠야 한다.
+  // 상품 목록 · 티켓 고르기 동안 렌더러를 만들고 셰이더를 미리 굽고(warm), 개봉 화면에서는 상품 사진을 받아 둔다
+  useEffect(() => {
+    if (step !== 'list' && step !== 'grid' && step !== 'open') return;
+    import('./fx3d/result3d')
+      .then((m) => {
+        m.getStage()?.warm();
+        if (step === 'open' && pending) m.preload(pending.isLastOne ? cfg?.lastOneImage ?? null : pending.image);
+      })
+      .catch(() => {});
+  }, [step, pending, cfg?.lastOneImage]);
 
   // 오픈 화면 진입 시 결과 선취득
   useEffect(() => {
@@ -724,9 +724,12 @@ export default function BoardClient({ token }: { token: string }) {
       )}
 
       {step === 'result' && result && (
-        <ResultView r={result} art={art} campaignId={cfg.campaignId} prizes={snap}
+        <ResultView r={result} art={art} dark={themeOf(cfg.theme).dark}
+                    campaignId={cfg.campaignId} prizes={snap}
                     lastOneImage={cfg.lastOneImage}
                     lastOneLabel={cfg.lastOneLabel ?? '마지막 보상'}
+                    store={cfg.store.name + (cfg.store.branch ? ` · ${cfg.store.branch}` : '')}
+                    title={cfg.title}
                     seconds={cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
       )}
     </div>
@@ -807,192 +810,6 @@ function Mini({ board, art, pops }: { board: Board | null; art: Art; pops: numbe
                   num={s.grade ?? ''} gradeColor={s.grade ? gradeColor(s.grade) : null} />
         </i>
       ))}
-    </div>
-  );
-}
-
-/* ================= 결과 ================= */
-function ResultView({
-  r, art, campaignId, prizes, seconds, lastOneImage, lastOneLabel, onDone,
-}: {
-  r: DrawResult; art: Art; campaignId: string; prizes: Prize[]; seconds: number;
-  lastOneImage: string | null; lastOneLabel: string; onDone: () => void;
-}) {
-  const [qr, setQr] = useState<string | null>(null);
-  const [sec, setSec] = useState(seconds);
-
-  useEffect(() => {
-    if (r.useWhen !== 'later') return;
-    const raw = r.code.replace('-', '');
-    const q = qrcode(0, 'M');
-    q.addData(`${location.origin}/c/${campaignId}/${raw}`);
-    q.make();
-    setQr(q.createDataURL(5, 2));
-  }, [r, campaignId]);
-
-  // 상태 갱신 함수 안에서 부모를 건드리면 렌더 도중 setState가 되어버린다. 분리한다.
-  useEffect(() => {
-    const t = setInterval(() => setSec((s) => Math.max(0, s - 1)), 1000);
-    return () => clearInterval(t);
-  }, []);
-  useEffect(() => { if (sec === 0) onDone(); }, [sec, onDone]);
-
-  const heavy = r.isLastOne || ['A', 'B'].includes(r.grade);
-  const COLORS_C = ['var(--gold)', 'var(--accent)', 'var(--gb)', 'var(--gd)', '#fff'];
-
-  // 끊기지 않는 색종이 비 — 각자 다른 지연/속도로 무한 반복
-  const [sparks] = useState(() =>
-    Array.from({ length: heavy ? 90 : 45 }, (_, i) => {
-      const dur = 2.2 + Math.random() * 2.4;
-      return {
-        left: `${Math.random() * 100}%`,
-        bg: COLORS_C[i % COLORS_C.length],
-        w: 6 + Math.round(Math.random() * 6),
-        h: 8 + Math.round(Math.random() * 10),
-        dur: `${dur}s`,
-        delay: `-${Math.random() * dur}s`,   // 음수 지연 = 처음부터 화면 가득
-        round: Math.random() < 0.35,
-      };
-    }));
-
-  // 주기적으로 터지는 폭죽
-  type Burst = { id: number; x: number; y: number; parts: { tx: number; ty: number; bg: string }[] };
-  const [bursts, setBursts] = useState<Burst[]>([]);
-  useEffect(() => {
-    let id = 0;
-    const fire = () => {
-      const n = heavy ? 22 : 14;
-      const b: Burst = {
-        id: id++,
-        x: 12 + Math.random() * 76,
-        y: 14 + Math.random() * 46,
-        parts: Array.from({ length: n }, (_, i) => {
-          const a = (Math.PI * 2 * i) / n + Math.random() * 0.3;
-          const d = 70 + Math.random() * 90;
-          return {
-            tx: Math.cos(a) * d,
-            ty: Math.sin(a) * d + 30,   // 살짝 아래로 떨어지게
-            bg: COLORS_C[i % COLORS_C.length],
-          };
-        }),
-      };
-      setBursts((v) => [...v, b]);
-      setTimeout(() => setBursts((v) => v.filter((x) => x.id !== b.id)), 1100);
-    };
-    fire();
-    const t = setInterval(fire, heavy ? 700 : 1100);
-    return () => clearInterval(t);
-  }, [heavy]);
-
-  return (
-    <div className="page">
-      <div className="res">
-        <div className="spark rain">
-          {sparks.map((s, i) => (
-            <i
-              key={i}
-              className={s.round ? 'r' : ''}
-              style={{
-                left: s.left, background: s.bg,
-                width: s.w, height: s.h,
-                animationDuration: s.dur, animationDelay: s.delay,
-              }}
-            />
-          ))}
-        </div>
-
-        {bursts.map((b) => (
-          <div className="burst" key={b.id} style={{ left: `${b.x}%`, top: `${b.y}%` }}>
-            {b.parts.map((p, i) => (
-              <i key={i} style={{
-                background: p.bg,
-                ['--tx' as string]: `${p.tx}px`,
-                ['--ty' as string]: `${p.ty}px`,
-              }} />
-            ))}
-          </div>
-        ))}
-
-        <div className="congratsbar">
-          {r.isLastOne && <span className="lastbadge">{lastOneLabel}</span>}
-          축하합니다!
-        </div>
-
-        {/* 막차 보너스가 나오면 그쪽이 주인공. 등급 상품은 아래에 함께 표시한다 */}
-        {r.isLastOne && r.lastOneName ? (
-          <>
-            <div className={`shotbox gold ${lastOneImage && isFlat(lastOneImage) ? 'flat' : ''}`}>
-              {lastOneImage
-                ? <img src={lastOneImage} alt="" />
-                : <div className="noimg"><Icon name="star" /></div>}
-            </div>
-            <div className="gtag gold">{lastOneLabel}</div>
-            <h1>{r.lastOneName}</h1>
-
-            <div className="alsobar">
-              <div className="thumb" style={{ background: gradeColor(r.grade) }}>
-                {r.image ? <img src={r.image} alt="" /> : r.grade}
-              </div>
-              <div className="tx">
-                <div className="k">함께 지급됩니다</div>
-                <div className="v">
-                  <b style={{ color: gradeColor(r.grade) }}>{r.grade}</b> {r.name}
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* 그림(할인권 SVG 같은 것)은 자르지 않는다 — 안에 글자와 테두리가 들어 있다.
-                정사각으로 꽉 채우면 "1,000원" 글자가 잘려 나갔다 */}
-            <div className={`shotbox ${r.image && isFlat(r.image) ? 'flat' : ''}`}
-                 style={{ ['--gc' as string]: gradeColor(r.grade) }}>
-              {r.image
-                ? <img src={r.image} alt="" />
-                : <div className="noimg">{r.grade}</div>}
-            </div>
-            {art.photo ? (
-              /* 밀랍 봉인 — 가운데가 비어 있어 글자를 얹을 수 있다 */
-              <div className="wax">
-                <img src={art.photo.sealSrc} alt="" />
-                <b>{r.grade}</b>
-              </div>
-            ) : (
-              <div className="gtag" style={{ background: gradeColor(r.grade) }}>{r.grade}</div>
-            )}
-            <h1>{r.name}</h1>
-          </>
-        )}
-
-        {r.useWhen === 'now' ? (
-          <div className="now">직원에게 바로 받으세요</div>
-        ) : (
-          <div className="cpn">
-            {qr && <img src={qr} alt="쿠폰 QR" />}
-            <div className="cc">
-              <div className="l">쿠폰 코드</div>
-              <div className="v">{r.code}</div>
-              <div className="x">
-                QR을 찍어 휴대폰에 저장하세요<br />
-                {new Date(r.expiresAt).toLocaleDateString('ko-KR')}까지 · 1회 사용
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="gchips" style={{ justifyContent: 'center', marginTop: 10 }}>
-          {prizes.map((p) => {
-            const l = p.grade === r.grade ? p.left - 1 : p.left;
-            return (
-              <div key={p.grade} className={`gchip ${l <= 0 ? 'zero' : ''}`}>
-                <div className="d" style={{ background: gradeColor(p.grade) }}>{p.grade}</div>
-                <div className="n">{Math.max(0, l)}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <button className="big" onClick={onDone}>확인 ({sec})</button>
     </div>
   );
 }

@@ -21,7 +21,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input{font:inherit;color:inherit}
 
 /* ── 어두운 판 · 서양 활판 — 밤 장사 · 라멘 · 바 (옛 modern·neon) ── */
-[data-theme="dark-west"],[data-theme="modern"],[data-theme="neon"]{
+[data-theme="dark-west"],[data-theme="modern"],[data-theme="neon"],
+[data-theme="photo-letterpress"],[data-theme="photo-brass"]{
   /* 검인 도장과 결과 스텁이 쓰는 종이 — 티켓과 같은 톤 */
   --stamp-pap:#D3C1A1; --stamp-ink:#2B2118;
   --page:#0E0E10; --surf:#18181B; --surf-2:#202024;
@@ -35,6 +36,9 @@ input{font:inherit;color:inherit}
   --font-strong:700; --grid-gap:5px;
   --ga:#D9B45C; --gb:#9FA6B2; --gc:#C08A5A; --gd:#6FA8C7; --ge:#6C6C74;
   --gf:#8FD694; --gg:#C98ACB; --gh:#7E8798;
+  /* 버튼 재질 — 위 빛 · 가운데 · 아래 · 두께 · 새긴 글자 */
+  --key-hi:#F4DE9E; --key-mid:#D2AA55; --key-lo:#9C7226; --key-edge:#5A4110; --key-ink:#33240A; --key-ink-hi:rgba(255,243,210,.6);
+  --key2-hi:#3A3A42; --key2-mid:#27272D; --key2-lo:#18181C; --key2-edge:#050506; --key2-ink:#F1EEE6; --key2-ink-hi:rgba(0,0,0,.6); --key-drop:rgba(0,0,0,.75);
   --glow:none;
 }
 /* ── 어두운 판 · 동양 인찰 — 일식 · 한식 · 전통주 ── */
@@ -52,6 +56,9 @@ input{font:inherit;color:inherit}
   --font-strong:700; --grid-gap:5px;
   --ga:#D9B45C; --gb:#A69C8C; --gc:#C08A5A; --gd:#7FA294; --ge:#6E675C;
   --gf:#8FA97E; --gg:#B08A9E; --gh:#7E7A70;
+  /* 버튼 재질 — 위 빛 · 가운데 · 아래 · 두께 · 새긴 글자 */
+  --key-hi:#E37A5E; --key-mid:#C14A31; --key-lo:#8C2A1B; --key-edge:#45130A; --key-ink:#FFE9C4; --key-ink-hi:rgba(60,10,4,.55);
+  --key2-hi:#2E2722; --key2-mid:#1E1915; --key2-lo:#13100D; --key2-edge:#040302; --key2-ink:#F5EFE4; --key2-ink-hi:rgba(0,0,0,.6); --key-drop:rgba(0,0,0,.75);
   --glow:none;
 }
 /* ── 밝은 판 · 서양 활판 — 카페 · 베이커리 · 분식 (옛 warm) ── */
@@ -69,6 +76,9 @@ input{font:inherit;color:inherit}
   --font-strong:800; --grid-gap:6px;
   --ga:#B8892F; --gb:#7E8794; --gc:#A2673B; --gd:#4E7C8C; --ge:#9B9184;
   --gf:#7C8B5E; --gg:#8C6A86; --gh:#6F7A86;
+  /* 버튼 재질 — 위 빛 · 가운데 · 아래 · 두께 · 새긴 글자 */
+  --key-hi:#EA7A5D; --key-mid:#D0573A; --key-lo:#A53B26; --key-edge:#6B2313; --key-ink:#FFF4EA; --key-ink-hi:rgba(90,20,8,.5);
+  --key2-hi:#FFFDF8; --key2-mid:#F2EADA; --key2-lo:#DDD0B6; --key2-edge:#B8A687; --key2-ink:#2A211A; --key2-ink-hi:rgba(255,255,255,.85); --key-drop:rgba(80,55,25,.38);
   --glow:none;
 }
 /* ── 밝은 판 · 동양 인찰 — 톤이 하나라 테두리와 도장으로만 가른다 ── */
@@ -86,6 +96,9 @@ input{font:inherit;color:inherit}
   --font-strong:800; --grid-gap:6px;
   --ga:#A07B28; --gb:#7E8794; --gc:#A2673B; --gd:#4E7C8C; --ge:#8E8676;
   --gf:#7C8B5E; --gg:#8C6A86; --gh:#6F7A86;
+  /* 버튼 재질 — 위 빛 · 가운데 · 아래 · 두께 · 새긴 글자 */
+  --key-hi:#5A5850; --key-mid:#3C3B35; --key-lo:#252420; --key-edge:#0B0B09; --key-ink:#F4EFE3; --key-ink-hi:rgba(0,0,0,.55);
+  --key2-hi:#FFFDF6; --key2-mid:#F2ECDD; --key2-lo:#DDD3BE; --key2-edge:#B5AA91; --key2-ink:#241F17; --key2-ink-hi:rgba(255,255,255,.85); --key-drop:rgba(70,55,30,.36);
   --glow:none;
 }
 
@@ -103,6 +116,9 @@ input{font:inherit;color:inherit}
   --font-strong:800; --grid-gap:6px;
   --ga:#D9B45C; --gb:#9FA6B2; --gc:#C08A5A; --gd:#6FA8C7; --ge:#6C6C74;
   --gf:#8FD694; --gg:#C98ACB; --gh:#7E8798;
+  /* 버튼 재질 — 위 빛 · 가운데 · 아래 · 두께 · 새긴 글자 */
+  --key-hi:#F4DE9E; --key-mid:#D2AA55; --key-lo:#9C7226; --key-edge:#5A4110; --key-ink:#33240A; --key-ink-hi:rgba(255,243,210,.6);
+  --key2-hi:#304677; --key2-mid:#1F2F55; --key2-lo:#15203D; --key2-edge:#070C18; --key2-ink:#EFE0B8; --key2-ink-hi:rgba(0,0,0,.55); --key-drop:rgba(0,0,0,.75);
   --glow:none;
 }
 

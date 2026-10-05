@@ -1,0 +1,8 @@
+/* 미리보기 도구 막대 — 카운터 화면에는 없다 */
+.fxpick{position:fixed;left:12px;right:12px;bottom:12px;z-index:9;display:flex;flex-wrap:wrap;gap:6px;
+  padding:8px;border-radius:14px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px)}
+.fxpick select,.fxpick button{font:inherit;font-size:14px;font-weight:700;padding:8px 12px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff}
+.fxpick select{flex:1 1 220px}
+.fxpick select option{color:#111}
+.fxpick button.on{background:#D2AA55;color:#241A06;border-color:#D2AA55}

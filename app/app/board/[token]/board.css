@@ -808,3 +808,132 @@
    종이표에서 용접 불꽃이 튀는 것이 가장 큰 위화감이었다.
    천공선에서 새는 빛이 그 자리를 대신한다. */
 .bd .peel.photo .tear{display:none}
+
+/* ============================================================
+   결과 화면 — 3D 층 위에 글자를 얹는다
+   그림(카드 · 메달 · 빛줄기 · 색종이)은 fx3d/result3d 가 캔버스에 그린다.
+   글자 층은 카드와 메달 자리를 비워 두고, 3D 가 그 자리를 재서 맞춰 앉는다.
+   ============================================================ */
+.bd canvas.fx3d{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+/* 캔버스(위치 지정된 층)보다 위에 오도록 상단 바와 글자 층에 층 번호를 준다 */
+.bd .bar{position:relative;z-index:2}
+.bd .res3wrap{position:relative;z-index:1}
+.bd .res3{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:safe center;
+  gap:clamp(8px,1.1dvh,14px);text-align:center;position:relative;padding:4px 0}
+/* 카드 칸은 남는 높이를 받아 커진다(최대 520). 작은 태블릿에서는 줄어들어 글자를 위아래로 밀어내지 않는다.
+   3D 는 이 칸에 들어가는 가장 큰 정사각형으로 카드를 그린다 */
+.bd .res3 .cardslot{flex:1 1 0;min-height:150px;max-height:min(520px,70vw);width:min(520px,70vw)}
+.bd .res3 .coinslot{width:120px;height:clamp(78px,8.2dvh,104px);flex:none;margin:-4px 0 -8px}
+/* 3D 가 실제로 출발할 때까지 글자 연출을 세워 둔다 (ResultView 의 go). 단축 속성 animation 이 재생 상태를 되살리므로 !important */
+.bd .res3.hold,.bd .res3.hold *{animation-play-state:paused!important}
+
+/* 금속 글씨 — 등급에 따라 금 · 구리 · 은, 막차는 붉은 금 */
+.bd .hdl{
+  font-size:clamp(42px,4.8dvh,60px);font-weight:900;letter-spacing:.02em;line-height:1.05;padding:0 10px;
+  background:linear-gradient(100deg,#9C7A2E 0%,#F6E7B8 20%,#C9A24B 38%,#FFF6DC 50%,#B08A3E 66%,#F0D389 84%,#9C7A2E 100%);
+  background-size:240% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  /* 금 빛줄기 위에 금 글씨라 획이 바탕에 묻힌다 — 가는 짙은 테두리로 떼어 낸다 */
+  -webkit-text-stroke:1px rgba(50,32,8,.55);
+  filter:drop-shadow(0 3px 0 rgba(60,40,10,.7)) drop-shadow(0 8px 22px rgba(0,0,0,.8));
+  animation:hdlIn .8s cubic-bezier(.2,1.25,.35,1) .35s both,hdlSheen 2.4s linear 1.2s infinite
+}
+.bd .tier-C .hdl{background-image:linear-gradient(100deg,#7A4A2A 0%,#F3C9A2 20%,#C08A5A 38%,#FFE6D2 50%,#9C6A3E 66%,#E2A57A 84%,#7A4A2A 100%)}
+.bd .tier-E .hdl{background-image:linear-gradient(100deg,#6E7682 0%,#F1F4F8 20%,#AEB5C0 38%,#FFFFFF 50%,#8C94A0 66%,#DDE2EA 84%,#6E7682 100%)}
+.bd .tier-L .hdl{font-size:clamp(44px,5.1dvh,64px);background-image:linear-gradient(100deg,#F2C25A 0%,#FFF8E4 20%,#FFD27A 38%,#FFFDF2 50%,#E8A848 66%,#FFF0C2 84%,#F2C25A 100%)}
+/* 막차 판은 뒤가 주황 빛으로 가득 차서 붉은 금 글씨가 묻힌다 — 글씨는 밝은 금으로 올리고 짙은 테두리와 가까운 그늘로 떼어 낸다.
+   붉은 기운은 뒤의 빛줄기가 맡는다 */
+.bd .tier-L .hdl{-webkit-text-stroke:2px rgba(90,26,8,.9);
+  filter:drop-shadow(0 3px 0 rgba(74,22,8,.9)) drop-shadow(0 0 12px rgba(40,10,0,.75)) drop-shadow(0 8px 22px rgba(0,0,0,.6))}
+/* 밝은 판 — 밝은 금은 크림색 바탕에서 안 읽힌다. 한 단 짙게, 그늘은 가볍게 */
+[data-theme^="light"] .bd .hdl{-webkit-text-stroke:0;
+  background-image:linear-gradient(100deg,#5E4210 0%,#B8892F 22%,#7A5A1A 40%,#D9B45C 52%,#6B4C14 68%,#A57A28 86%,#5E4210 100%);
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.7)) drop-shadow(0 6px 14px rgba(80,55,25,.35))
+}
+[data-theme^="light"] .bd .tier-C .hdl{background-image:linear-gradient(100deg,#5A3218 0%,#A2673B 22%,#6E4224 40%,#C98E5E 52%,#5A3218 70%,#9C6A3E 86%,#5A3218 100%)}
+[data-theme^="light"] .bd .tier-E .hdl{background-image:linear-gradient(100deg,#3E4652 0%,#7E8794 22%,#525A66 40%,#9AA3B0 52%,#3E4652 70%,#6E7682 86%,#3E4652 100%)}
+@keyframes hdlIn{0%{opacity:0;transform:scale(2.1) translateY(-10px);letter-spacing:.3em}100%{opacity:1;transform:none;letter-spacing:.02em}}
+@keyframes hdlSheen{from{background-position:120% 0}to{background-position:-120% 0}}
+
+/* 카드가 다 날아온 뒤에 이름과 안내가 올라온다 */
+.bd .res3:not(.res) h1{
+  font-size:clamp(30px,3.5dvh,44px);font-weight:900;letter-spacing:-.04em;line-height:1.12;padding:0 20px;margin:0;
+  text-shadow:0 2px 14px rgba(0,0,0,.85),0 0 2px rgba(0,0,0,.8);animation:sIn .45s ease 1.3s both
+}
+[data-theme^="light"] .bd .res3 h1{text-shadow:0 1px 0 rgba(255,255,255,.75),0 6px 18px rgba(255,255,255,.7)}
+.bd .res3:not(.res) .now,.bd .res3:not(.res) .cpn,.bd .res3:not(.res) .alsobar{animation:sIn .45s ease 1.4s both}
+.bd .res3:not(.res) .gchips{animation:sIn .45s ease 1.5s both}
+.bd .res3 .gchips{justify-content:center;margin-top:6px}
+/* 쿠폰 QR — 작은 화면에서는 줄인다. 휴대폰 카메라는 100px 남짓이면 충분히 읽는다 */
+.bd .res3:not(.res) .cpn{padding:clamp(12px,1.6dvh,20px)}
+.bd .res3:not(.res) .cpn img{width:clamp(100px,11.5dvh,150px);height:clamp(100px,11.5dvh,150px)}
+.bd .res3 .now{font-size:20px;font-weight:800;padding:16px 24px;border-radius:var(--radius)}
+.bd .res3 .alsobar{display:flex;align-items:center;gap:14px;width:min(78vw,520px);padding:12px 16px;border-radius:var(--radius)}
+.bd .res3 .alsobar .thumb{width:52px;height:52px;border-radius:12px;flex:none;overflow:hidden;
+  display:grid;place-items:center;color:#fff;font-size:22px;font-weight:900}
+.bd .res3 .alsobar .thumb img{width:100%;height:100%;object-fit:cover}
+.bd .res3 .alsobar .tx{text-align:left;min-width:0}
+.bd .res3 .alsobar .tx .k{font-size:11px;font-weight:800;letter-spacing:.14em;opacity:.7}
+.bd .res3 .alsobar .tx .v{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-top:3px}
+
+/* 안내판 — 직원 안내 · 쿠폰 · 함께 지급. 평면 띠 대신 버튼과 같은 재질의 명판 */
+.bd .res .now,.bd .res3 .now,.bd .cpn,.bd .res .alsobar,.bd .res3 .alsobar{
+  border:none;color:var(--key2-ink);text-shadow:0 1px 0 var(--key2-ink-hi);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 45%),
+    linear-gradient(180deg,var(--key2-hi),var(--key2-mid) 55%,var(--key2-lo));
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.18),inset 0 -2px 0 rgba(0,0,0,.32),inset 0 0 0 1px rgba(0,0,0,.42),
+    0 3px 0 var(--key2-edge),0 14px 26px -12px var(--key-drop)
+}
+.bd .cpn .cc .l,.bd .cpn .cc .x{color:inherit;opacity:.72}
+.bd .cpn img{border-radius:6px;box-shadow:0 0 0 6px #fff}
+
+/* ============================================================
+   버튼 — 실물 키
+   평면 색 덩어리는 화면 위 "그림"으로 읽힌다. 두께(아래 그림자 층) · 위쪽 빛 ·
+   가장자리 · 새긴 글자를 주면 손가락으로 누르는 물건이 된다.
+   재질 색은 테마가 준다 — 황동 · 주칠 · 테라코타 · 먹 · 남색 법랑 (globals.css 의 --key-*)
+   ============================================================ */
+.bd .big,.bd .touch{
+  position:relative;border:none;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 44%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,rgba(0,0,0,.035) 1px 3px),
+    linear-gradient(180deg,var(--key-hi) 0%,var(--key-mid) 50%,var(--key-lo) 100%);
+  color:var(--key-ink);text-shadow:0 1px 0 var(--key-ink-hi);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 0 rgba(0,0,0,.26),inset 0 0 0 1px rgba(0,0,0,.24),
+    0 5px 0 var(--key-edge),0 14px 24px -10px var(--key-drop);
+  transition:transform .08s ease,box-shadow .08s ease,filter .2s ease
+}
+/* 빛 한 줄이 가끔 표면을 훑고 지나간다 — 금속이 살아 있게 */
+.bd .big::after,.bd .touch::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.3) 50%,transparent 62%) no-repeat;
+  background-size:260% 100%;background-position:130% 0;animation:keySheen 5s ease-in-out infinite
+}
+@keyframes keySheen{0%,62%{background-position:130% 0}100%{background-position:-130% 0}}
+.bd .big:active:not([disabled]),.bd .touch:active{
+  transform:translateY(4px);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.4),inset 0 -2px 0 rgba(0,0,0,.24),inset 0 0 0 1px rgba(0,0,0,.26),
+    0 1px 0 var(--key-edge),0 5px 10px -6px var(--key-drop)
+}
+.bd .big[disabled]{opacity:.45;filter:saturate(.35) brightness(.82)}
+.bd .big[disabled]::after{display:none}
+/* 보조 버튼 · 자판 · 처음으로 — 무쇠 · 흑칠 · 상아 자기 */
+.bd .big.ghost,.bd .keys button,.bd .bar .home{
+  border:none;color:var(--key2-ink);text-shadow:0 1px 0 var(--key2-ink-hi);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,0) 42%),
+    linear-gradient(180deg,var(--key2-hi),var(--key2-mid) 52%,var(--key2-lo));
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.2),inset 0 -2px 0 rgba(0,0,0,.3),inset 0 0 0 1px rgba(0,0,0,.4),
+    0 4px 0 var(--key2-edge),0 12px 20px -10px var(--key-drop);
+  transition:transform .08s ease,box-shadow .08s ease
+}
+/* 아이콘(지우기 · 확인)은 svg{display:block} 때문에 왼쪽에 붙어 있었다 — 가운데로 */
+.bd .keys button{display:grid;place-items:center}
+.bd .big.ghost::after{display:none}
+.bd .big.ghost .cdbar{background:rgba(128,128,128,.16)}
+.bd .big.ghost:active:not([disabled]),.bd .keys button:active,.bd .bar .home:active{
+  transform:translateY(3px);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.3),inset 0 0 0 1px rgba(0,0,0,.42),
+    0 1px 0 var(--key2-edge),0 4px 8px -5px var(--key-drop)
+}
