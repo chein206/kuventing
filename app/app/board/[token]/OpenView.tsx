@@ -90,7 +90,10 @@ function Open3D({
       vg.style.setProperty('--vy', `${f.ly.toFixed(0)}px`);
     }
     if (bt) bt.style.opacity = f.done ? '0' : (1 - f.k).toFixed(3);
-    if (autoRef.current && !f.done) sfx.grindSet(f.p);
+    // 그라인더는 미는 동안만 · 글자 구간에서는 살짝 낮춘다. 심장 소리와 긴장음은 화면 박자 그대로
+    if ((drag.current || autoRef.current) && !f.done) sfx.grindSet(f.p, f.k);
+    if (f.beat > 0) sfx.heartbeat(f.beat);
+    sfx.tensionSet(f.done ? 0 : f.k, f.p);
   }, []);
 
   // 3D 를 띄운다 — 뽑기 흐름에 들어올 때 미리 받아 둔 모듈을 꺼내 쓴다
@@ -113,6 +116,7 @@ function Open3D({
             if (!alive) return;
             drag.current = null;
             sfx.grindStop();
+            sfx.tensionStop();
             sfx.snap();
             setDone(true);
           },
@@ -131,6 +135,7 @@ function Open3D({
       sceneRef.current = null;
       sc?.stop();
       sfx.grindStop();
+      sfx.tensionStop();
     };
   }, [sel, art, dark, title, store, font, paint, fallback]);
 
@@ -213,7 +218,6 @@ function Open3D({
           if (!d || !sc) return;
           const p = curve(d.f0 + (e.clientX - d.x0) / d.w);
           sc.setTarget(p);
-          sfx.grindSet(p);
           lastAct.current = Date.now();
         }}
         onPointerUp={() => { if (drag.current) { drag.current = null; sfx.grindStop(); } }}

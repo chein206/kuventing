@@ -50,6 +50,8 @@ export type OpenFrame = {
   p: number;
   /** 숨죽임 0~1 — 글자 구간에 들어서면 오른다 */
   k: number;
+  /** 이 프레임에 심장이 뛰었으면 그 세기(첫 박 k · 둘째 박 0.55k), 아니면 0 — 소리가 같은 박자로 따라간다 */
+  beat: number;
   done: boolean;
 };
 
@@ -280,6 +282,7 @@ class OpenScene implements Runner {
   private auto: { k: [number, number][]; t0: number; first: boolean } | null = null;
   private letterL = new Vector3(); private letterW = new Vector3(); private v = new Vector3();
   private rayK = 1; private bokK = 1;
+  private beat = 0;
   private plainRay = new Color(PLAIN_RAY); private plainBok = new Color(PLAIN_BOKEH);
   private tierRay = new Color(PLAIN_RAY); private tierBok = new Color(PLAIN_BOKEH);
   private reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -506,9 +509,12 @@ class OpenScene implements Runner {
     if (!this.done) {
       // 들어올 때 — 판에서 뽑혀 나온 표가 탁자에 눕는다
       const ki = eOutCubic(c01(lt / .6));
-      // 두근거림 — 글자에 가까울수록 빨라진다
+      // 두근거림 — 글자에 가까울수록 빨라진다. 첫 박(0.1) · 둘째 박(0.28)을 지나면 소리에 알린다
+      const ph0 = this.hb % 1;
       this.hb += dt * (1 + 1.9 * k);
       const ph = this.hb % 1;
+      const crossed = (a: number) => (ph >= ph0 ? ph0 < a && a <= ph : a > ph0 || a <= ph);
+      this.beat = crossed(.1) ? k : crossed(.28) ? .55 * k : 0;
       const beat = Math.exp(-Math.pow((ph - .1) * 22, 2)) + .55 * Math.exp(-Math.pow((ph - .28) * 22, 2));
       this.group.rotation.x = -.24 * ki;
       this.group.scale.setScalar((.88 + .12 * ki) * (1 + (this.reduce ? 0 : .016) * k * beat));
@@ -580,7 +586,8 @@ class OpenScene implements Runner {
     const x = (this.v.x * .5 + .5) * g.W + this.off.x, y = (-this.v.y * .5 + .5) * g.H + this.off.y;
     this.v.copy(this.letterW).project(this.cam);
     const lx = (this.v.x * .5 + .5) * g.W + this.off.x, ly = (-this.v.y * .5 + .5) * g.H + this.off.y;
-    o.frame({ x, y, lx, ly, p, k, done: this.done });
+    o.frame({ x, y, lx, ly, p, k, beat: this.done ? 0 : this.beat, done: this.done });
+    this.beat = 0;
   }
 
   /** 다 열렸다 — 표가 날아가고, 글자에 박이 차오르고, 불꽃과 색종이가 터진다 */

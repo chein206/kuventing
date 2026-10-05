@@ -20,7 +20,36 @@ export default function SfxClient() {
   const wake = () => { sfx.unlock(mode); setReady(true); };
 
   useEffect(() => { if (ready) sfx.setMode(mode); }, [mode, ready]);
-  useEffect(() => () => { sfx.grindStop(); }, []);
+  useEffect(() => () => { sfx.grindStop(); sfx.tensionStop(); }, []);
+
+  /**
+   * 글자 구간을 흉내낸다 — 4.5초 동안 숨죽임이 0 → 1 로 차오르고 심장이 점점 빨리 뛴다(화면과 같은 박자 계산).
+   * 그라인더도 같이 갈아 실제 개봉처럼 겹쳐 듣는다
+   */
+  const [hushing, setHushing] = useState(false);
+  const htimer = useRef<number | null>(null);
+  function demoHush() {
+    wake();
+    if (hushing) return;
+    setHushing(true);
+    const t0 = performance.now();
+    let last = t0, hb = 0;
+    sfx.grindStart();
+    htimer.current = window.setInterval(() => {
+      const now = performance.now(), dt = (now - last) / 1000; last = now;
+      const t = (now - t0) / 1000, p = Math.min(1, .55 + t * .09), k = Math.min(1, t / 3.2);
+      const ph0 = hb % 1; hb += dt * (1 + 1.9 * k); const ph = hb % 1;
+      const crossed = (a: number) => (ph >= ph0 ? ph0 < a && a <= ph : a > ph0 || a <= ph);
+      if (crossed(.1)) sfx.heartbeat(k); else if (crossed(.28)) sfx.heartbeat(.55 * k);
+      sfx.grindSet(p, k);
+      sfx.tensionSet(k, p);
+      if (t >= 4.5) {
+        window.clearInterval(htimer.current!);
+        sfx.grindStop(); sfx.tensionStop(); sfx.snap();
+        setHushing(false);
+      }
+    }, 20);
+  }
 
   /** 미는 동작을 흉내낸다 — 0에서 1까지 2초 동안 올린다 */
   function demoGrind() {
@@ -65,6 +94,10 @@ export default function SfxClient() {
         <button className="row big" onClick={demoGrind} disabled={grinding}>
           <b>{grinding ? '갈리는 중…' : '지이익 — 확정음까지 한 번에'}</b>
           <span>손잡이를 끝까지 미는 2초를 그대로 재현합니다</span>
+        </button>
+        <button className="row big" onClick={demoHush} disabled={hushing}>
+          <b>{hushing ? '두근두근…' : '글자 구간 — 심장 소리 · 긴장음'}</b>
+          <span>글자 앞에서 숨죽이는 4.5초. 심장이 점점 빨리 뛰고 낮은 소리가 차오릅니다</span>
         </button>
       </section>
 

@@ -120,12 +120,15 @@ export function grindStart() {
   grind = { src, bp, g };
 }
 
-/** 미는 정도(0~1)에 따라 세기와 음색을 올린다 */
-export function grindSet(t: number) {
+/**
+ * 미는 정도(0~1)에 따라 세기와 음색을 올린다.
+ * hush(0~1)는 글자 구간의 숨죽임 — 그만큼 살짝(최대 35%) 낮춰 심장 소리가 묻히지 않게 한다
+ */
+export function grindSet(t: number, hush = 0) {
   if (!grind || !ctx) return;
   const k = Math.max(0, Math.min(1, t));
   const now = ctx.currentTime;
-  grind.g.gain.setTargetAtTime(0.12 + k * 0.5, now, 0.05);
+  grind.g.gain.setTargetAtTime((0.12 + k * 0.5) * (1 - 0.35 * Math.max(0, Math.min(1, hush))), now, 0.05);
   grind.bp.frequency.setTargetAtTime(700 + k * 2100, now, 0.06);
   grind.bp.Q.setTargetAtTime(1.2 + k * 2.4, now, 0.08);
 }
@@ -136,6 +139,58 @@ export function grindStop() {
   grind = null;
   g.gain.setTargetAtTime(0, ctx.currentTime, 0.04);
   setTimeout(() => { try { src.stop(); } catch { /* 이미 멈춤 */ } }, 220);
+}
+
+/* ---------- 개봉 중 글자 구간: 두근두근 · 숨죽임 ----------
+   글자 구간에 들어서면 화면이 어두워지고 표가 두근거린다. 소리도 같은 박자로 따라간다.
+   태블릿 스피커는 저음이 약하다 — "쿵"만으로는 안 들리므로 짧은 가죽 소리("딱")를 섞는다. */
+
+/** 심장 한 번 — strength 0~1(첫 박 1, 둘째 박 0.55 를 화면이 곱해서 준다) */
+export function heartbeat(strength: number) {
+  if (!on() || !ctx) return;
+  const s = Math.max(0, Math.min(1, strength));
+  if (s < 0.04) return;
+  const t = ctx.currentTime + 0.005;
+  tone(t, 140, 52, 0.2, 0.6 * s, 'sine');        // 쿵 — 낮게 떨어진다
+  burst(t, 1400, 450, 0.04, 0.26 * s, 1.1);      // 딱 — 작은 스피커에서도 박이 들리게
+}
+
+type Hush = { o1: OscillatorNode; o2: OscillatorNode; lp: BiquadFilterNode; g: GainNode; key: number };
+let hush: Hush | null = null;
+
+/**
+ * 숨죽이는 긴장음 — 근음과 5도 위가 낮게 깔리고, 글자에 다가갈수록(p) 조금씩 올라가고
+ * 숨죽임(k)만큼 커지고 밝아진다. 0 이면 들리지 않는다
+ */
+export function tensionSet(k: number, p: number) {
+  if (!on() || !ctx || !master) return;
+  const kk = Math.max(0, Math.min(1, k)), pp = Math.max(0, Math.min(1, p));
+  if (!hush) {
+    if (kk < 0.02) return;
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator();
+    o1.type = 'sawtooth'; o2.type = 'sawtooth'; o2.detune.value = 9;   // 살짝 어긋나 천천히 일렁인다
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.8; lp.frequency.value = 350;
+    const g = ctx.createGain(); g.gain.value = 0;
+    o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
+    o1.start(); o2.start();
+    hush = { o1, o2, lp, g, key: -1 };
+  }
+  const key = Math.round(kk * 100) * 1000 + Math.round(pp * 100);
+  if (key === hush.key) return;
+  hush.key = key;
+  const now = ctx.currentTime, f = 196 + 60 * pp;   // G3 에서 조금씩 올라간다
+  hush.o1.frequency.setTargetAtTime(f, now, 0.15);
+  hush.o2.frequency.setTargetAtTime(f * 1.5, now, 0.15);
+  hush.lp.frequency.setTargetAtTime(350 + 1400 * kk, now, 0.15);
+  hush.g.gain.setTargetAtTime(kk * kk * 0.08, now, 0.15);
+}
+
+export function tensionStop() {
+  if (!hush || !ctx) return;
+  const { o1, o2, g } = hush;
+  hush = null;
+  g.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
+  setTimeout(() => { try { o1.stop(); o2.stop(); } catch { /* 이미 멈춤 */ } }, 500);
 }
 
 /* ---------- 다 열릴 때: 확정음 ----------
