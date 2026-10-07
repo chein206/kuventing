@@ -406,6 +406,8 @@ export default function SitePage() {
           <div className="kv-foot-brand">
             <span className="kv-logo"><img src="/icon-192.png" alt="" width={28} height={28} /><span>KUVENTING</span></span>
             <p>평소엔 광고판, 누르면 럭키드로우</p>
+            {/* 폼 말고 메일로 바로 묻고 싶은 사람 — 폼 문의도 같은 메일로 알림이 간다(lib/notify.ts) */}
+            <p className="kv-foot-mail">문의 메일 <a href="mailto:scpad206@gmail.com">scpad206@gmail.com</a></p>
           </div>
           <nav className="kv-foot-links" aria-label="데모 바로가기">
             <a href="/demo/beauty" target="_blank" rel="noopener">뷰티 팝업 데모</a>
