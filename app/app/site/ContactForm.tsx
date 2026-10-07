@@ -71,8 +71,8 @@ export default function ContactForm() {
         <input type="checkbox" name="agree" required />
         <span>
           개인정보 수집과 이용에 동의합니다 (필수)
-          <small>수집 항목: 이름 또는 상호, 연락처, 문의 내용</small>
-          <small>목적: 도입 상담 회신 / 보관: 문의일로부터 1년</small>
+          <small>수집 항목: 이름 또는 상호, 업종, 연락처, 문의 내용</small>
+          <small>목적: 도입 상담 회신 / 보관: 문의일로부터 1년 · <a href="/privacy" target="_blank" rel="noopener">개인정보처리방침</a></small>
         </span>
       </label>
       {st === 'error' && <p className="kv-form-err" role="alert">{msg}</p>}
