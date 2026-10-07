@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 
 /**
  * 홈페이지 움직임 — IntersectionObserver 하나로 세 가지를 맡는다.
- *  1. [data-reveal] 화면에 들어오면 .in 을 붙여 나타나게(위로 떠오름) — 읽는 순서를 잡아 준다
+ *  1. [data-reveal] 화면에 들어오면 data-in 을 붙여 나타나게(위로 떠오름) — 읽는 순서를 잡아 준다.
+ *     class 가 아니라 속성인 이유: 리액트가 class 를 다시 쓰면(데모 판이 넓어질 때) 붙여 둔 표시가 지워져
+ *     판이 도로 투명해졌다(10-07 사장님 「마우스 대면 사라짐」). 리액트는 자기가 안 넘긴 속성은 건드리지 않는다
  *  2. [data-count="50>36"] 들어올 때 숫자를 줄여 세기 — "남은 수가 줄어든다"를 직접 보여 준다
  *  3. video[data-inview] 화면 밖이면 멈추고 들어오면 재생 — 안 보이는 영상이 휴대폰 배터리를 먹지 않게
  * 움직임을 줄이라고 해 둔 기기(prefers-reduced-motion)는 숫자는 바로 끝값, 영상은 멈춘 첫 화면만.
@@ -24,7 +26,7 @@ export default function SiteMotion() {
           continue;
         }
         if (!e.isIntersecting) continue;
-        el.classList.add('in');
+        el.setAttribute('data-in', '');
         if (el.dataset.count) countDown(el, reduce);
         io.unobserve(el);
       }

@@ -307,7 +307,7 @@ html:has(.kv){scroll-behavior:smooth}
 /* ---------- 나타나기(스크롤) ---------- */
 .kv-js .kv [data-reveal]{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease),transform 1s var(--ease);
   transition-delay:calc(var(--i,0) * 90ms)}
-.kv-js .kv [data-reveal].in{opacity:1;transform:none}
+.kv-js .kv [data-reveal][data-in]{opacity:1;transform:none}
 /* 데모 판은 넓어지는 움직임을 따로 가지므로 나타날 때도 그 값이 덮이지 않게 */
 .kv-js .kv .kv-demo[data-reveal]{transition:opacity .9s var(--ease),transform 1s var(--ease),flex-grow .8s var(--ease);
   transition-delay:calc(var(--i,0) * 90ms),calc(var(--i,0) * 90ms),0s}
