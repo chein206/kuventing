@@ -10,7 +10,7 @@ export async function GET(
     {
       name: '쿠벤팅',
       short_name: '쿠벤팅',
-      description: '꽝 없는 동네 쿠지 — 카운터 화면',
+      description: '남은 한 장까지, 럭키드로우 — 카운터 화면',
       start_url: `/board/${token}`,
       scope: `/board/${token}`,
       display: 'fullscreen',

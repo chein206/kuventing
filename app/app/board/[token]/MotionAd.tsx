@@ -129,7 +129,7 @@ export function buildScenes(
     photo: shots[0].image as string,
     cam: SIGN_CAM,
     store: store.name + (store.branch ? ` · ${store.branch}` : ''),
-    tagline: total > 0 ? `${total}장 중 ${left}장 남았습니다` : '꽝 없는 뽑기',
+    tagline: total > 0 ? `${total}장 중 ${left}장 남았습니다` : '남은 한 장까지, 럭키드로우',
     // 2.5초짜리 컷이다. 한 줄만 남긴다 — 세 줄이면 아무것도 안 읽힌다
     info: `${verb}하시면 한 장 뽑습니다`,
     top: 880,

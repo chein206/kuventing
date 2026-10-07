@@ -39,6 +39,10 @@ python assets/site/build_signage.py cafe beauty chicken food arven
 # 첫 화면 바로 열어 보기 포스터(판 화면이 바뀌면 다시)
 node assets/site/quick_poster.mjs beauty
 
+# 개봉 조각을 A 로(10-07 밤 · 문구 바뀐 뒤) — 빠른 열기로 찍으면 고르기 없이 맨 윗등급이 나온다(안내 글씨는 녹화에서 숨김)
+QUICK=1 node assets/site/rec_hero.mjs beauty 8
+python assets/site/build_assets.py assets/site/_rec/beauty-8 assets/site/_rec/beauty-4 --draw
+
 # 2판 — 개봉 조각 · QR 쿠폰만
 python assets/site/build_assets.py assets/site/_rec/beauty-1 assets/site/_rec/beauty-4 --draw
 

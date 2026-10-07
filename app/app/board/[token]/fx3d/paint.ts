@@ -79,8 +79,8 @@ export function slipCanvas(grade: string, info: SlipInfo, revealed: boolean, rat
     do { g.font = font.replace(/\d+px/, px + 'px'); px -= 2; } while (g.measureText(text).width > max && px > 16);
     return rest;
   };
-  g.fillStyle = ink(0.6); fit('꽝 없는 뽑기 · ' + info.title, '700 34px ' + KO, 640);
-  g.fillText('꽝 없는 뽑기 · ' + info.title, 112, 178);
+  g.fillStyle = ink(0.6); fit('남은 한 장까지 · ' + info.title, '700 34px ' + KO, 640);
+  g.fillText('남은 한 장까지 · ' + info.title, 112, 178);
   g.fillStyle = ink(0.7); fit(info.store, '600 36px ' + KO, 640); g.fillText(info.store, 112, 408);
   if (info.no !== null) {
     g.fillStyle = ink(0.82); g.font = '700 58px ' + SERIF; g.fillText('NO. ' + info.no, 112, 556);

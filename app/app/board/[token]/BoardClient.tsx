@@ -539,7 +539,8 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
               <MotionAd scenes={scenes} key="m" />
             ) : slide === 0 || !cfg.ads?.length ? (
               <div className="slide kuji" key="k">
-                <div className="eyebrow">꽝 없는 뽑기</div>
+                {/* 판 이름표 — 「남은 한 장까지」 다 나가는 판이라는 뜻(10-07 「꽝 없는 뽑기」에서 바꿈) */}
+                <div className="eyebrow">남은 한 장까지, 럭키드로우</div>
                 <h1>{cfg.drawVerb || '주문'}하시면<br /><em>한 장</em> 뽑습니다</h1>
                 <p className="lead">모든 티켓에 상품이 들어있습니다.<br />남은 티켓은 아래에서 직접 확인하세요.</p>
                 <div className="hero"><b>{left}</b><span>장 남음</span></div>

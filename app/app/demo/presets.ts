@@ -26,7 +26,7 @@ export const DEMOS: Record<string, Demo> = {
       { kicker: 'EV 시승 페스타', title: '한 번 타 보면\n압니다', sub: '예약 없이 전시장에서 바로', price: '시승 무료', image: '/demo/arven/slide-1.jpg' },
       { kicker: '실내', title: '달리는 라운지', sub: '넓은 화면과 조용한 실내, 앉아 보면 압니다', image: '/demo/arven/slide-2.jpg' },
       { kicker: '피날레 보너스', title: '주말엔 바닷길로', sub: '주말 시승 1박 2일, 판에 단 한 장', image: '/demo/arven/slide-3.jpg' },
-      { kicker: '시승 선물', title: '시승 1팀 = 1장', sub: '골프백 · 장우산 · 텀블러 · 충전 쿠폰', price: '꽝 없음', image: '/demo/arven/slide-4.jpg' },
+      { kicker: '시승 선물', title: '시승 1팀 = 1장', sub: '골프백 · 장우산 · 텀블러 · 충전 쿠폰', price: '남은 한 장까지', image: '/demo/arven/slide-4.jpg' },
     ],
     drawn: 14,
   },
@@ -46,7 +46,7 @@ export const DEMOS: Record<string, Demo> = {
     promos: [
       { kicker: 'POP-UP · 성수', title: '성분부터 보고\n고르는 팝업', sub: '뷰티성분사전이 고른 제품을 직접 발라 보세요', image: '/demo/beauty/slide-1.jpg' },
       { kicker: '오늘의 성분', title: '바르기 전에,\n성분부터', sub: '제형 · 향 · 흡수감을 체험존에서', image: '/demo/beauty/slide-2.jpg' },
-      { kicker: '체험존', title: '체험 1회 = 1장', sub: '꽝 없는 뽑기, 본품 풀세트까지', price: '꽝 없음', image: '/demo/beauty/slide-3.jpg' },
+      { kicker: '체험존', title: '체험 1회 = 1장', sub: '남은 한 장까지 다 받는 럭키드로우', price: '본품 풀세트까지', image: '/demo/beauty/slide-3.jpg' },
       { kicker: '피날레 보너스', title: '팝업 한정 세트', sub: '판에 단 한 장, 팝업에서만', image: '/demo/beauty/slide-4.jpg' },
     ],
     drawn: 16,
@@ -102,7 +102,7 @@ export const DEMOS: Record<string, Demo> = {
     promos: [
       { kicker: '오늘의 치킨', title: '바삭한 후라이드', sub: '주문 즉시 두 번 튀깁니다', price: '19,000원', image: '/demo/chicken/slide-1.jpg' },
       { kicker: '반반', title: '양념 반\n후라이드 반', sub: '고민될 땐 둘 다', price: '20,000원', image: '/demo/chicken/slide-2.jpg' },
-      { kicker: '치맥', title: '생맥주와 함께', sub: '치킨 주문 1테이블 = 1장, 꽝 없음', image: '/demo/chicken/slide-3.jpg' },
+      { kicker: '치맥', title: '생맥주와 함께', sub: '1테이블 = 1장, 남은 한 장까지 럭키드로우', image: '/demo/chicken/slide-3.jpg' },
     ],
     drawn: 12,
   },

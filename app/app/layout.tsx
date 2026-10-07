@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: '쿠벤팅',
-  description: '꽝 없는 동네 쿠지 — 매장 뽑기 이벤트',
+  description: '남은 한 장까지 다 받는 매장 럭키드로우 — 평소엔 광고판, 누르면 럭키드로우',
 };
 
 export const viewport: Viewport = {

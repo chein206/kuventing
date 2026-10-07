@@ -7,6 +7,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const BASE = 'https://kuvt.scpadlab.com';
+// QUICK=1 — 빠른 열기(?quick=1): 대기 화면에서 누르면 고르기 없이 맨 윗등급 표가 바로 나온다. 홈페이지 개봉 조각을 A 로 찍을 때(build_assets --draw 전용 — list · grid 표시가 없다)
+const QUICK = process.env.QUICK === '1';
 const SLUG = process.argv[2] || 'food';
 const TAKE = process.argv[3] || '1';
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '_rec');
@@ -23,6 +25,7 @@ const p = await ctx.newPage();
 // 데모 띠는 숨기고, 손가락 자리를 보이게 — 누르면 고리, 끄는 동안은 점이 따라온다
 await p.addInitScript(() => {
   const css = `.demo-tag{display:none!important}
+  .op3hint{display:none!important}
   .tap-ring{position:fixed;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;border:3px solid rgba(255,255,255,.9);
     background:rgba(255,255,255,.16);pointer-events:none;z-index:2147483647;animation:tapRing .65s cubic-bezier(.16,1,.3,1) forwards}
   .tap-dot{position:fixed;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,255,255,.55);
@@ -49,7 +52,7 @@ await p.addInitScript(() => {
 
 const errs = [];
 p.on('pageerror', (e) => errs.push(e.message));
-await p.goto(`${BASE}/demo/${SLUG}`, { waitUntil: 'load', timeout: 120000 });
+await p.goto(`${BASE}/demo/${SLUG}${QUICK ? '?quick=1' : ''}`, { waitUntil: 'load', timeout: 120000 });
 await p.waitForSelector('.touch', { timeout: 120000 });
 await p.evaluate(() => document.fonts.ready);
 // 상품 사진을 미리 받아 둔다 — 안 그러면 상품 목록이 빈 카드로 한 박자 보인다
@@ -73,18 +76,20 @@ mark('start');
 await p.waitForTimeout(1800);
 mark('attract');
 await p.click('.touch');
-await p.waitForSelector('.pgrid', { timeout: 15000 });
-await p.waitForTimeout(1500);
-mark('list');
-await p.click('.page .big.cd');
-await p.waitForSelector('.tgrid', { timeout: 15000 });
-await p.waitForTimeout(1100);
-const tiles = p.locator('.tk2:not(.used)');
-const n = await tiles.count();
-await tiles.nth(Math.floor(n * 0.37)).click();
-await p.waitForTimeout(700);
-mark('grid');
-await p.click('.rowbtn .big.cd');
+if (!QUICK) {
+  await p.waitForSelector('.pgrid', { timeout: 15000 });
+  await p.waitForTimeout(1500);
+  mark('list');
+  await p.click('.page .big.cd');
+  await p.waitForSelector('.tgrid', { timeout: 15000 });
+  await p.waitForTimeout(1100);
+  const tiles = p.locator('.tk2:not(.used)');
+  const n = await tiles.count();
+  await tiles.nth(Math.floor(n * 0.37)).click();
+  await p.waitForTimeout(700);
+  mark('grid');
+  await p.click('.rowbtn .big.cd');
+}
 await p.waitForSelector('.op3wrap .tslot.grip:not(.off)', { timeout: 60000 });
 await p.waitForTimeout(700);
 mark('open');
