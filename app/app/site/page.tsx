@@ -7,6 +7,7 @@ import SiteMotion from './SiteMotion';
 import Scene from './Scene';
 import QuickOpen, { type QuickItem } from './QuickOpen';
 import SignageCycle, { type SigItem } from './SignageCycle';
+import HowSteps, { type HowSet } from './HowSteps';
 import Demos from './Demos';
 import ContactForm from './ContactForm';
 import SiteFooter from './SiteFooter';
@@ -135,12 +136,20 @@ const DEMOS = [
   },
 ];
 
-// HOW IT WORKS — 손님 4단계(사장님 10-07: 광고 + 현황 → 남은 선물 → 픽 → 열기 → 럭키). 화면은 실제 데모 녹화(build_steps.py)
+// HOW IT WORKS — 손님 4단계(사장님 10-07: 광고 + 현황 → 남은 선물 → 픽 → 열기 → 럭키). 화면은 실제 데모 녹화(build_steps.py),
+// 업종 다섯이 4초마다 돌아간다(HowSteps). 업종 순서는 첫 화면 · SIGNAGE 단추와 같게
 const STEPS = [
-  { n: '01', tag: 'WATCH', t: '보고', d: '평소엔 광고판. 남은 선물이 몇 장인지 같이 보입니다.', img: '/site/how-1.jpg', alt: '광고와 남은 티켓 수가 보이는 대기 화면' },
-  { n: '02', tag: 'CHECK', t: '확인하고', d: '어떤 선물이 몇 개 남았는지 먼저 봅니다.', img: '/site/how-2.jpg', alt: '등급별 남은 선물 목록' },
-  { n: '03', tag: 'PICK', t: '고르고', d: '마음에 드는 표 한 장을 직접 고릅니다.', img: '/site/how-3.jpg', alt: '표 한 장을 고른 화면' },
-  { n: '04', tag: 'OPEN', t: '열면, 럭키!', d: '표를 밀어 열면 선물이 나옵니다. 남은 한 장까지.', img: '/site/how-4.jpg', alt: '본품 풀세트가 나온 결과 화면' },
+  { n: '01', tag: 'WATCH', t: '보고', d: '평소엔 광고판. 남은 선물이 몇 장인지 같이 보입니다.', alt: '광고와 남은 티켓 수가 보이는 대기 화면' },
+  { n: '02', tag: 'CHECK', t: '확인하고', d: '어떤 선물이 몇 개 남았는지 먼저 봅니다.', alt: '등급별 남은 선물 목록' },
+  { n: '03', tag: 'PICK', t: '고르고', d: '마음에 드는 표 한 장을 직접 고릅니다.', alt: '표 한 장을 고른 화면' },
+  { n: '04', tag: 'OPEN', t: '열면, 럭키!', d: '표를 밀어 열면 선물이 나옵니다. 남은 한 장까지.', alt: '맨 윗등급 선물이 나온 결과 화면' },
+];
+const HOW_SETS: HowSet[] = [
+  { key: 'beauty', tag: '뷰티 팝업' },
+  { key: 'cafe', tag: '카페' },
+  { key: 'chicken', tag: '치킨 호프' },
+  { key: 'arven', tag: '시승 행사' },
+  { key: 'food', tag: '라멘집' },
 ];
 
 // DONE FOR YOU — 사장님 일은 하나, 저희 일은 다섯
@@ -230,20 +239,7 @@ export default function SitePage() {
               손님은 이렇게 참여합니다. 앱 설치도 회원 가입도 없이, 화면 앞에서 1분이면 끝납니다.
             </p>
           </div>
-          <ol className="kv-steps">
-            {STEPS.map((s, i) => (
-              <li key={s.n} data-reveal style={{ ['--i' as string]: i }}>
-                <div className="kv-step-dev">
-                  <img src={s.img} alt={s.alt} width={480} height={768} loading="lazy" />
-                </div>
-                <div className="kv-step-copy">
-                  <span className="kv-step-n">{s.n}<i>{s.tag}</i></span>
-                  <h3>{s.t}</h3>
-                  <p>{s.d}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <HowSteps steps={STEPS} sets={HOW_SETS} />
         </section>
 
         {/* ── SIGNAGE ── */}

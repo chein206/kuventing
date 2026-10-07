@@ -60,6 +60,8 @@ await p.evaluate(() => Promise.all([...new Set([
   '/fx/prize-a.jpg', '/demo/food/b-ramen.jpg', '/fx/prize-c.jpg', '/demo/food/d-soda.jpg', '/art/coupon-1000.svg', '/fx/prize-last.jpg',
   '/demo/arven/a-golfbag.jpg', '/demo/arven/b-umbrella.jpg', '/demo/arven/c-tumbler.jpg', '/demo/arven/d-charge.jpg', '/demo/arven/e-coffee.jpg', '/demo/arven/finale.jpg',
   '/demo/beauty/a-fullset.jpg', '/demo/beauty/b-serum.jpg', '/demo/beauty/c-minikit.jpg', '/demo/beauty/d-sample.jpg', '/demo/beauty/e-coupon.jpg', '/demo/beauty/finale.jpg',
+  '/img/prize-cafe-a.jpg', '/img/prize-cafe-b.jpg', '/img/prize-cafe-c.jpg', '/img/prize-cafe-d.jpg', '/img/prize-cafe-last.jpg',
+  '/demo/chicken/a-chicken.jpg', '/demo/chicken/b-cheeseball.jpg', '/demo/chicken/c-beer.jpg', '/demo/chicken/d-cola.jpg', '/demo/chicken/finale.jpg', '/art/coupon-2000.svg',
 ])].map((u) => new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = u; }))));
 await p.waitForTimeout(2500);   // 모션 광고 첫 컷이 자리 잡게
 

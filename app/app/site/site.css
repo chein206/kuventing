@@ -185,11 +185,18 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-screen video,.kv-screen img,.kv-screen iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
 
 /* ---------- HOW IT WORKS — 손님 4단계(실제 판 화면) ---------- */
-.kv-steps{list-style:none;margin-top:56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,2.6vw,36px)}
+.kv-how-tabs{margin-top:44px;display:flex;flex-wrap:wrap;gap:6px}
+.kv-how-tabs button{height:34px;padding:0 14px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;font-weight:700;
+  color:var(--ink-2);background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);transition:background .3s,color .3s,box-shadow .3s}
+.kv-how-tabs button:hover{color:var(--ink)}
+.kv-how-tabs button.on{background:var(--pop);color:var(--pop-ink);box-shadow:none}
+.kv-steps{list-style:none;margin-top:24px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,2.6vw,36px)}
 .kv-steps li{position:relative;display:flex;flex-direction:column}
 .kv-step-dev{padding:8px;border-radius:24px;background:linear-gradient(155deg,#26304A,#0B101C 55%,#161E31);
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),0 30px 60px -34px rgba(0,0,0,.9)}
-.kv-step-dev img{width:100%;height:auto;aspect-ratio:480/768;border-radius:17px;object-fit:cover}
+.kv-step-stack{position:relative;aspect-ratio:480/768;border-radius:17px;overflow:hidden;background:var(--bg-3)}
+.kv-step-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s var(--ease)}
+.kv-step-stack img.on{opacity:1}
 .kv-step-copy{margin-top:20px}
 .kv-step-n{display:inline-flex;align-items:baseline;gap:10px;font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;
   font-size:16px;letter-spacing:.06em;color:var(--pop)}
@@ -464,11 +471,11 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-ideas{grid-template-columns:1fr}
   .kv-split{grid-template-columns:1fr}
   /* 폰 — 단계마다 한 줄: 왼쪽 화면 · 오른쪽 글 */
-  .kv-steps{grid-template-columns:1fr;row-gap:22px;margin-top:40px}
+  .kv-steps{grid-template-columns:1fr;row-gap:22px;margin-top:22px}
   .kv-steps li{flex-direction:row;align-items:center;gap:18px}
   .kv-steps li::after{display:none}
   .kv-step-dev{flex:none;width:36%;padding:6px;border-radius:18px}
-  .kv-step-dev img{border-radius:13px}
+  .kv-step-stack{border-radius:13px}
   .kv-step-copy{margin-top:0}
   .kv-steps h3{font-size:24px}
   .kv-steps p{font-size:14.5px}
