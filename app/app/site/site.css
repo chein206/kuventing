@@ -107,6 +107,8 @@ html:has(.kv){scroll-behavior:smooth}
              radial-gradient(40% 50% at 82% 60%,rgba(52,76,140,.22),transparent 70%);
 }
 .kv-ctas{margin-top:36px;display:flex;flex-wrap:wrap;gap:12px}
+.kv-hero-note{margin-top:22px;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--ink-2)}
+.kv-hero-note svg{flex:none;font-size:18px;color:var(--pop)}
 /* 오른쪽 — 뒤에 팝업 입구 장면(평소엔 광고판), 앞에 바로 열어 보는 태블릿(누르면 럭키드로우)을 겹쳐 놓는다 */
 .kv-hero-try{position:relative;height:clamp(500px,46vw,640px)}
 .kv-hero-try .kv-shot.a{position:absolute;right:0;top:0;width:82%}
@@ -157,6 +159,7 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-h1{animation:kvRise 1s .06s var(--ease) both}
 .kv-lead{animation:kvRise 1s .16s var(--ease) both}
 .kv-ctas{animation:kvRise 1s .26s var(--ease) both}
+.kv-hero-note{animation:kvRise 1s .34s var(--ease) both}
 .kv-shot.a{animation:kvSlide 1.2s .15s var(--ease) both}
 .kv-quick{animation:kvRise 1.1s .35s var(--ease) both}
 
@@ -257,6 +260,24 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-unit.kiosk .kv-unit-foot{width:140px;height:96px;background:linear-gradient(180deg,#171E2D,#0D111A);
   clip-path:polygon(16% 0,84% 0,100% 100%,0 100%)}
 .kv-unit figcaption{justify-content:center;text-align:center;margin-top:22px}
+
+/* ---------- DONE FOR YOU — 사장님 일 하나 · 저희 일 다섯 ---------- */
+.kv-split{margin-top:48px;display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);gap:16px}
+.kv-split-tag{display:block;font-size:13px;font-weight:800;letter-spacing:.06em}
+.kv-you{position:relative;display:flex;flex-direction:column;padding:34px;border-radius:22px;background:var(--pop);color:var(--pop-ink)}
+/* 할 일이 하나뿐이라는 표시 — 큰 체크 하나 */
+.kv-you-mark{position:absolute;right:26px;top:22px;font-size:clamp(64px,9vw,136px);line-height:0;opacity:.88}
+.kv-you .kv-split-tag{opacity:.66}
+.kv-you-big{margin-top:auto;padding-top:56px;font-family:var(--hd);font-weight:400;font-size:clamp(40px,4.4vw,64px);line-height:1.1}
+.kv-you-sub{margin-top:14px;font-size:16px;line-height:1.65;font-weight:600;opacity:.8}
+.kv-we{padding:30px 34px 14px;border-radius:22px;background:var(--bg-2);border:1px solid var(--line)}
+.kv-we .kv-split-tag{color:var(--dim)}
+.kv-we ul{list-style:none;margin-top:8px}
+.kv-we li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start;padding:16px 0;border-top:1px solid var(--line);
+  font-size:15px;line-height:1.6;color:var(--ink-2)}
+.kv-we li:first-child{border-top:0}
+.kv-we li b{display:block;margin-bottom:2px;font-size:17px;font-weight:800;color:var(--ink)}
+.kv-we-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;color:var(--pop);background:rgba(255,200,61,.12)}
 
 /* ---------- DEMO(넓어지는 판 셋) ---------- */
 .kv-demos-row{display:flex;gap:14px;height:clamp(460px,72dvh,660px);margin-top:48px}
@@ -387,6 +408,10 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-vs-row{grid-template-columns:1fr;gap:6px;padding:18px 20px}
   .kv-vs-arrow{justify-self:start;transform:rotate(180deg);font-size:16px}
   .kv-ideas{grid-template-columns:1fr}
+  .kv-split{grid-template-columns:1fr}
+  .kv-you{padding:28px}
+  .kv-you-big{padding-top:36px}
+  .kv-we{padding:24px 22px 8px}
   .kv-lineup{grid-template-columns:1fr;gap:56px;justify-items:center}
   .kv-bubble{max-width:90%}
   .kv-draw-stage{padding:40px 52px}

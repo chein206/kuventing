@@ -23,6 +23,7 @@ import './site.css';
  * - 기기는 고객이 가진 화면(태블릿 · 스탠드형 터치스크린 · 키오스크) — 대여는 말하지 않는다(사장님 10-07)
  * - 첫 화면에서 바로 열어 본다 — 실제 데모 판을 빠른 열기로(고르기 없이 표 → 맨 윗등급). SIGNAGE 는 업종이 돌아가며 바뀐다
  *   (차만 나오면 업종이 고정돼 보이고 어둡다 — 사장님 10-07)
+ * - 디자인 · 사진 제작까지 맡아 준다는 것(DONE FOR YOU) — 「머리 아프게 신경 쓸 것 없이 상품만 신경 쓰면 된다」(사장님 10-07)
  * - 주소는 kuventing.scpadlab.com — 그 주소의 / 가 이 페이지다(next.config.ts)
  */
 
@@ -132,10 +133,20 @@ const DEMOS = [
   },
 ];
 
+// DONE FOR YOU — 사장님 일은 하나, 저희 일은 다섯
+const WE_DO = [
+  { icon: 'ticket' as const, t: '판 디자인', d: '브랜드 색과 분위기에 맞춰 판, 표, 글꼴을 만듭니다.' },
+  { icon: 'megaphone' as const, t: '광고 화면', d: '대기 화면에 도는 모션 광고의 문구와 순서를 짭니다.' },
+  { icon: 'camera' as const, t: '사진 제작', d: '사진이 없어도 됩니다. 상품 사진과 광고 사진까지 만들어 드립니다.' },
+  { icon: 'gift' as const, t: '경품 구성', d: '등급별 수량과 마지막 피날레까지 업종에 맞게 제안합니다.' },
+  { icon: 'check' as const, t: '화면 띄우기', d: '가진 기기에 주소 하나만 열어 두면 끝입니다.' },
+];
+
 const FAQ = [
   { q: '기기를 따로 사야 하나요?', a: '가지고 계신 태블릿, 스탠드형 터치스크린, 키오스크에서 브라우저로 엽니다. 앱 설치도 필요 없어요.' },
   { q: '비용은 얼마인가요?', a: '행사 규모와 기간에 따라 달라요. 도입 문의를 남겨 주시면 맞춰서 안내드립니다.' },
-  { q: '경품은 누가 정해요?', a: '매장이나 브랜드가 정합니다. 등급, 수량, 사진만 알려 주시면 판은 저희가 만들어 드려요.' },
+  { q: '디자인이나 사진은 직접 해야 하나요?', a: '아니요. 판 디자인, 광고 문구, 사진까지 저희가 만들어 드려요. 사진이 없어도 됩니다.' },
+  { q: '경품은 누가 정해요?', a: '매장이나 브랜드가 정합니다. 무엇을 몇 개 걸지만 알려 주시면 등급과 수량은 같이 맞춰 드려요.' },
   { q: '좋은 경품이 먼저 다 나가면요?', a: '하위 등급만 남았을 때 끝까지 갈지, 피날레를 걸고 새 판을 열지 고를 수 있어요.' },
   { q: '손님 쿠폰은 어떻게 써요?', a: '손님 폰에 QR 쿠폰으로 남고, 다시 왔을 때 사장님 폰에서 사용 처리합니다.' },
 ];
@@ -178,6 +189,7 @@ export default function SitePage() {
               <a className="kv-btn primary" href="#contact">도입 문의</a>
               <a className="kv-btn ghost" href="#demos">데모 해 보기</a>
             </div>
+            <p className="kv-hero-note"><Icon name="check" />디자인과 사진은 저희가 만듭니다. 상품만 정하세요.</p>
           </div>
           {/* 뒤는 팝업 입구 장면(평소엔 광고판), 앞은 실제 판을 바로 열어 보는 태블릿(누르면 럭키드로우) */}
           <div className="kv-hero-try">
@@ -302,6 +314,36 @@ export default function SitePage() {
                 <figcaption><b>{d.name}</b>{d.note}</figcaption>
               </figure>
             ))}
+          </div>
+        </section>
+
+        {/* ── DONE FOR YOU — 상품만 정하면 나머지는 저희가 ── */}
+        <section className="kv-sec kv-done" id="done">
+          <div className="kv-head">
+            <p className="kv-label" data-reveal>DONE FOR YOU</p>
+            <h2 className="kv-h2" data-reveal>상품만 정하세요,<br />나머지는 저희가</h2>
+            <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
+              디자인도 사진도 저희가 만듭니다. 머리 아프게 신경 쓸 것 없이, 매장 화면에 띄워 두기만 하면 됩니다.
+            </p>
+          </div>
+          <div className="kv-split">
+            <div className="kv-you" data-reveal>
+              <span className="kv-split-tag">사장님이 하실 일</span>
+              <span className="kv-you-mark" aria-hidden="true"><Icon name="check" strokeWidth={2.2} /></span>
+              <p className="kv-you-big">상품 정하기</p>
+              <p className="kv-you-sub">무엇을 몇 개 걸지만 알려 주세요.<br />나머지는 아래처럼 저희가 합니다.</p>
+            </div>
+            <div className="kv-we" data-reveal style={{ ['--i' as string]: 1 }}>
+              <span className="kv-split-tag">쿠벤팅이 하는 일</span>
+              <ul>
+                {WE_DO.map((w) => (
+                  <li key={w.t}>
+                    <span className="kv-we-ic"><Icon name={w.icon} /></span>
+                    <span><b>{w.t}</b>{w.d}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 
