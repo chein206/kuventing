@@ -29,13 +29,16 @@ body{width:1200px;height:630px;overflow:hidden;background:#070B16;color:#F3F1EA;
 .scene>.scr{position:absolute;left:0;top:0;width:540px;height:864px;transform-origin:0 0;transform:${POPUP};
   background:url(${img('site/screen-beauty.jpg')}) center/cover}
 .shade{position:absolute;inset:0;background:linear-gradient(90deg,#070B16 0%,#070B16 30%,rgba(7,11,22,.86) 46%,rgba(7,11,22,.3) 64%,rgba(7,11,22,0) 76%)}
-.copy{position:absolute;left:76px;top:92px;width:640px}
+.copy{position:absolute;left:76px;top:62px;width:660px}
 .logo{display:flex;align-items:center;gap:14px;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:800;font-size:21px;letter-spacing:.08em}
 .logo img{width:42px;height:42px;border-radius:11px}
-.label{margin-top:58px;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:800;font-size:17px;letter-spacing:.16em;color:#FFC83D}
+.label{margin-top:46px;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:800;font-size:17px;letter-spacing:.16em;color:#FFC83D}
 h1{margin-top:16px;font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:74px;line-height:1.14}
 h1 em{font-style:normal;color:#FFC83D}
 p{margin-top:24px;font-size:25px;color:#C3CAD8;letter-spacing:-.02em}
+.done{margin-top:26px;display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 24px 0 18px;border-radius:999px;
+  background:#FFC83D;color:#1A1300;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.done svg{width:28px;height:28px;flex:none}
 </style></head><body>
 <div class="scene"><img src="${img('site/scene-popup.jpg')}"><div class="scr"></div></div>
 <div class="shade"></div>
@@ -44,6 +47,7 @@ p{margin-top:24px;font-size:25px;color:#C3CAD8;letter-spacing:-.02em}
   <div class="label">SIGNAGE + LUCKY DRAW</div>
   <h1>평소엔 광고판,<br><em>누르면 럭키드로우</em></h1>
   <p>팝업 스토어, 행사장, 매장 카운터의 화면 하나로</p>
+  <div class="done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>디자인 · 사진은 저희가, 상품만 정하세요</div>
 </div>
 </body></html>`;
 

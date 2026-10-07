@@ -37,11 +37,12 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: '/' },
   title: '쿠벤팅 | 평소엔 광고판, 누르면 럭키드로우',
-  description: '팝업 스토어, 행사장, 매장 카운터의 화면 하나로 움직이는 광고와 경품 이벤트를 함께 돌립니다.',
+  description: '팝업 스토어, 행사장, 매장 카운터의 화면 하나로 움직이는 광고와 경품 이벤트를 함께 돌립니다. 디자인과 사진은 저희가 만들고, 상품만 정하시면 됩니다.',
   openGraph: {
     title: '쿠벤팅 | 평소엔 광고판, 누르면 럭키드로우',
-    description: '팝업 스토어, 행사장, 매장 카운터의 화면 하나로 움직이는 광고와 경품 이벤트를 함께.',
-    images: ['/site/og.jpg'],
+    description: '화면 하나로 움직이는 광고와 경품 이벤트를 함께. 디자인 · 사진은 저희가, 상품만 정하세요.',
+    // 그림을 바꾸면 v 를 올린다 — 같은 주소면 메신저 · SNS 가 옛 그림을 계속 보여 준다(카톡은 공유 디버거에서 캐시도 지워야 한다)
+    images: ['/site/og.jpg?v=2'],
     url: '/',
     siteName: '쿠벤팅',
     type: 'website',
