@@ -37,3 +37,5 @@ audio/
 
 # Flow 후보 더미 — 고른 원본만 assets/demo/pick/ 에 남긴다
 assets/demo/_cand/
+# 홈페이지 영상 녹화 프레임(수천 장) — 굽고 나면 필요 없다
+assets/site/_rec/
