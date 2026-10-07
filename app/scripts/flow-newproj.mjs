@@ -4,6 +4,8 @@
  *
  *   node scripts/flow-newproj.mjs "쿠벤팅 데모 상품"               → 새 탭 · 마지막 줄 PROJECT=<id>
  *   node scripts/flow-newproj.mjs "쿠벤팅 데모 광고" --tab <id>    → 내가 전에 연 그 프로젝트 탭을 다시 써서
+ *   node scripts/flow-newproj.mjs "쿠벤팅 데모 광고" --u 1         → 계정 자리를 정해서(/u/1). 찍힌 계정 메일을 같이 보여 준다
+ *     (10-07: 엣지를 새로 띄우면 u/0 이 프로 계정이라 그림에 ✦ 가 찍힌다 — 울트라 계정 자리로 만든다)
  *
  * 그다음 shorts-lab 의 flow_still 로 시트를 뽑는다 — assets/demo/README.md
  */
@@ -15,11 +17,14 @@ const args = process.argv.slice(2);
 const NAME = args[0] || '쿠벤팅';
 const ti = args.indexOf('--tab');
 const TAB = ti >= 0 ? args[ti + 1] : '';
+const ui = args.indexOf('--u');
+const U = ui >= 0 ? args[ui + 1] : '';
 
 const browser = await pw.chromium.connectOverCDP('http://127.0.0.1:9333');
 const ctx = browser.contexts()[0];
 const flowTab = ctx.pages().find((p) => /flow\.google\.com/.test(p.url()));
-const BASE = flowTab?.url().match(/^https:\/\/flow\.google\.com(\/u\/\d+)?/)?.[0] ?? 'https://flow.google.com';
+const BASE = U ? `https://flow.google.com/u/${U}`
+  : flowTab?.url().match(/^https:\/\/flow\.google\.com(\/u\/\d+)?/)?.[0] ?? 'https://flow.google.com';
 const page = TAB ? ctx.pages().find((p) => p.url().includes(`/project/${TAB}`)) : await ctx.newPage();
 if (!page) { console.log('그 프로젝트 탭 없음 —', TAB); process.exit(1); }
 const pause = (ms = 700) => page.waitForTimeout(ms);
@@ -28,6 +33,10 @@ await page.bringToFront();
 await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
 await pause(5000);
 if (await page.evaluate(() => navigator.webdriver)) { console.log('navigator.webdriver=true — 멈춤'); process.exit(1); }
+// 어느 계정 자리인지 — 계정 단추의 이름표에서 메일만 읽는다(누르지 않는다. 그 창은 로그아웃 단추가 있는 구글 계정 창)
+const who = await page.evaluate(() => [...document.querySelectorAll('[aria-label*="@"]')]
+  .map((e) => e.getAttribute('aria-label').match(/[\w.+-]+@[\w.-]+/)?.[0]).filter(Boolean)[0] ?? '');
+console.log(`계정 ${who || '(못 읽음)'} · ${BASE}`);
 // 열린 창의 투명 덮개가 남아 있으면 첫 클릭이 안 먹는다(flow_upload 와 같다)
 for (let i = 0; i < 3; i++) {
   const bd = page.locator('.cdk-overlay-backdrop').filter({ visible: true });

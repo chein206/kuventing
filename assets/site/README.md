@@ -9,6 +9,9 @@
 | `build_assets.py` | 녹화에서 히어로 영상 · 3D 개봉 조각 · 단계 화면 넷 · 남은 티켓 띠 · QR 쿠폰을 뽑고, 상품 사진 · 티켓 원판을 홈페이지 크기로 → `app/public/site/` |
 | `og.mjs` | 링크 미리보기 그림(1200×630) — 팝업 입구 장면 + 실제 대기 화면 + 제목 → `app/public/site/og.jpg` |
 | `rec_screen.mjs` | 대기 화면(광고판)만 녹화 — 손대지 않은 판에서 모션 광고가 도는 몇 초 → `screen-<업종>.mp4 · .jpg` |
+| `rec_signage.mjs` | SIGNAGE 장 — 업종마다 대기 화면 첫 컷(올린 사진 한 장 + 문구)만 녹화 → `_rec/sig-<업종>/` |
+| `build_signage.py` | 그 첫 컷들을 6초씩 잘라 홈페이지 순서대로 이어 붙임 → `signage.mp4 · .jpg`, 올린 사진 → `site/sig/<업종>.jpg` |
+| `quick_poster.mjs` | 첫 화면 「바로 열어 보기」 포스터 — 빠른 열기 판(`/demo/<업종>?quick=open`)이 표를 내민 순간 → `quick-<업종>.jpg` |
 | `screen_fit.py` | 장면 사진 속 검은 화면의 네 귀퉁이를 찾아 영상을 얹는 CSS `matrix3d` — `page.tsx` 의 `M` 에 넣는다 |
 | `SHEET-scene.md` | 장면 사진(Flow) 프롬프트 — 팝업 입구 스탠드형 스크린 · 시승 행사장 키오스크. 화면은 까맣게 뽑는다 |
 | `SHEET-lab.md` | 시안(`/lab`)용 장면 사진 프롬프트 — 카운터 위 태블릿(2판 첫 화면의 매장 카운터 장면도 여기서) |
@@ -27,7 +30,15 @@ node assets/site/og.mjs
   `rec_hero.mjs beauty 1~4` 중 1번(B 본품 택1) → `open.mp4`, 4번(E 온라인 15% 할인) → `coupon.jpg`.
   2판은 히어로 · 단계 화면을 안 쓰므로 `--draw` 로 그 둘만 굽는다
 
+- **2판 고침(10-07 밤)**: 첫 화면에 실제 판을 바로 열어 보는 태블릿(빠른 열기 — 고르기 없이 표, 밀면 맨 윗등급), SIGNAGE 는 업종이 돌아가며(카페 → 뷰티 → 치킨 → 라멘 → 시승, 6초씩 · 아래 칩으로 건너뛰기). 사장님: 차만 나오면 업종이 고정돼 보이고 어둡다
+
 ```bash
+# SIGNAGE — 업종을 늘리면 page.tsx 의 SIG 와 순서를 같이 맞춘다
+node assets/site/rec_signage.mjs cafe beauty chicken food arven
+python assets/site/build_signage.py cafe beauty chicken food arven
+# 첫 화면 바로 열어 보기 포스터(판 화면이 바뀌면 다시)
+node assets/site/quick_poster.mjs beauty
+
 # 2판 — 개봉 조각 · QR 쿠폰만
 python assets/site/build_assets.py assets/site/_rec/beauty-1 assets/site/_rec/beauty-4 --draw
 

@@ -64,4 +64,46 @@ export const DEMOS: Record<string, Demo> = {
     ],
     drawn: 12,
   },
+  cafe: {
+    label: '망원 디저트 카페',
+    note: '카페 신메뉴 이벤트 · 음료 1잔 주문 = 1장',
+    theme: 'light-west', font: 'pretendard', title: '신메뉴 럭키드로우', drawVerb: '주문',
+    store: { name: '망원 디저트 카페', branch: null, logo: null },
+    // 카페 시험 때 쓴 상품 · 메뉴 사진(이미지규격.md 대로 뽑은 것). 구성은 lib/presets.ts 카페 · 디저트와 같다
+    prizes: [
+      { grade: 'A', name: '케익 + 음료 세트', qty: 1, useWhen: 'now', image: '/img/prize-cafe-a.jpg' },
+      { grade: 'B', name: '딸기 케익 1조각', qty: 3, useWhen: 'now', image: '/img/prize-cafe-b.jpg' },
+      { grade: 'C', name: '아인슈페너 1잔', qty: 6, useWhen: 'now', image: '/img/prize-cafe-c.jpg' },
+      { grade: 'D', name: '아이스 아메리카노', qty: 12, useWhen: 'now', image: '/img/prize-cafe-d.jpg' },
+      { grade: 'E', name: '1,000원 할인', qty: 28, useWhen: 'later', image: '/art/coupon-1000.svg' },
+    ],
+    finale: { name: '케익 + 음료 2잔 세트', image: '/img/prize-cafe-last.jpg', label: '피날레 보너스' },
+    promos: [
+      { kicker: '오늘의 디저트', title: '딸기 생크림 케익', sub: '매일 아침 굽는 시트, 생딸기 가득', price: '6,500원', image: '/img/menu-딸기생크림케익.jpg' },
+      { kicker: '시그니처', title: '아인슈페너', sub: '직접 휘핑한 크림 아래 진한 커피', price: '5,500원', image: '/img/menu-아인슈페너.jpg' },
+      { kicker: '둘이 오면', title: '케익 세트', sub: '케익 한 조각에 음료 두 잔', price: '14,000원', image: '/img/menu-딸기케익세트.jpg' },
+    ],
+    drawn: 10,
+  },
+  chicken: {
+    label: '을지로 치킨 호프',
+    note: '치킨 · 호프 치맥 이벤트 · 1테이블 주문 = 1장',
+    // 밤 장사라 어두운 참나무 판(사진 판 · 활판 입장권). 구성은 lib/presets.ts 치킨 · 호프와 같다 — 치킨 1마리는 다음 방문(14일)
+    theme: 'photo-letterpress', font: 'pretendard', title: '치맥 럭키드로우', drawVerb: '주문',
+    store: { name: '을지로 치킨 호프', branch: null, logo: null },
+    prizes: [
+      { grade: 'A', name: '치킨 1마리', qty: 1, useWhen: 'later', image: '/demo/chicken/a-chicken.jpg' },
+      { grade: 'B', name: '치즈볼 무료', qty: 3, useWhen: 'now', image: '/demo/chicken/b-cheeseball.jpg' },
+      { grade: 'C', name: '생맥주 1잔', qty: 8, useWhen: 'now', image: '/demo/chicken/c-beer.jpg' },
+      { grade: 'D', name: '음료 1잔', qty: 10, useWhen: 'now', image: '/demo/chicken/d-cola.jpg' },
+      { grade: 'E', name: '2,000원 할인', qty: 28, useWhen: 'later', image: '/art/coupon-2000.svg' },
+    ],
+    finale: { name: '치킨 1마리 + 생맥주 2잔', image: '/demo/chicken/finale.jpg', label: '피날레 보너스' },
+    promos: [
+      { kicker: '오늘의 치킨', title: '바삭한 후라이드', sub: '주문 즉시 두 번 튀깁니다', price: '19,000원', image: '/demo/chicken/slide-1.jpg' },
+      { kicker: '반반', title: '양념 반\n후라이드 반', sub: '고민될 땐 둘 다', price: '20,000원', image: '/demo/chicken/slide-2.jpg' },
+      { kicker: '치맥', title: '생맥주와 함께', sub: '치킨 주문 1테이블 = 1장, 꽝 없음', image: '/demo/chicken/slide-3.jpg' },
+    ],
+    drawn: 12,
+  },
 };

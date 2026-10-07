@@ -50,7 +50,15 @@ const storeOf = (c: Config) => c.store.name + (c.store.branch ? ` · ${c.store.b
 /** 새 버전 반영 — 묻는 간격 · 손님 없음으로 칠 무동작 · 배포 뒤 기다림 · 실패 뒤 쉼 */
 const UPD = { poll: 5 * 60_000, idle: 60_000, grace: 10 * 60_000, retry: 30 * 60_000 };
 
-export default function BoardClient({ token, build }: { token: string; build: string }) {
+/**
+ * 빠른 열기(홈페이지 첫 화면에 얹는 데모) — 상품 목록 · 티켓 고르기를 건너뛰고 누르면 바로 개봉 화면.
+ * 칸은 pick 이 정한다(데모 판이 맨 윗등급 칸을 집어 준다). 가만히 두면 금방 저절로 열리고, 소리는 끈다.
+ * open 이면 처음 열 때 대기 화면을 건너뛰고 표부터 — 결과를 본 뒤에는 평소처럼 대기 화면(광고)으로 돌아간다
+ */
+type Quick = { pick: () => number; open?: boolean };
+const QUICK = { autoOpen: 12, result: 15 };
+
+export default function BoardClient({ token, build, quick }: { token: string; build: string; quick?: Quick }) {
   const [cfg, setCfg] = useState<Config | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
   const [step, setStep] = useState<Step>('attract');
@@ -233,7 +241,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
   }, [cfg?.idleSeconds, goAttract]);
 
   // 사장님이 소리 설정을 바꾸면 볼륨을 따라간다
-  useEffect(() => { sfx.setMode(cfg?.sound ?? 'off'); }, [cfg?.sound]);
+  useEffect(() => { sfx.setMode(quick ? 'off' : cfg?.sound ?? 'off'); }, [cfg?.sound, quick]);
 
   // 고른 글꼴만 내려받는다. 기본값은 받지 않으므로 첫 화면이 늦어지지 않는다
   useEffect(() => { loadFont(cfg?.font); }, [cfg?.font]);
@@ -284,6 +292,8 @@ export default function BoardClient({ token, build }: { token: string; build: st
     setMsg(null);
     setPass(r.pass!);
     setPinErr(false);
+    // 빠른 열기 — 고르기 없이 바로 개봉 화면(대기 화면에서 오므로 열던 결과는 이미 비어 있다)
+    if (quick) { setSel(quick.pick()); setStep('open'); return; }
     setStep('list');
   }
 
@@ -293,6 +303,16 @@ export default function BoardClient({ token, build }: { token: string; build: st
     if (cfg.mode === 'pin') { setPin(''); setPinErr(false); setStep('pin'); }
     else openSession();
   }
+
+  // 빠른 열기 open — 판을 받자마자 한 번 저절로 시작(표부터 보이게)
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!quick?.open || autoStarted.current || !cfg || !board || step !== 'attract') return;
+    autoStarted.current = true;
+    start();
+    // start 는 매 렌더 새로 만들어지는 함수 — 판이 처음 들어온 때 한 번만 부른다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quick, cfg, board, step]);
 
   /* ---------- 뽑기 ----------
      미는 만큼 결과가 드러나야 하므로, 오픈 화면에 들어오는 순간 서버에서 결과를 미리 받아둔다.
@@ -669,7 +689,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
                   title={cfg.title}
                   store={storeOf(cfg)}
                   font={fontOf(cfg.font).stack}
-                  autoOpenSeconds={cfg.autoOpenSeconds ?? DEF.autoOpen}
+                  autoOpenSeconds={quick ? QUICK.autoOpen : cfg.autoOpenSeconds ?? DEF.autoOpen}
                   lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
                   from={pull?.from ?? null} onShown={shown}
                   onOpened={opened} />
@@ -682,7 +702,7 @@ export default function BoardClient({ token, build }: { token: string; build: st
                     lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
                     store={storeOf(cfg)}
                     title={cfg.title}
-                    seconds={cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
+                    seconds={quick ? QUICK.result : cfg.resultSeconds ?? DEF.result} onDone={goAttract} />
       )}
 
       {/* 고른 티켓이 판에서 돌면서 튀어나온다. 개봉 화면으로 넘어가도 남아 있다가,

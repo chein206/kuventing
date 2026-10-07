@@ -5,6 +5,8 @@ import { FONTS } from '@/lib/fonts';
 import { SITE_URL } from '@/lib/site';
 import SiteMotion from './SiteMotion';
 import Scene from './Scene';
+import QuickOpen from './QuickOpen';
+import SignageCycle, { type SigItem } from './SignageCycle';
 import Demos from './Demos';
 import ContactForm from './ContactForm';
 import './site.css';
@@ -19,6 +21,8 @@ import './site.css';
  * - 움직이는 그림은 전부 실제 화면이다 — 데모 대기 화면 녹화(assets/site/rec_screen.mjs)를 장면 사진(Flow) 속 기기 화면에
  *   원근 맞춰 얹었다(screen_fit.py). 장면 사진은 만든 그림이고 화면 속 광고만 실제다(사진 아래에 적어 둔다)
  * - 기기는 고객이 가진 화면(태블릿 · 스탠드형 터치스크린 · 키오스크) — 대여는 말하지 않는다(사장님 10-07)
+ * - 첫 화면에서 바로 열어 본다 — 실제 데모 판을 빠른 열기로(고르기 없이 표 → 맨 윗등급). SIGNAGE 는 업종이 돌아가며 바뀐다
+ *   (차만 나오면 업종이 고정돼 보이고 어둡다 — 사장님 10-07)
  * - 주소는 kuventing.scpadlab.com — 그 주소의 / 가 이 페이지다(next.config.ts)
  */
 
@@ -51,6 +55,16 @@ const M = {
   popup: 'matrix3d(0.28433166,-0.04106174,0,-0.00010319,0.00293412,0.45052272,0,0.00000483,0,0,1,0,846.71380615,61.28153992,0,1)',
   counter: 'matrix3d(0.11229332,-0.11316589,0,-0.00032479,-0.13827646,0.36325627,0,-0.00008351,0,0,1,0,835.90441895,248.50479126,0,1)',
 };
+
+// SIGNAGE — 업종 순서는 signage.mp4 를 이어 붙인 순서와 같아야 한다(build_signage.py cafe beauty chicken food arven). 밝은 카페부터
+const SIG: SigItem[] = [
+  { key: 'cafe', tag: '카페', photo: '/site/sig/cafe.jpg', text: '딸기 생크림 케익 6,500원' },
+  { key: 'beauty', tag: '뷰티 팝업', photo: '/site/sig/beauty.jpg', text: '성분부터 보고 고르는 팝업' },
+  { key: 'chicken', tag: '치킨 호프', photo: '/site/sig/chicken.jpg', text: '바삭한 후라이드 19,000원' },
+  { key: 'food', tag: '음식점', photo: '/site/sig/food.jpg', text: '매운 미소라멘 11,000원' },
+  { key: 'arven', tag: '시승 행사', photo: '/site/sig/arven.jpg', text: '한 번 타 보면 압니다' },
+];
+const SIG_SEG = 6;
 
 // 가진 화면 그대로 — 기기 모양만 다르고 화면은 같은 판(실제 대기 화면 녹화)
 const DEVICES = [
@@ -93,7 +107,17 @@ const DEMOS = [
     brand: '아르벤 EV 시승 페스타', photo: '/demo/arven/slide-1.jpg',
   },
   {
-    slug: 'food', title: '음식점과 카페', rule: '1테이블 결제가 한 번',
+    slug: 'cafe', title: '카페 신메뉴 이벤트', rule: '음료 1잔 주문이 한 번',
+    desc: '디저트 카페 신메뉴 럭키드로우. 케익 세트, 케익, 아인슈페너에 다음에 쓰는 할인 쿠폰.',
+    brand: '망원 디저트 카페', photo: '/img/menu-딸기생크림케익.jpg',
+  },
+  {
+    slug: 'chicken', title: '치킨 호프 치맥 이벤트', rule: '1테이블 주문이 한 번',
+    desc: '치맥 럭키드로우. 치킨 1마리, 치즈볼, 생맥주에 다음에 쓰는 할인 쿠폰.',
+    brand: '을지로 치킨 호프', photo: '/demo/chicken/slide-1.jpg',
+  },
+  {
+    slug: 'food', title: '라멘집 오픈 이벤트', rule: '1테이블 결제가 한 번',
     desc: '오픈 기념 이벤트. 차슈덮밥 세트, 라멘, 교자에 나중에 쓰는 할인 쿠폰.',
     brand: '합정 라멘집', photo: '/img/menu-미소라멘.jpg',
   },
@@ -115,6 +139,7 @@ export default function SitePage() {
       <link rel="stylesheet" href={PRETENDARD} precedence="default" />
       <link rel="stylesheet" href={BLACK_HAN} precedence="default" />
       <link rel="preload" as="image" href="/site/scene-popup.jpg" />
+      <link rel="preload" as="image" href="/site/quick-beauty.jpg" />
       <SiteMotion />
 
       <header className="kv-nav">
@@ -145,18 +170,14 @@ export default function SitePage() {
               <a className="kv-btn ghost" href="#demos">데모 해 보기</a>
             </div>
           </div>
-          <div className="kv-hero-scenes">
+          {/* 뒤는 팝업 입구 장면(평소엔 광고판), 앞은 실제 판을 바로 열어 보는 태블릿(누르면 럭키드로우) */}
+          <div className="kv-hero-try">
             <figure className="kv-shot a">
               <Scene photo="/site/scene-popup.jpg" video="/site/screen-beauty.mp4" poster="/site/screen-beauty.jpg" matrix={M.popup}
                 alt="뷰티 팝업 입구의 스탠드형 스크린" />
-              <figcaption><b>팝업 · 행사</b>스탠드형 터치스크린</figcaption>
+              <figcaption><b>팝업 입구</b>평소엔 광고판</figcaption>
             </figure>
-            <figure className="kv-shot b">
-              <Scene photo="/site/scene-counter.jpg" video="/site/screen-food.mp4" poster="/site/screen-food.jpg" matrix={M.counter}
-                alt="라멘집 카운터 위 태블릿" />
-              <figcaption><b>매장 카운터</b>태블릿</figcaption>
-            </figure>
-            <p className="kv-shot-note">장면 사진은 예시이고, 화면 속 광고는 실제 쿠벤팅 화면입니다.</p>
+            <QuickOpen src="/demo/beauty?quick=open" poster="/site/quick-beauty.jpg" />
           </div>
         </section>
 
@@ -178,24 +199,8 @@ export default function SitePage() {
               신제품, 시승 차량, 오늘의 메뉴. 사진과 문구만 넣으면 천천히 움직이는 광고가 만들어져 화면에서 돕니다.
             </p>
           </div>
-          {/* 올린 사진 한 장 → 화면에서는 움직이는 광고 */}
-          <div className="kv-sig-flow">
-            <figure className="kv-sig-in" data-reveal>
-              <img src="/demo/arven/slide-1.jpg" alt="사장님이 올린 광고 사진" width={1493} height={2000} loading="lazy" />
-              <figcaption><b>올린 것</b>사진 한 장 + 문구 「한 번 타 보면 압니다」</figcaption>
-            </figure>
-            <span className="kv-sig-arrow" aria-hidden="true" data-reveal style={{ ['--i' as string]: 1 }}><Icon name="up" /></span>
-            <figure className="kv-sig-out" data-reveal style={{ ['--i' as string]: 2 }}>
-              <div className="kv-device">
-                <div className="kv-screen">
-                  <video autoPlay muted loop playsInline preload="metadata" poster="/site/screen-arven.jpg" data-inview>
-                    <source src="/site/screen-arven.mp4" type="video/mp4" />
-                  </video>
-                </div>
-              </div>
-              <figcaption><b>화면에서는</b>천천히 다가오는 사진, 떠오르는 문구, 마지막엔 매장 이름</figcaption>
-            </figure>
-          </div>
+          {/* 올린 사진 한 장 → 화면에서는 움직이는 광고. 업종이 돌아가며 바뀐다 */}
+          <SignageCycle items={SIG} video="/site/signage.mp4" poster="/site/signage.jpg" seg={SIG_SEG} />
         </section>
 
         {/* ── LUCKY DRAW ── */}
@@ -269,6 +274,11 @@ export default function SitePage() {
               앱 설치 없이 브라우저로 열고, 세로 화면에 맞춰 뜹니다. 카운터, 입구, 체험존 어디에 세워도 됩니다.
             </p>
           </div>
+          <figure className="kv-shot kv-any-scene" data-reveal>
+            <Scene photo="/site/scene-counter.jpg" video="/site/screen-food.mp4" poster="/site/screen-food.jpg" matrix={M.counter}
+              alt="라멘집 카운터 위 태블릿" />
+            <figcaption><b>매장 카운터</b>계산대 옆 태블릿 한 대 · 장면 사진은 예시이고 화면 속 광고는 실제 쿠벤팅 화면입니다</figcaption>
+          </figure>
           <div className="kv-lineup">
             {DEVICES.map((d, i) => (
               <figure className={`kv-unit ${d.kind}`} key={d.kind} data-reveal style={{ ['--i' as string]: i }}>
@@ -348,7 +358,9 @@ export default function SitePage() {
           <nav className="kv-foot-links" aria-label="데모 바로가기">
             <a href="/demo/beauty" target="_blank" rel="noopener">뷰티 팝업 데모</a>
             <a href="/demo/arven" target="_blank" rel="noopener">시승 행사 데모</a>
-            <a href="/demo/food" target="_blank" rel="noopener">음식점 데모</a>
+            <a href="/demo/cafe" target="_blank" rel="noopener">카페 데모</a>
+            <a href="/demo/chicken" target="_blank" rel="noopener">치킨 호프 데모</a>
+            <a href="/demo/food" target="_blank" rel="noopener">라멘집 데모</a>
           </nav>
           <p className="kv-copy">© 2026 SCPAD Lab</p>
         </div>

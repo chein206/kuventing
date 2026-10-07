@@ -40,6 +40,17 @@ PICKS = [
     ('promo/S6-b.jpg', 'beauty', 'slide-2.jpg', 'promo'),
     ('promo/S7-a.jpg', 'beauty', 'slide-3.jpg', 'promo'),   # b 는 흰 소매가 글자 자리(아래 40%)에 걸림
     ('promo/S8-a.jpg', 'beauty', 'slide-4.jpg', 'promo'),
+    # 치킨 · 호프 — 상품 (SHEET-chicken.md). 엣지를 새로 띄운 뒤 u/0 프로 계정으로 뽑혀 ✦ 가 찍혔다 → wm_inpaint 로 지운 -fix
+    # (그 뒤로는 --u 1 울트라 계정 자리에서 뽑는다 — scripts/flow-newproj.mjs). S4-b 는 흰 액자가 구워져 버림
+    ('chicken-prize/S1-a-fix.jpg', 'chicken', 'a-chicken.jpg', 'prize'),
+    ('chicken-prize/S2-a-fix.jpg', 'chicken', 'b-cheeseball.jpg', 'prize'),
+    ('chicken-prize/S3-b-fix.jpg', 'chicken', 'c-beer.jpg', 'prize'),
+    ('chicken-prize/S4-a-fix.jpg', 'chicken', 'd-cola.jpg', 'prize'),
+    ('chicken-prize/S5-a-fix.jpg', 'chicken', 'finale.jpg', 'prize'),
+    # 치킨 · 호프 — 대기 화면 광고 (울트라 계정 자리 /u/1 에서 뽑아 ✦ 없음)
+    ('chicken-promo/S6-a.jpg', 'chicken', 'slide-1.jpg', 'promo'),
+    ('chicken-promo/S7-b.jpg', 'chicken', 'slide-2.jpg', 'promo'),
+    ('chicken-promo/S8-b.jpg', 'chicken', 'slide-3.jpg', 'promo'),
 ]
 
 def put(src, slug, name, kind, inset=0):

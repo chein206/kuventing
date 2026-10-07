@@ -265,6 +265,23 @@ export class EndgameSim {
     this.changed(was);
   }
 
+  /**
+   * 빠른 열기(홈페이지 첫 화면) — 맨 윗등급이 든 칸 하나를 골라 준다. 남은 게 없으면 새 판을 열고 고른다.
+   * 결과를 조작하지 않고 그 등급이 든 칸을 집어 줄 뿐이라, 판 · 남은 수 · 결과 화면은 평소 뽑기와 같다.
+   */
+  pickTop(): number {
+    const top = this.p.prizes[0].grade;
+    let tk = this.t.find((x) => !x.drawn && x.grade === top);
+    if (!tk) {
+      // 새 판을 열되 보드에 알리지는 않는다 — 알리면 보드가 판을 다시 받으면서 개봉 화면의 뽑기가 두 번 나가
+      // 「방금 나간 티켓」이 된다. 곧 이어지는 뽑기가 알리므로 그때 새 판이 같이 들어간다
+      this.open(false);
+      this.say(`${this.box}회차 새 판(빠른 열기)`);
+      tk = this.t.find((x) => !x.drawn && x.grade === top)!;
+    }
+    return tk.pos;
+  }
+
   /** 다른 손님 한 명이 아무 칸이나 뽑는다 */
   otherDraw() {
     const rest = this.state().rest;
