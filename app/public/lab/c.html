@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>쿠벤팅 시안 C · 밝고 경쾌하게</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
+<style>
+/* 시안 C — 밝고 경쾌한 마케팅 판. 해바라기 노랑 하나를 강조색으로, 칸마다 연한 바탕색으로 리듬.
+   모양: 카드 28px · 버튼 알약 · 사진 동그라미/28px */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#121212;--ink-2:#4A4A4A;--dim:#767676;--bg:#FFFFFF;--sun:#FFD84D;--sun-2:#FFC91F;
+  --mint:#D7F5E6;--sky:#DCEBFF;--peach:#FFE4D6;--line:#EDEDED;--ease:cubic-bezier(.16,1,.3,1);
+  --pad:clamp(20px,5vw,64px);--max:1200px}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;word-break:keep-all;line-height:1.6;overflow-x:clip}
+a{color:inherit;text-decoration:none}
+img,video{display:block;max-width:100%}
+.disp{font-family:'Black Han Sans','Pretendard Variable',sans-serif;font-weight:400;letter-spacing:-.01em;line-height:1.12}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:56px;padding:0 30px;border-radius:999px;font-weight:800;font-size:17px;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);white-space:nowrap}
+.btn.ink{background:var(--ink);color:#fff;box-shadow:0 8px 0 rgba(0,0,0,.18)}
+.btn.ink:hover{transform:translateY(-3px)}
+.btn.line{box-shadow:inset 0 0 0 2px var(--ink)}
+.btn.line:hover{background:rgba(0,0,0,.06)}
+.btn:active{transform:translateY(2px) scale(.98)}
+
+/* 위 막대 */
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{height:68px;display:flex;align-items:center;gap:28px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;letter-spacing:-.02em}
+.logo img{width:34px;height:34px;border-radius:10px}
+.nav nav{margin-left:auto;display:flex;gap:26px;font-weight:600;color:var(--ink-2);font-size:15px}
+.nav .btn{height:44px;padding:0 20px;font-size:15px;box-shadow:none}
+
+/* 첫 화면 — 노란 판 */
+.hero{background:var(--sun);border-radius:0 0 48px 48px;overflow:hidden;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;min-height:calc(100dvh - 68px);padding-top:56px;padding-bottom:64px}
+.hero h1{font-size:clamp(36px,4.3vw,60px)}
+.hero p{margin-top:22px;font-size:clamp(17px,1.4vw,20px);color:#2B2B2B;max-width:30ch;font-weight:500}
+.ctas{margin-top:34px;display:flex;gap:12px;flex-wrap:wrap}
+.stage{position:relative;justify-self:center;width:min(100%,460px);padding:30px 0}
+.device{position:relative;width:min(78%,330px);margin:0 auto;padding:11px;border-radius:32px;background:#151515;
+  box-shadow:0 30px 60px -24px rgba(80,50,0,.55);transform:rotate(3deg)}
+.screen{position:relative;aspect-ratio:800/1280;border-radius:22px;overflow:hidden;background:#000}
+.screen video,.screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* 경품 스티커 — 사진 동그라미 + 아래 이름 */
+.sticker{position:absolute;width:118px;text-align:center;font-weight:800;font-size:13px}
+.sticker img{width:104px;height:104px;margin:0 auto 8px;border-radius:50%;object-fit:cover;border:5px solid #fff;box-shadow:0 14px 30px -12px rgba(0,0,0,.35)}
+.sticker span{display:inline-block;padding:4px 10px;border-radius:999px;background:#fff}
+.sticker.s1{left:-4%;top:14%;rotate:-8deg}
+.sticker.s2{right:-6%;top:40%;rotate:7deg}
+.sticker.s3{left:2%;bottom:6%;rotate:5deg}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -10px}}
+.sticker{animation:bob 5s ease-in-out infinite}
+.sticker.s2{animation-delay:-1.6s}.sticker.s3{animation-delay:-3.1s}
+
+/* 한 줄 요약 띠 */
+.belt{padding:72px 0 24px}
+.belt h2{font-size:clamp(30px,3.6vw,48px);text-align:center}
+.belt p{margin:14px auto 0;max-width:46ch;text-align:center;color:var(--ink-2);font-size:18px}
+
+/* 타일 넷 */
+.bento{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px;padding:40px 0 96px;
+  grid-template-areas:"sign sign sign draw draw draw" "sign sign sign coupon coupon owner"}
+.tile{border-radius:28px;padding:30px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px}
+.tile h3{font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.3}
+.tile p{color:var(--ink-2);font-size:16px;max-width:36ch}
+.tile .tag{align-self:flex-start;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.08);font-size:13px;font-weight:800}
+.t-sign{grid-area:sign;background:var(--sky);flex-direction:row;align-items:flex-end;gap:28px}
+.t-sign .device{flex:none;width:200px;transform:rotate(-3deg);margin:0}
+.t-sign .copy{display:flex;flex-direction:column;gap:12px;padding-bottom:6px}
+.t-draw{grid-area:draw;background:var(--peach);flex-direction:row;align-items:center;gap:22px}
+.t-draw .device{flex:none;width:150px;transform:rotate(3deg);margin:0;padding:8px;border-radius:24px}
+.t-draw .screen{border-radius:16px}
+.t-coupon{grid-area:coupon;background:var(--mint)}
+.t-coupon img{border-radius:16px;margin-bottom:6px;box-shadow:0 12px 24px -16px rgba(0,0,0,.5)}
+.t-owner{grid-area:owner;background:#F4F4F4}
+.chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin-top:auto}
+.chips li{padding:7px 12px;border-radius:999px;background:#fff;font-size:13px;font-weight:700}
+
+/* 업종 */
+.inds{padding:96px 0;background:#FAFAFA;border-radius:48px}
+.inds h2{font-size:clamp(30px,3.6vw,48px)}
+.tabs{margin-top:28px;display:flex;gap:10px;flex-wrap:wrap}
+.tabs button{height:48px;padding:0 22px;border-radius:999px;border:0;background:#fff;box-shadow:inset 0 0 0 2px var(--line);font:inherit;font-weight:800;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--ink);color:#fff;box-shadow:none}
+.panel{margin-top:28px;display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center}
+.panel img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:28px}
+.panel h3{font-size:30px;font-weight:900;letter-spacing:-.03em}
+.panel ul{margin-top:16px;list-style:none;display:grid;gap:10px}
+.panel li{padding-left:28px;position:relative;font-size:17px;color:var(--ink-2)}
+.panel li::before{content:'';position:absolute;left:0;top:.45em;width:16px;height:16px;border-radius:50%;background:var(--sun);box-shadow:inset 0 0 0 3px #fff,0 0 0 2px var(--ink)}
+.panel .btn{margin-top:24px}
+
+/* 사장님 질문 — 말풍선 */
+.qa{padding:110px 0 40px}
+.qa h2{font-size:clamp(30px,3.6vw,48px);text-align:center}
+.chat{max-width:720px;margin:40px auto 0;display:grid;gap:14px}
+.bubble{max-width:80%;padding:16px 20px;border-radius:24px;font-size:16px;line-height:1.6}
+.bubble.q{justify-self:end;background:var(--ink);color:#fff;border-bottom-right-radius:8px;font-weight:700}
+.bubble.a{justify-self:start;background:#F2F2F2;border-bottom-left-radius:8px}
+
+/* 마지막 */
+.cta{margin:80px var(--pad) 60px;border-radius:48px;background:var(--sun);text-align:center;padding:88px 24px}
+.cta h2{font-size:clamp(34px,4.6vw,64px)}
+.cta p{margin:14px auto 30px;max-width:40ch;font-size:18px;color:#2B2B2B}
+footer{padding:40px var(--pad) 56px;color:var(--dim);font-size:14px;text-align:center}
+
+/* 나타나기 */
+.js [data-r]{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0)*80ms)}
+.js [data-r][data-in]{opacity:1;transform:none}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.hero h1,.hero p,.ctas{animation:rise .9s var(--ease) both}.hero p{animation-delay:.12s}.ctas{animation-delay:.2s}
+.stage{animation:rise 1.1s .15s var(--ease) both}
+
+@media (max-width:960px){
+  .hero .wrap{grid-template-columns:1fr;min-height:auto;padding-top:40px}
+  .bento{grid-template-columns:1fr;grid-template-areas:"sign" "draw" "coupon" "owner"}
+  .t-sign{flex-direction:column;align-items:flex-start}
+  .panel{grid-template-columns:1fr}
+  .nav nav{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js [data-r]{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="#"><img src="/icon-192.png" alt="">쿠벤팅</a>
+  <nav><a href="#how">이렇게 돌아가요</a><a href="#inds">업종별</a><a href="#qa">질문</a></nav>
+  <a class="btn ink" href="https://kuventing.scpadlab.com/#contact">도입 문의</a>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div>
+    <h1 class="disp">손님이 먼저 눌러 보는<br>카운터 광고판</h1>
+    <p>평소엔 메뉴와 신상품 광고가 돌고, 결제한 손님은 경품 이벤트에 참여합니다. 태블릿 하나면 됩니다.</p>
+    <div class="ctas"><a class="btn ink" href="https://kuventing.scpadlab.com/#contact">도입 문의</a><a class="btn line" href="#inds">데모 보기</a></div>
+  </div>
+  <div class="stage">
+    <div class="device"><div class="screen"><video autoplay muted loop playsinline poster="/lab/screen-food.jpg" src="/lab/screen-food.mp4"></video></div></div>
+    <div class="sticker s1"><img src="/site/m/cake.jpg" alt=""><span>딸기 케이크</span></div>
+    <div class="sticker s2"><img src="/site/m/golfbag.jpg" alt=""><span>골프백</span></div>
+    <div class="sticker s3"><img src="/site/m/serum.jpg" alt=""><span>세럼 본품</span></div>
+  </div>
+</div></section>
+
+<section class="belt wrap" id="how">
+  <h2 class="disp" data-r>광고로 보여 주고, 경품으로 부르고,<br>쿠폰으로 다시 오게</h2>
+  <p data-r style="--i:1">카운터 앞 3분이 광고 시간이 됩니다. 모든 참여에 경품이 있어서 손님이 먼저 눌러 봅니다.</p>
+</section>
+
+<section class="wrap"><div class="bento">
+  <article class="tile t-sign" data-r>
+    <div class="device"><div class="screen"><video autoplay muted loop playsinline poster="/lab/screen-arven.jpg" src="/lab/screen-arven.mp4"></video></div></div>
+    <div class="copy">
+      <span class="tag">평소에는</span>
+      <h3>사진만 올리면<br>움직이는 광고판</h3>
+      <p>메뉴 사진과 문구를 넣으면 천천히 확대되는 광고 영상이 알아서 만들어져 돌아갑니다.</p>
+    </div>
+  </article>
+  <article class="tile t-draw" data-r style="--i:1">
+    <div class="device"><div class="screen"><video autoplay muted loop playsinline poster="/site/open.jpg" src="/site/open.mp4"></video></div></div>
+    <div>
+      <span class="tag">결제하면</span>
+      <h3 style="margin-top:12px">모든 참여에 경품</h3>
+      <p>손님이 직접 표를 밀어 열고, 그 자리에서 경품을 받습니다.</p>
+    </div>
+  </article>
+  <article class="tile t-coupon" data-r style="--i:2">
+    <img src="/site/coupon.jpg" alt="QR 쿠폰">
+    <h3>다음 방문은 쿠폰이</h3>
+    <p>나중 경품은 손님 폰에 QR 쿠폰으로 남습니다.</p>
+  </article>
+  <article class="tile t-owner" data-r style="--i:3">
+    <h3>사장님 폰으로 관리</h3>
+    <p>바꿀 때 카운터까지 안 가도 됩니다.</p>
+    <ul class="chips"><li>광고 사진</li><li>경품과 수량</li><li>문구</li><li>테마</li></ul>
+  </article>
+</div></section>
+
+<section class="inds wrap" id="inds">
+  <h2 class="disp" data-r>업종마다 맞춰 드립니다</h2>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-t="0">음식점 · 카페</button>
+    <button role="tab" aria-selected="false" data-t="1">자동차 시승 행사</button>
+    <button role="tab" aria-selected="false" data-t="2">뷰티 팝업</button>
+  </div>
+  <div class="panel" data-p="0">
+    <img src="/img/menu-미소라멘.jpg" alt="라멘 광고 사진">
+    <div><h3>1테이블 결제마다 한 번</h3><ul><li>대기 줄에서 오늘의 메뉴 광고</li><li>교자, 음료 같은 바로 받는 경품</li><li>다음 방문 할인 쿠폰</li></ul><a class="btn ink" href="/demo/food" target="_blank">라멘집 데모</a></div>
+  </div>
+  <div class="panel" data-p="1" hidden>
+    <img src="/demo/arven/slide-1.jpg" alt="전시장 차량 사진">
+    <div><h3>시승 1팀마다 한 번</h3><ul><li>전시장 입구에서 신차 광고</li><li>골프백, 장우산 같은 브랜드 굿즈</li><li>피날레 경품으로 주말 시승</li></ul><a class="btn ink" href="/demo/arven" target="_blank">시승 행사 데모</a></div>
+  </div>
+  <div class="panel" data-p="2" hidden>
+    <img src="/demo/beauty/slide-1.jpg" alt="팝업 카운터 사진">
+    <div><h3>체험 1회마다 한 번</h3><ul><li>체험존 옆에서 신제품 광고</li><li>샘플부터 본품 풀세트까지</li><li>온라인몰 할인 쿠폰으로 연결</li></ul><a class="btn ink" href="/demo/beauty" target="_blank">뷰티 팝업 데모</a></div>
+  </div>
+</section>
+
+<section class="qa wrap" id="qa">
+  <h2 class="disp" data-r>사장님들이 많이 물어보세요</h2>
+  <div class="chat">
+    <div class="bubble q" data-r>태블릿 말고 따로 사야 하는 기계가 있나요?</div>
+    <div class="bubble a" data-r style="--i:1">없어요. 카운터에 둘 태블릿 하나면 됩니다. 앱 설치도 없이 브라우저로 열어요.</div>
+    <div class="bubble q" data-r>경품은 누가 정해요?</div>
+    <div class="bubble a" data-r style="--i:1">사장님이 정하세요. 등급, 수량, 사진만 알려 주시면 판은 저희가 만들어 드려요.</div>
+    <div class="bubble q" data-r>광고는 어떻게 바꿔요?</div>
+    <div class="bubble a" data-r style="--i:1">사장님 폰에서 사진과 문구를 바꾸면 됩니다.</div>
+  </div>
+</section>
+
+<section class="cta" data-r>
+  <h2 class="disp">우리 매장 카운터에도<br>놓아 볼까요?</h2>
+  <p>업종과 일정을 알려 주시면 맞는 광고와 경품 구성을 제안드립니다.</p>
+  <a class="btn ink" href="https://kuventing.scpadlab.com/#contact">도입 문의</a>
+</section>
+<footer>쿠벤팅 · SCPAD Lab · 시안 C</footer>
+
+<script>
+const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.setAttribute('data-in', ''); io.unobserve(e.target); } }), { threshold: .15 });
+document.querySelectorAll('[data-r]').forEach((el) => io.observe(el));
+document.querySelectorAll('[data-t]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-t]').forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+  document.querySelectorAll('[data-p]').forEach((p) => { p.hidden = p.dataset.p !== b.dataset.t; });
+}));
+</script>
+</body>
+</html>

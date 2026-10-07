@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>쿠벤팅 시안 A · 밝은 매장 마케팅</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+/* 시안 A — 밝은 매장 마케팅. 흰 바탕 + 남색 글자(로고 남색) + 귤색 하나만 강조.
+   모양: 카드 24px · 버튼 알약 · 사진 24px. 실제 매장 사진 속 태블릿에 대기 화면(광고판) 영상을 원근에 맞춰 얹었다 */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#13203B;--ink-2:#4A5568;--dim:#7A8496;--bg:#FFFFFF;--bg-2:#F4F6F9;--line:#E4E8EF;
+  --acc:#FF6A2B;--acc-ink:#FFFFFF;--acc-soft:#FFF1EA;--ease:cubic-bezier(.16,1,.3,1);--pad:clamp(20px,5vw,64px);--max:1200px}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard Variable',Pretendard,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;word-break:keep-all;line-height:1.6;overflow-x:clip}
+a{color:inherit;text-decoration:none}
+img,video{display:block;max-width:100%}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:54px;padding:0 26px;border-radius:999px;font-weight:700;font-size:16px;
+  white-space:nowrap;transition:transform .3s var(--ease),background .3s,box-shadow .3s}
+.btn.acc{background:var(--acc);color:var(--acc-ink);box-shadow:0 10px 24px -12px rgba(255,106,43,.7)}
+.btn.acc:hover{transform:translateY(-2px);background:#FF7A40}
+.btn.sub{background:var(--bg-2);color:var(--ink)}
+.btn.sub:hover{background:#E9EDF3}
+.btn:active{transform:scale(.98)}
+h1,h2,h3{letter-spacing:-.035em;line-height:1.2}
+
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{height:66px;display:flex;align-items:center;gap:28px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+.logo img{width:32px;height:32px;border-radius:9px}
+.nav nav{margin-left:auto;display:flex;gap:26px;font-size:15px;color:var(--ink-2)}
+.nav .btn{height:42px;padding:0 18px;font-size:14px}
+
+/* 첫 화면 */
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding-top:64px;padding-bottom:72px}
+.hero h1{font-size:clamp(30px,3.2vw,46px);font-weight:800}
+.hero h1 b{color:var(--acc)}
+.hero p{margin-top:20px;font-size:clamp(16px,1.3vw,19px);color:var(--ink-2);max-width:32ch}
+.ctas{margin-top:32px;display:flex;flex-wrap:wrap;gap:10px}
+.note{margin-top:10px;font-size:13px;color:var(--dim)}
+/* 사진 + 화면 영상 — 사진 크기(1376×768) 좌표계를 통째로 줄여 맞춘다 */
+.scene{position:relative;aspect-ratio:1376/768;border-radius:24px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(19,32,59,.45)}
+.scene-in{position:absolute;left:0;top:0;width:1376px;height:768px;transform-origin:0 0}
+.scene-in>img{width:100%;height:100%}
+.scene-in>video{position:absolute;left:0;top:0;width:540px;height:864px;transform-origin:0 0;object-fit:cover}
+
+/* 두 가지 일 */
+.two{padding:96px 0;background:var(--bg-2)}
+.two h2,.flow h2,.inds h2,.own h2{font-size:clamp(28px,3.2vw,42px);font-weight:800}
+.two .lead{margin-top:12px;color:var(--ink-2);font-size:18px;max-width:46ch}
+.pair{margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.mode{background:#fff;border-radius:24px;padding:32px;display:grid;grid-template-columns:150px 1fr;gap:26px;align-items:center;border:1px solid var(--line)}
+.device{padding:8px;border-radius:24px;background:#151A26}
+.screen{position:relative;aspect-ratio:800/1280;border-radius:16px;overflow:hidden;background:#000}
+.screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mode .when{display:inline-block;padding:5px 12px;border-radius:999px;background:var(--acc-soft);color:#C2410C;font-size:13px;font-weight:700}
+.mode h3{margin-top:12px;font-size:24px;font-weight:800}
+.mode p{margin-top:8px;color:var(--ink-2)}
+
+/* 흐름 — 세 마디를 선으로 잇는다 */
+.flow{padding:100px 0}
+.steps{margin-top:48px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;position:relative}
+.steps::before{content:'';position:absolute;left:8%;right:8%;top:32px;height:2px;background:repeating-linear-gradient(90deg,var(--line) 0 10px,transparent 10px 18px)}
+.step{position:relative;text-align:center;padding:0 12px}
+.step i{display:grid;place-items:center;width:64px;height:64px;margin:0 auto;border-radius:20px;background:#fff;border:1px solid var(--line);font-size:28px;color:var(--acc);
+  box-shadow:0 10px 20px -14px rgba(19,32,59,.35)}
+.step h3{margin-top:20px;font-size:21px;font-weight:800}
+.step p{margin-top:8px;color:var(--ink-2);font-size:15.5px;max-width:28ch;margin-left:auto;margin-right:auto}
+
+/* 업종 — 옆으로 넘기는 카드 */
+.inds{padding:40px 0 100px}
+.rail{margin-top:36px;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(300px,1fr);gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+.card{scroll-snap-align:start;border-radius:24px;overflow:hidden;background:#fff;border:1px solid var(--line)}
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.card div{padding:22px 24px 26px}
+.card small{color:var(--acc);font-weight:700}
+.card h3{margin-top:4px;font-size:21px;font-weight:800}
+.card p{margin-top:8px;color:var(--ink-2);font-size:15px}
+.card a{display:inline-flex;margin-top:14px;font-weight:700;color:var(--ink);gap:6px;align-items:center}
+
+/* 사장님 */
+.own{padding:96px 0;background:var(--bg-2)}
+.grid4{margin-top:36px;display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.feat{background:#fff;border-radius:24px;padding:26px;display:flex;gap:18px;align-items:flex-start;border:1px solid var(--line)}
+.feat i{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--acc-soft);color:var(--acc)}
+.feat h3{font-size:18px;font-weight:800}
+.feat p{margin-top:4px;color:var(--ink-2);font-size:15px}
+
+.cta{margin:0 auto;max-width:var(--max);padding:96px var(--pad);text-align:center}
+.cta h2{font-size:clamp(30px,3.8vw,50px);font-weight:800}
+.cta p{margin:14px auto 30px;color:var(--ink-2);font-size:18px;max-width:40ch}
+footer{border-top:1px solid var(--line);padding:36px var(--pad) 48px;color:var(--dim);font-size:14px;text-align:center}
+
+.js [data-r]{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0)*80ms)}
+.js [data-r][data-in]{opacity:1;transform:none}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.hero h1,.hero p,.ctas{animation:rise .9s var(--ease) both}.hero p{animation-delay:.1s}.ctas{animation-delay:.18s}
+.scene{animation:rise 1.1s .12s var(--ease) both}
+@media (max-width:960px){
+  .hero .wrap{grid-template-columns:1fr;padding-top:40px}
+  .pair{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr;gap:36px}.steps::before{display:none}
+  .grid4{grid-template-columns:1fr}
+  .nav nav{display:none}
+}
+@media (max-width:520px){.mode{grid-template-columns:110px 1fr;padding:22px;gap:18px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.js [data-r]{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js')</script>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="#"><img src="/icon-192.png" alt="">쿠벤팅</a>
+  <nav><a href="#two">기능</a><a href="#flow">효과</a><a href="#inds">업종별</a></nav>
+  <a class="btn acc" href="https://kuventing.scpadlab.com/#contact">도입 문의</a>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <div>
+    <h1>기다리는 손님에겐 광고를,<br><b>결제한 손님에겐 경품을</b></h1>
+    <p>태블릿 하나로 매장 광고판과 경품 이벤트를 함께 돌립니다. 사진만 올리면 움직이는 광고가 만들어집니다.</p>
+    <div class="ctas"><a class="btn acc" href="https://kuventing.scpadlab.com/#contact">도입 문의</a><a class="btn sub" href="#inds">데모 보기</a></div>
+  </div>
+  <div>
+    <div class="scene" data-scene>
+      <div class="scene-in">
+        <img src="/lab/counter-ramen.jpg" alt="라멘집 카운터 위 태블릿">
+        <video autoplay muted loop playsinline poster="/lab/screen-food.jpg" src="/lab/screen-food.mp4"
+          style="transform:matrix3d(0.11229332,-0.11316589,0,-0.00032479,-0.13827646,0.36325627,0,-0.00008351,0,0,1,0,835.90441895,248.50479126,0,1)"></video>
+      </div>
+    </div>
+    <p class="note">카운터 태블릿의 대기 화면 예시. 화면 속 광고는 실제 쿠벤팅 화면입니다.</p>
+  </div>
+</div></section>
+
+<section class="two" id="two"><div class="wrap">
+  <h2 data-r>한 화면이 두 가지 일을 합니다</h2>
+  <p class="lead" data-r style="--i:1">손님이 없을 땐 광고판, 손님이 결제하면 경품 이벤트. 따로 기계를 들일 필요가 없습니다.</p>
+  <div class="pair">
+    <article class="mode" data-r>
+      <div class="device"><div class="screen"><video autoplay muted loop playsinline poster="/lab/screen-beauty.jpg" src="/lab/screen-beauty.mp4"></video></div></div>
+      <div><span class="when">평소에는</span><h3>움직이는 광고판</h3><p>메뉴, 신제품, 행사 사진에 문구만 넣으면 천천히 움직이는 광고가 돌아갑니다.</p></div>
+    </article>
+    <article class="mode" data-r style="--i:1">
+      <div class="device"><div class="screen"><video autoplay muted loop playsinline poster="/site/open.jpg" src="/site/open.mp4"></video></div></div>
+      <div><span class="when">결제하면</span><h3>모두 받는 경품 이벤트</h3><p>손님이 화면을 밀어 경품을 엽니다. 모든 참여에 경품이 있어 부담 없이 누릅니다.</p></div>
+    </article>
+  </div>
+</div></section>
+
+<section class="flow wrap" id="flow">
+  <h2 data-r>광고에서 재방문까지 한 번에</h2>
+  <div class="steps">
+    <div class="step" data-r><i class="ph ph-megaphone-simple"></i><h3>광고로 보여 주고</h3><p>줄 서는 동안 오늘의 메뉴와 신상품을 보여 줍니다.</p></div>
+    <div class="step" data-r style="--i:1"><i class="ph ph-gift"></i><h3>경품으로 참여시키고</h3><p>결제, 시승, 체험 한 번마다 이벤트에 참여합니다.</p></div>
+    <div class="step" data-r style="--i:2"><i class="ph ph-qr-code"></i><h3>쿠폰으로 다시 오게</h3><p>나중 경품은 QR 쿠폰으로 손님 폰에 남습니다.</p></div>
+  </div>
+</section>
+
+<section class="inds wrap" id="inds">
+  <h2 data-r>업종별로 미리 만들어 두었습니다</h2>
+  <div class="rail">
+    <article class="card" data-r><img src="/img/menu-미소라멘.jpg" alt=""><div><small>음식점 · 카페</small><h3>1테이블 결제마다 한 번</h3><p>오늘의 메뉴 광고와 교자, 음료, 할인 쿠폰.</p><a href="/demo/food" target="_blank">데모 열기 <i class="ph ph-arrow-up-right"></i></a></div></article>
+    <article class="card" data-r style="--i:1"><img src="/demo/arven/slide-1.jpg" alt=""><div><small>자동차 전시장</small><h3>시승 1팀마다 한 번</h3><p>신차 광고와 골프백, 장우산, 주말 시승.</p><a href="/demo/arven" target="_blank">데모 열기 <i class="ph ph-arrow-up-right"></i></a></div></article>
+    <article class="card" data-r style="--i:2"><img src="/demo/beauty/slide-1.jpg" alt=""><div><small>뷰티 팝업</small><h3>체험 1회마다 한 번</h3><p>신제품 광고와 샘플, 본품, 온라인 쿠폰.</p><a href="/demo/beauty" target="_blank">데모 열기 <i class="ph ph-arrow-up-right"></i></a></div></article>
+  </div>
+</section>
+
+<section class="own"><div class="wrap">
+  <h2 data-r>사장님은 폰으로 관리합니다</h2>
+  <div class="grid4">
+    <div class="feat" data-r><i class="ph ph-images"></i><div><h3>광고 사진 바꾸기</h3><p>새 메뉴가 나오면 사진과 문구만 바꾸세요.</p></div></div>
+    <div class="feat" data-r style="--i:1"><i class="ph ph-package"></i><div><h3>경품과 수량</h3><p>등급별 경품과 수량을 직접 정합니다.</p></div></div>
+    <div class="feat" data-r><i class="ph ph-ticket"></i><div><h3>쿠폰 사용 처리</h3><p>손님이 보여 준 쿠폰을 사장님 폰에서 바로 처리합니다.</p></div></div>
+    <div class="feat" data-r style="--i:1"><i class="ph ph-paint-brush"></i><div><h3>매장에 맞는 테마</h3><p>판 모양과 글꼴을 매장 분위기에 맞춥니다.</p></div></div>
+  </div>
+</div></section>
+
+<section class="cta" data-r>
+  <h2>다음 행사, 카운터에서 시작하세요</h2>
+  <p>업종과 일정을 알려 주시면 맞는 광고와 경품 구성을 제안드립니다.</p>
+  <a class="btn acc" href="https://kuventing.scpadlab.com/#contact">도입 문의</a>
+</section>
+<footer>쿠벤팅 · SCPAD Lab · 시안 A</footer>
+
+<script>
+const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.setAttribute('data-in', ''); io.unobserve(e.target); } }), { threshold: .15 });
+document.querySelectorAll('[data-r]').forEach((el) => io.observe(el));
+// 사진 좌표계(1376×768)를 칸 폭에 맞춰 줄인다 — 화면 영상의 원근 변환이 그 좌표계 기준이다
+document.querySelectorAll('[data-scene]').forEach((sc) => {
+  const inner = sc.firstElementChild;
+  const fit = () => { inner.style.transform = `scale(${sc.clientWidth / 1376})`; };
+  new ResizeObserver(fit).observe(sc); fit();
+});
+</script>
+</body>
+</html>
