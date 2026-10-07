@@ -1,5 +1,5 @@
 # 사진 속 태블릿의 검은 화면 네 귀퉁이를 찾아, 대기 화면 영상을 그 자리에 얹는 CSS matrix3d 를 만든다
-#   python assets/site/screen_fit.py <사진> <영상 첫 화면(포스터)> <미리보기 저장>
+#   python assets/site/screen_fit.py <사진> <영상 첫 화면(포스터)> <미리보기 저장> [안쪽 비율] [어둠 문턱]
 # 출력: 귀퉁이(왼위 · 오위 · 오아래 · 왼아래)와 matrix3d — 영상 요소(540×864)를 사진 좌표계로 옮긴다
 import sys, json
 import cv2, numpy as np
@@ -12,7 +12,8 @@ H, W = im.shape[:2]
 g = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 # 화면은 거의 검정 — 세로로 긴 어두운 덩어리 중 가장 큰 것. 볼록 껍질을 꼭짓점 넷이 될 때까지 단순하게
 INSET = float(sys.argv[4]) if len(sys.argv) > 4 else 0.0   # 몸체까지 검은 태블릿은 테두리 몫만큼 안으로(폭 비율)
-mask = (g < 22).astype(np.uint8) * 255
+TH = int(sys.argv[5]) if len(sys.argv) > 5 else 22     # 화면이 숯색이면(조명 반사) 문턱을 올린다 — 팝업 입구 사진은 40
+mask = (g < TH).astype(np.uint8) * 255
 mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
 n, lab, st, _ = cv2.connectedComponentsWithStats(mask)
 cand = [i for i in range(1, n) if st[i][4] > W * H * 0.015 and 1.1 < st[i][3] / max(st[i][2], 1) < 1.9]

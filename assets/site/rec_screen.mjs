@@ -1,6 +1,6 @@
 // 대기 화면(광고판)만 녹화 — 데모 판을 열어 두고 손대지 않은 채 모션 광고가 도는 몇 초를 뜬다
 //   node assets/site/rec_screen.mjs food 14        (kuventing 폴더에서) → assets/site/_rec/screen-food/{f/*.jpg, list.txt}
-// 굽기: ffmpeg -f concat -safe 0 -i list.txt -vf fps=30,scale=540:-2 … (build 는 lab 샘플 README 참고)
+// 굽기: ffmpeg -f concat -safe 0 -i list.txt -vf fps=30,scale=540:864 … (명령 전체는 assets/site/README.md)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

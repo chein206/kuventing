@@ -17,8 +17,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // 테마는 캠페인 설정을 읽어 클라이언트에서 교체한다. 기본값은 어두운 판.
+  // 홈페이지(/site)는 첫 그림 전에 html 에 kv-js 를 붙인다(움직임 준비) — 그 한 칸 차이로 하이드레이션 경고가 나지 않게
   return (
-    <html lang="ko" data-theme="dark-west">
+    <html lang="ko" data-theme="dark-west" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );
