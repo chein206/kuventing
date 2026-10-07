@@ -11,6 +11,7 @@
 | `rec_screen.mjs` | 대기 화면(광고판)만 녹화 — 손대지 않은 판에서 모션 광고가 도는 몇 초 → `screen-<업종>.mp4 · .jpg` |
 | `rec_signage.mjs` | SIGNAGE 장 — 업종마다 대기 화면 첫 컷(올린 사진 한 장 + 문구)만 녹화 → `_rec/sig-<업종>/` |
 | `build_signage.py` | 그 첫 컷들을 6초씩 잘라 홈페이지 순서대로 이어 붙임 → `signage.mp4 · .jpg`, 올린 사진 → `site/sig/<업종>.jpg` |
+| `build_steps.py` | HOW IT WORKS 손님 4단계 화면 — 전체 흐름 녹화에서 대기 화면 · 남은 선물 · 표 고름, A 녹화에서 결과 → `how-1..4.jpg` |
 | `quick_poster.mjs` | 첫 화면 「바로 열어 보기」 포스터 — 빠른 열기 판(`/demo/<업종>?quick=open`)이 표를 내민 순간 → `quick-<업종>.jpg` |
 | `screen_fit.py` | 장면 사진 속 검은 화면의 네 귀퉁이를 찾아 영상을 얹는 CSS `matrix3d` — `page.tsx` 의 `M` 에 넣는다 |
 | `SHEET-scene.md` | 장면 사진(Flow) 프롬프트 — 팝업 입구 스탠드형 스크린 · 시승 행사장 키오스크. 화면은 까맣게 뽑는다 |

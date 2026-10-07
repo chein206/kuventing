@@ -135,6 +135,14 @@ const DEMOS = [
   },
 ];
 
+// HOW IT WORKS — 손님 4단계(사장님 10-07: 광고 + 현황 → 남은 선물 → 픽 → 열기 → 럭키). 화면은 실제 데모 녹화(build_steps.py)
+const STEPS = [
+  { n: '01', tag: 'WATCH', t: '보고', d: '평소엔 광고판. 남은 선물이 몇 장인지 같이 보입니다.', img: '/site/how-1.jpg', alt: '광고와 남은 티켓 수가 보이는 대기 화면' },
+  { n: '02', tag: 'CHECK', t: '확인하고', d: '어떤 선물이 몇 개 남았는지 먼저 봅니다.', img: '/site/how-2.jpg', alt: '등급별 남은 선물 목록' },
+  { n: '03', tag: 'PICK', t: '고르고', d: '마음에 드는 표 한 장을 직접 고릅니다.', img: '/site/how-3.jpg', alt: '표 한 장을 고른 화면' },
+  { n: '04', tag: 'OPEN', t: '열면, 럭키!', d: '표를 밀어 열면 선물이 나옵니다. 남은 한 장까지.', img: '/site/how-4.jpg', alt: '본품 풀세트가 나온 결과 화면' },
+];
+
 // DONE FOR YOU — 사장님 일은 하나, 저희 일은 다섯
 const WE_DO = [
   { icon: 'ticket' as const, t: '판 디자인', d: '브랜드 색과 분위기에 맞춰 판, 표, 글꼴을 만듭니다.' },
@@ -212,6 +220,31 @@ export default function SitePage() {
             ))}
           </div>
         </div>
+
+        {/* ── HOW IT WORKS — 손님은 이렇게(첫 화면 바로 다음) ── */}
+        <section className="kv-sec kv-how" id="how">
+          <div className="kv-head">
+            <p className="kv-label" data-reveal>HOW IT WORKS</p>
+            <h2 className="kv-h2" data-reveal>보고, 확인하고, 고르고,<br />열면 럭키!</h2>
+            <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
+              손님은 이렇게 참여합니다. 앱 설치도 회원 가입도 없이, 화면 앞에서 1분이면 끝납니다.
+            </p>
+          </div>
+          <ol className="kv-steps">
+            {STEPS.map((s, i) => (
+              <li key={s.n} data-reveal style={{ ['--i' as string]: i }}>
+                <div className="kv-step-dev">
+                  <img src={s.img} alt={s.alt} width={480} height={768} loading="lazy" />
+                </div>
+                <div className="kv-step-copy">
+                  <span className="kv-step-n">{s.n}<i>{s.tag}</i></span>
+                  <h3>{s.t}</h3>
+                  <p>{s.d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
 
         {/* ── SIGNAGE ── */}
         <section className="kv-sec kv-signage" id="signage">

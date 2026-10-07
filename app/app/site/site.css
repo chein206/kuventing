@@ -184,6 +184,23 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-screen{position:relative;aspect-ratio:800/1280;border-radius:22px;overflow:hidden;background:#05070C}
 .kv-screen video,.kv-screen img,.kv-screen iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
 
+/* ---------- HOW IT WORKS — 손님 4단계(실제 판 화면) ---------- */
+.kv-steps{list-style:none;margin-top:56px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,2.6vw,36px)}
+.kv-steps li{position:relative;display:flex;flex-direction:column}
+.kv-step-dev{padding:8px;border-radius:24px;background:linear-gradient(155deg,#26304A,#0B101C 55%,#161E31);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),0 30px 60px -34px rgba(0,0,0,.9)}
+.kv-step-dev img{width:100%;height:auto;aspect-ratio:480/768;border-radius:17px;object-fit:cover}
+.kv-step-copy{margin-top:20px}
+.kv-step-n{display:inline-flex;align-items:baseline;gap:10px;font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;
+  font-size:16px;letter-spacing:.06em;color:var(--pop)}
+.kv-step-n i{font-style:normal;font-size:11.5px;letter-spacing:.18em;color:var(--dim)}
+.kv-steps h3{margin-top:8px;font-family:var(--hd);font-weight:400;font-size:clamp(24px,2.2vw,32px);line-height:1.2}
+.kv-steps li:last-child h3{color:var(--pop)}
+.kv-steps p{margin-top:8px;font-size:15px;line-height:1.65;color:var(--ink-2)}
+/* 단계 사이 꺾쇠(넓은 화면) — 기기 화면 높이 가운데쯤 */
+.kv-steps li:not(:last-child)::after{content:'';position:absolute;top:30%;right:calc(clamp(18px,2.6vw,36px) / -2 - 6px);width:12px;height:12px;
+  border-top:2px solid var(--pop);border-right:2px solid var(--pop);rotate:45deg;opacity:.85}
+
 /* ---------- SIGNAGE — 올린 사진 한 장이 움직이는 광고로 ---------- */
 .kv-signage{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(32px,5vw,80px);align-items:center}
 .kv-sig-flow{display:grid;grid-template-columns:minmax(0,.86fr) auto minmax(0,1fr);align-items:center;gap:clamp(12px,2vw,28px)}
@@ -419,6 +436,8 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-sig-flow{max-width:640px}
   .kv-draw-stage{order:2}
   .kv-ideas{grid-template-columns:1fr 1fr}
+  .kv-steps h3{font-size:22px}
+  .kv-steps p{font-size:14px}
   .kv-demos-row{flex-direction:column;height:auto}
   .kv-demo,.kv-demo.open{flex:none;height:min(118vw,520px)}
   .kv-demo>img{transform:none;filter:none}
@@ -444,6 +463,15 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-vs-arrow{justify-self:start;transform:rotate(180deg);font-size:16px}
   .kv-ideas{grid-template-columns:1fr}
   .kv-split{grid-template-columns:1fr}
+  /* 폰 — 단계마다 한 줄: 왼쪽 화면 · 오른쪽 글 */
+  .kv-steps{grid-template-columns:1fr;row-gap:22px;margin-top:40px}
+  .kv-steps li{flex-direction:row;align-items:center;gap:18px}
+  .kv-steps li::after{display:none}
+  .kv-step-dev{flex:none;width:36%;padding:6px;border-radius:18px}
+  .kv-step-dev img{border-radius:13px}
+  .kv-step-copy{margin-top:0}
+  .kv-steps h3{font-size:24px}
+  .kv-steps p{font-size:14.5px}
   .kv-you{padding:28px}
   .kv-you-big{padding-top:36px}
   .kv-we{padding:24px 22px 8px}
