@@ -5,7 +5,7 @@ import { FONTS } from '@/lib/fonts';
 import { SITE_URL } from '@/lib/site';
 import SiteMotion from './SiteMotion';
 import Scene from './Scene';
-import QuickOpen from './QuickOpen';
+import QuickOpen, { type QuickItem } from './QuickOpen';
 import SignageCycle, { type SigItem } from './SignageCycle';
 import Demos from './Demos';
 import ContactForm from './ContactForm';
@@ -55,6 +55,15 @@ const M = {
   popup: 'matrix3d(0.28433166,-0.04106174,0,-0.00010319,0.00293412,0.45052272,0,0.00000483,0,0,1,0,846.71380615,61.28153992,0,1)',
   counter: 'matrix3d(0.11229332,-0.11316589,0,-0.00032479,-0.13827646,0.36325627,0,-0.00008351,0,0,1,0,835.90441895,248.50479126,0,1)',
 };
+
+// 첫 화면 바로 열어 보기 — 업종 단추 순서. 포스터는 assets/site/quick_poster.mjs <업종>
+const QUICK_ITEMS: QuickItem[] = [
+  { slug: 'beauty', tag: '뷰티 팝업', poster: '/site/quick-beauty.jpg' },
+  { slug: 'cafe', tag: '카페', poster: '/site/quick-cafe.jpg' },
+  { slug: 'chicken', tag: '치킨 호프', poster: '/site/quick-chicken.jpg' },
+  { slug: 'arven', tag: '시승 행사', poster: '/site/quick-arven.jpg' },
+  { slug: 'food', tag: '라멘집', poster: '/site/quick-food.jpg' },
+];
 
 // SIGNAGE — 업종 순서는 signage.mp4 를 이어 붙인 순서와 같아야 한다(build_signage.py cafe beauty chicken food arven). 밝은 카페부터
 const SIG: SigItem[] = [
@@ -177,7 +186,7 @@ export default function SitePage() {
                 alt="뷰티 팝업 입구의 스탠드형 스크린" />
               <figcaption><b>팝업 입구</b>평소엔 광고판</figcaption>
             </figure>
-            <QuickOpen src="/demo/beauty?quick=open" poster="/site/quick-beauty.jpg" />
+            <QuickOpen items={QUICK_ITEMS} />
           </div>
         </section>
 

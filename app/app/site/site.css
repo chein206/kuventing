@@ -131,7 +131,15 @@ html:has(.kv){scroll-behavior:smooth}
     background:var(--pop);color:var(--pop-ink);font-size:15px;font-weight:800;box-shadow:0 5px 0 #B98A10}
   .kv-quick-cover svg{transform:rotate(90deg)}
 }
-.kv-quick-hint{margin-top:16px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:14px;color:var(--dim)}
+.kv-quick-hint{margin-top:10px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:14px;color:var(--dim)}
+/* 업종 단추 · 소리 — 틀보다 넓어도 된다(오른쪽 장면 사진 아래가 비어 있다) */
+.kv-quick-bar{margin-top:16px;width:max-content;max-width:min(560px,44vw);display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.kv-quick-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.kv-quick-tabs button,.kv-quick-snd{height:34px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;font-weight:700;
+  color:var(--ink-2);background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);transition:background .3s,color .3s,box-shadow .3s}
+.kv-quick-tabs button:hover,.kv-quick-snd:hover{color:var(--ink)}
+.kv-quick-tabs button.on{background:var(--pop);color:var(--pop-ink);box-shadow:none}
+.kv-quick-snd.on{color:var(--pop);box-shadow:inset 0 0 0 1px var(--pop)}
 .kv-quick-hint b{color:var(--pop);font-weight:800;font-size:15px}
 
 /* 장면 사진 + 화면 영상 — 영상 층은 사진 좌표계(1376×768)로 그려 두고 칸 폭에 맞춰 줄인다(Scene.tsx) */
@@ -348,6 +356,9 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-hero-try .kv-shot.a{position:static;width:100%;order:2}
   .kv-hero-try .kv-shot.a figcaption{justify-content:flex-start}
   .kv-quick{position:static;justify-self:center;width:min(300px,74vw)}
+  .kv-quick-bar{max-width:min(560px,calc(100vw - 2 * var(--pad)));margin-left:50%;translate:-50% 0;justify-content:center}
+  .kv-quick-tabs{justify-content:center}
+  .kv-quick-hint{justify-content:center}
   .kv-draw,.kv-revisit,.kv-signage{grid-template-columns:1fr}
   .kv-sig-flow{max-width:640px}
   .kv-draw-stage{order:2}

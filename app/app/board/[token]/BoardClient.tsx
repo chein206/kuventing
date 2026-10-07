@@ -52,11 +52,13 @@ const UPD = { poll: 5 * 60_000, idle: 60_000, grace: 10 * 60_000, retry: 30 * 60
 
 /**
  * 빠른 열기(홈페이지 첫 화면에 얹는 데모) — 상품 목록 · 티켓 고르기를 건너뛰고 누르면 바로 개봉 화면.
- * 칸은 pick 이 정한다(데모 판이 맨 윗등급 칸을 집어 준다). 가만히 두면 금방 저절로 열리고, 소리는 끈다.
- * open 이면 처음 열 때 대기 화면을 건너뛰고 표부터 — 결과를 본 뒤에는 평소처럼 대기 화면(광고)으로 돌아간다
+ * 칸은 pick 이 정한다(데모 판이 맨 윗등급 칸을 집어 준다).
+ * open 이면 처음 열 때 대기 화면을 건너뛰고 표부터 — 결과를 본 뒤에는 평소처럼 대기 화면(광고)으로 돌아간다.
+ * 저절로 열지 않는다 — 방문자가 아래를 구경하는 동안 혼자 열려 버렸다(사장님 10-07). 하루로 둔다(Infinity 는 setTimeout 이 0 으로 읽는다).
+ * 소리는 기본 끔 — 홈페이지가 postMessage({ kuvt: 'sound', on }) 로 켜고 끈다(처음 값은 sound)
  */
-type Quick = { pick: () => number; open?: boolean };
-const QUICK = { autoOpen: 12, result: 15 };
+type Quick = { pick: () => number; open?: boolean; sound?: boolean };
+const QUICK = { autoOpen: 86400, result: 15 };
 
 export default function BoardClient({ token, build, quick }: { token: string; build: string; quick?: Quick }) {
   const [cfg, setCfg] = useState<Config | null>(null);
@@ -79,6 +81,8 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
   const [slide, setSlide] = useState(0);
   const [pops, setPops] = useState<number[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  // 빠른 열기 소리 — 판 설정(cfg.sound) 대신 이 값을 쓴다
+  const [qSnd, setQSnd] = useState<sfx.SoundMode>(quick?.sound ? 'soft' : 'off');
 
   const stepRef = useRef(step);
   stepRef.current = step;
@@ -241,7 +245,18 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
   }, [cfg?.idleSeconds, goAttract]);
 
   // 사장님이 소리 설정을 바꾸면 볼륨을 따라간다
-  useEffect(() => { sfx.setMode(quick ? 'off' : cfg?.sound ?? 'off'); }, [cfg?.sound, quick]);
+  useEffect(() => { sfx.setMode(quick ? qSnd : cfg?.sound ?? 'off'); }, [cfg?.sound, quick, qSnd]);
+
+  // 빠른 열기 — 홈페이지의 소리 단추(같은 출처에서 온 것만)
+  useEffect(() => {
+    if (!quick) return;
+    const on = (e: MessageEvent) => {
+      if (e.origin !== location.origin || e.data?.kuvt !== 'sound') return;
+      setQSnd(e.data.on ? 'soft' : 'off');
+    };
+    addEventListener('message', on);
+    return () => removeEventListener('message', on);
+  }, [quick]);
 
   // 고른 글꼴만 내려받는다. 기본값은 받지 않으므로 첫 화면이 늦어지지 않는다
   useEffect(() => { loadFont(cfg?.font); }, [cfg?.font]);
@@ -484,7 +499,7 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
       onPointerDown={() => {
         lastTouch.current = Date.now();
         // 브라우저는 사용자가 만지기 전에는 소리를 못 내게 막는다. 여기서만 깨울 수 있다
-        sfx.unlock(cfg.sound ?? 'off');
+        sfx.unlock(quick ? qSnd : cfg.sound ?? 'off');
       }}
       onPointerUp={() => {
         // 전체화면은 사용자 손짓 안에서만 걸 수 있다(터치는 손을 뗄 때). 크롬 탭으로 띄운 태블릿은
