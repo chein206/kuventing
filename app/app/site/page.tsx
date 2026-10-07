@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Archivo } from 'next/font/google';
 import { Icon } from '@/lib/Icon';
 import { FONTS } from '@/lib/fonts';
+import { SITE_URL } from '@/lib/site';
 import SiteMotion from './SiteMotion';
 import Steps from './Steps';
 import Demos from './Demos';
@@ -13,7 +14,7 @@ import './site.css';
  *
  * - 판 · 색은 로고(남색 바탕 + 금색 표)를 그대로 키웠다. 금색 하나만 강조색으로 쓴다
  * - 움직이는 그림은 전부 실제 화면이다 — 데모 판을 손님처럼 한 바퀴 돌며 녹화한 영상(assets/site/build_assets.py)
- * - 이 앱(kuvt)은 서비스 도메인이라 검색을 막아 둔다(robots.ts). 홈페이지 도메인을 붙이면 그 주소의 / 를 여기로 돌린다
+ * - 주소는 kuventing.scpadlab.com — 그 주소의 / 가 이 페이지다(next.config.ts). 서비스 주소(kuvt)는 검색을 막는다(robots.ts)
  */
 
 // 영문 워드마크 · 큰 숫자. 한글은 프리텐다드(CDN 조각 받기 — 카운터 화면과 같은 주소)
@@ -21,12 +22,17 @@ const display = Archivo({ subsets: ['latin'], axes: ['wdth'], variable: '--kv-di
 const PRETENDARD = FONTS.find((f) => f.key === 'pretendard')!.css!;
 
 export const metadata: Metadata = {
+  // 카톡 · 검색 미리보기 그림과 대표 주소는 홈페이지 주소로(서비스 주소 /site 로 열려도 같은 곳을 가리킨다)
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: '/' },
   title: '쿠벤팅 | 꽝 없는 매장 뽑기판',
   description: '결제, 시승, 체험 한 번에 한 장. 태블릿 하나로 매장에 여는 꽝 없는 뽑기판, 쿠벤팅.',
   openGraph: {
     title: '쿠벤팅 | 꽝 없는 매장 뽑기판',
     description: '결제, 시승, 체험 한 번에 한 장. 태블릿 하나로 매장에 여는 꽝 없는 뽑기판.',
     images: ['/site/og.jpg'],
+    url: '/',
+    siteName: '쿠벤팅',
     type: 'website',
     locale: 'ko_KR',
   },
