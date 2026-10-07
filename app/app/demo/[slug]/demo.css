@@ -6,3 +6,8 @@
 .demo-tag b{flex:none;padding:4px 8px;border-radius:99px;background:#EDEAE4;color:#0E0E10;font-weight:800;letter-spacing:.08em}
 .demo-tag span{min-width:0;overflow:hidden;text-overflow:ellipsis;opacity:.78}
 .demo-tag button{flex:none;padding:5px 11px;border-radius:99px;border:1px solid rgba(255,255,255,.26);color:inherit;font:inherit;cursor:pointer}
+
+/* 데모는 홈페이지 창 · 폰에서 태블릿보다 작게 열린다 — 상품 목록이 넘쳐 스크롤이 생겨도 막대는 숨긴다(밀어서 스크롤은 그대로).
+   실매장 화면(board.css)은 그대로 둔다 */
+.demo-wrap *{scrollbar-width:none}
+.demo-wrap *::-webkit-scrollbar{display:none}
