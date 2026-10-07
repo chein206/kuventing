@@ -707,6 +707,7 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
                   autoOpenSeconds={quick ? QUICK.autoOpen : cfg.autoOpenSeconds ?? DEF.autoOpen}
                   lastOneLabel={cfg.lastOneLabel ?? '피날레 보너스'}
                   from={pull?.from ?? null} onShown={shown}
+                  hint={quick ? '직접 열어 보세요' : undefined}
                   onOpened={opened} />
       )}
 

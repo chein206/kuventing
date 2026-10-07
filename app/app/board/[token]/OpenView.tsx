@@ -38,6 +38,8 @@ type Props = {
   from?: { x: number; y: number; w: number } | null;
   /** 표가 화면에 처음 그려진 뒤 — 돌아 나온 카드를 걷는다 */
   onShown?: () => void;
+  /** 표 위 빈자리에 희미하게 깜빡이는 안내 — 홈페이지 빠른 열기에서만(「직접 열어 보세요」). 잡거나 열기 시작하면 사라진다 */
+  hint?: string;
 };
 
 export default function OpenView(props: Props) {
@@ -66,7 +68,7 @@ const curve = (f: number) => { const u = Math.min(1, Math.max(0, f / F_END)); re
 const uncurve = (p: number) => F_END * (1.5 - Math.sqrt(Math.max(0, 2.25 - 2 * p)));
 
 function Open3D({
-  sel, pending, art, dark, title, store, font, autoOpenSeconds, lastOneLabel, onOpened, fallback, from, onShown,
+  sel, pending, art, dark, title, store, font, autoOpenSeconds, lastOneLabel, onOpened, fallback, from, onShown, hint,
 }: Props & { fallback: () => void }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const slotRef = useRef<HTMLDivElement>(null);
@@ -87,6 +89,8 @@ function Open3D({
   const [grip] = useState<Grip>(() => GRIP);
   // 한 번이라도 잡았으면 더는 들썩이지 않는다(놓은 자리에서 기다린다)
   const touched = useRef(false);
+  // 안내(hint)는 처음 잡는 순간 걷는다
+  const [held, setHeld] = useState(false);
 
   useEffect(() => { openedRef.current = onOpened; }, [onOpened]);
   // 카드가 멈춘 자리는 처음 뜰 때 한 번만 읽는다 — 카드가 걷혀 값이 사라져도 3D 를 다시 띄우지 않게
@@ -207,6 +211,7 @@ function Open3D({
     const sc = sceneRef.current;
     if (!sc || !sc.ready || !canPush) return;
     touched.current = true;
+    setHeld(true);
     sc.setPeek(false);
     drag.current = { x0: e.clientX, f0: uncurve(sc.progress), w: slotRef.current?.clientWidth || 400 };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -234,7 +239,11 @@ function Open3D({
       <div className="op3">
         {/* 표 자리 — 3D 가 이 칸을 재서 앉는다. 종이 판은 이 칸이 곧 손잡이다 */}
         {grip === 'paper'
-          ? <div className={`tslot grip ${canPush ? '' : 'off'}`} ref={slotRef} {...hands} />
+          ? (
+            <div className={`tslot grip ${canPush ? '' : 'off'}${hint ? ' hinted' : ''}`} ref={slotRef} {...hands}>
+              {hint && canPush && !held && <span className="op3hint" aria-hidden="true">{hint}</span>}
+            </div>
+          )
           : <div className="tslot" ref={slotRef} />}
         <div className="opfoot">
           {/* 이 시점엔 티켓이 이미 확정돼 있다. 되돌아가면 상품을 잃으므로 여는 길만 남긴다 */}

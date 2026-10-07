@@ -100,7 +100,7 @@ export default function QuickOpen({ items }: { items: QuickItem[] }) {
           {sound ? '소리 끄기' : '소리 켜기'}
         </button>
       </div>
-      <p className="kv-quick-hint"><b>직접 열어 보세요</b>표를 오른쪽으로 밀면 열립니다</p>
+      <p className="kv-quick-hint"><b>실제 판 그대로</b>표를 오른쪽으로 밀면 열립니다</p>
     </div>
   );
 }

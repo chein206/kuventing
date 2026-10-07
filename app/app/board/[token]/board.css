@@ -972,6 +972,12 @@
 /* 종이 판 — 손잡이 없이 표 자리가 손잡이다(OpenView grip='paper') */
 .bd .op3 .tslot.grip{touch-action:none;cursor:grab}
 .bd .op3 .tslot.grip.off{cursor:default}
+/* 홈페이지 빠른 열기 — 표 위 빈자리에 희미하게 깜빡이는 「직접 열어 보세요」(OpenView hint). 표 자리 크기는 그대로 둔다 */
+.bd .op3 .tslot.hinted{position:relative}
+.bd .op3hint{position:absolute;left:0;right:0;bottom:calc(100% + clamp(30px,7dvh,72px));text-align:center;pointer-events:none;
+  font-size:clamp(20px,5.6vw,32px);font-weight:800;letter-spacing:.08em;color:var(--ink);animation:op3hint 1.6s ease-in-out infinite}
+@keyframes op3hint{0%,100%{opacity:.12}50%{opacity:.5}}
+@media (prefers-reduced-motion: reduce){.bd .op3hint{animation:none;opacity:.35}}
 .bd .op3 .opfoot{position:relative;width:100%;max-width:460px}
 .bd .op3 .rowbtn{transition:opacity .2s}
 .bd .op3 .rowbtn .big{flex:1;margin-top:0}
