@@ -1072,10 +1072,11 @@ function UseTab({
       <div className="card">
         <h3>쿠폰 사용처리 <span>손님 화면의 코드를 입력</span></h3>
         <input
-          className="codein" value={code} placeholder="XXX-XXX" maxLength={7} autoComplete="off"
+          className="codein" value={code} placeholder="XXXX-XXXX" maxLength={9} autoComplete="off"
           onChange={(e) => {
-            let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (v.length > 3) v = `${v.slice(0, 3)}-${v.slice(3, 6)}`;
+            // 새 쿠폰은 8자리(XXXX-XXXX, SQL 029). 예전 6자리도 그대로 받는다 — 서버가 줄표를 빼고 맞춰 본다
+            let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+            if (v.length > 4) v = `${v.slice(0, 4)}-${v.slice(4)}`;
             setCode(v);
           }}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}

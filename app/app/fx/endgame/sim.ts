@@ -55,7 +55,8 @@ const shuffle = <X,>(a: X[]) => {
   return a;
 };
 const CODE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const code = () => Array.from({ length: 6 }, () => CODE[Math.floor(Math.random() * CODE.length)]).join('');
+// 실제 판과 같은 8자리(SQL 029) — 데모 쿠폰 번호라 암호 난수는 필요 없다
+const code = () => Array.from({ length: 8 }, () => CODE[Math.floor(Math.random() * CODE.length)]).join('');
 
 export class EndgameSim {
   mode: Mode;
@@ -139,7 +140,7 @@ export class EndgameSim {
     this.changed(hidden);
     return {
       grade: tk.grade, name: p.name, useWhen: p.useWhen, image: p.image,
-      code: `${c.slice(0, 3)}-${c.slice(3)}`,
+      code: `${c.slice(0, 4)}-${c.slice(4)}`,
       isLastOne: isLast,
       lastOneName: isLast ? F.name : null,
       lastOneLabel: isLast ? F.label : null,

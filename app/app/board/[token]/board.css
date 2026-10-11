@@ -753,7 +753,8 @@
 .bd .cpn img{width:150px;height:150px;image-rendering:pixelated}
 .bd .cpn .cc{text-align:left}
 .bd .cpn .cc .l{font-size:12px;color:var(--ink-dim);font-weight:700;letter-spacing:.12em}
-.bd .cpn .cc .v{font-size:30px;font-weight:900;letter-spacing:.1em;margin:4px 0 6px;
+/* 쿠폰 번호는 8자리(XXXX-XXXX, SQL 029) — 줄바꿈 없이, 폰처럼 좁으면 글자만 줄인다 */
+.bd .cpn .cc .v{font-size:clamp(20px,6.4vw,30px);white-space:nowrap;font-weight:900;letter-spacing:.1em;margin:4px 0 6px;
   font-family:ui-monospace,Menlo,monospace}
 .bd .cpn .cc .x{font-size:13px;color:var(--ink-dim);line-height:1.5}
 

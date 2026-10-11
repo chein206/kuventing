@@ -279,7 +279,7 @@ input{font:inherit;color:inherit}
 .coupon{width:100%;background:var(--surf);border:1px solid var(--line);border-radius:var(--radius);
   padding:16px;box-shadow:var(--shadow);margin-top:6px}
 .coupon .cl{font-size:10px;color:var(--ink-dim);letter-spacing:.14em;font-weight:700}
-.coupon .cc{font-size:32px;font-weight:900;letter-spacing:.12em;margin:5px 0 3px;
+.coupon .cc{font-size:clamp(22px,7.6vw,32px);white-space:nowrap;font-weight:900;letter-spacing:.12em;margin:5px 0 3px;   /* 8자리 번호(029) 한 줄 */
   font-family:ui-monospace,'SFMono-Regular',Menlo,monospace}
 .coupon .cx{font-size:11px;color:var(--ink-dim)}
 .lastone{font-size:11px;font-weight:800;letter-spacing:.1em;padding:5px 13px;border-radius:99px;
