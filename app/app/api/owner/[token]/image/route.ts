@@ -85,7 +85,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const { data, error } = await saveUrl(r.ctx.campaignId, sp, url);
 
   if (error || !(data as { ok?: boolean })?.ok) {
-    await dropImage(url);                                     // DB에 못 박았으면 파일도 남기지 않는다
+    await dropImage(url, r.ctx.campaignId);                   // DB에 못 박았으면 파일도 남기지 않는다
     const reason = (data as { reason?: string })?.reason ?? '';
     return Response.json(
       { error: reason || 'SAVE_FAILED', message: REASON[reason] ?? error?.message ?? '저장하지 못했습니다' },
@@ -93,7 +93,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     );
   }
 
-  await dropImage((data as { old?: string }).old);            // 갈아끼운 옛 사진 정리
+  await dropImage((data as { old?: string }).old, r.ctx.campaignId);   // 갈아끼운 옛 사진 정리
   return Response.json({ ok: true, url });
 }
 
@@ -118,6 +118,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ token
     );
   }
 
-  await dropImage(res.old);
+  await dropImage(res.old, r.ctx.campaignId);
   return Response.json({ ok: true });
 }

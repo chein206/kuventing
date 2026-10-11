@@ -17,6 +17,7 @@ const REASON: Record<string, string> = {
   EMPTY_SLIDE: '제목이나 사진 중 하나는 있어야 합니다',
   TOO_LONG: '글자 수를 줄여주세요',
   BAD_POS: '글자 위치가 잘못됐습니다',
+  BAD_IMAGE: '사진이 바뀌었습니다. 화면을 새로 고친 뒤 다시 올려 주세요',
 };
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -49,6 +50,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     );
   }
 
-  for (const url of res.gone ?? []) await dropImage(url);
+  for (const url of res.gone ?? []) await dropImage(url, c.campaignId);
   return Response.json({ ok: true, count: res.count });
 }

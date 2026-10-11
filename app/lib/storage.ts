@@ -32,10 +32,19 @@ export async function putImage(path: string, body: ArrayBuffer, contentType: str
   });
 }
 
-/** 갈아끼운 뒤 옛 파일을 치운다. 실패해도 흐름은 막지 않는다 */
-export async function dropImage(url: string | null | undefined) {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * 갈아끼운 뒤 옛 파일을 치운다. 실패해도 흐름은 막지 않는다.
+ *
+ * **그 캠페인 폴더 안의 파일만 지운다.** 지울 주소는 DB(광고 · 상품 칸)에서 오는데, 광고 칸에는 사장님이 보낸 문자열이
+ * 들어갈 수 있었다 — 남의 매장 사진 주소를 넣었다 빼면 서비스 롤로 그 매장 파일이 지워졌다(10-11 보안 점검).
+ * 예전 캠페인 폴더에 남은 사진은 안 지워지고 남는다(용량만 먹고 해는 없다 — 안전한 쪽)
+ */
+export async function dropImage(url: string | null | undefined, campaignId: string) {
   const p = pathFromUrl(url);
-  if (!p) return;
+  if (!p || !UUID.test(campaignId)) return;
+  if (!p.startsWith(`${campaignId}/`) || p.includes('..') || p.slice(campaignId.length + 1).includes('/')) return;
   await getAdmin().storage.from(BUCKET).remove([p]).catch(() => {});
 }
 
