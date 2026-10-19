@@ -23,8 +23,8 @@ function liveSim(slug: string) {
  * 띠는 판 위에 덮지 않고 흐름 안에 둔다 — 덮으면 판 맨 위 줄(매장 이름 · 남은 수)이나 아래 버튼을 가린다.
  * 끝물 조작판(/fx/endgame)과 달리 손님 화면만 보여 준다 — 홈페이지 · 영업에서 "직접 해 보기"로 연다.
  */
-export default function DemoBoard({ slug, build, quick, sound }: {
-  slug: string; build: string; quick?: 'tap' | 'open'; sound?: boolean;
+export default function DemoBoard({ slug, build, quick, sound, shoot }: {
+  slug: string; build: string; quick?: 'tap' | 'open'; sound?: boolean; shoot?: boolean;
 }) {
   const [sim] = useState(() => liveSim(slug));
   // 빠른 열기 — 홈페이지 첫 화면에 얹는 판. 띠 없이 판만, 누르면 고르기 없이 맨 윗등급 표가 바로 열린다
@@ -38,11 +38,11 @@ export default function DemoBoard({ slug, build, quick, sound }: {
   }
   return (
     <div className="demo-wrap">
-      <div className="demo-tag">
+      {!shoot && <div className="demo-tag">
         <b>데모</b>
         <span>{DEMOS[slug].note}</span>
         <button onClick={() => sim.newBox()}>새 판</button>
-      </div>
+      </div>}
       <BoardClient token={`demo-${slug}`} build={build} />
     </div>
   );

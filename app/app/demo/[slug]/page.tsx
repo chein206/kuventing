@@ -17,6 +17,7 @@ export async function generateMetadata(
 }
 
 // ?quick=open — 홈페이지 첫 화면에 얹는 빠른 열기(표부터) · ?quick=1 — 대기 화면에서 누르면 바로 열기 · &sound=1 — 소리 켜고 시작
+// ?shoot=1 — SNS 촬영용: 위 「데모」 띠 없이 판만, 만지면 전체화면(실제 매장 화면처럼 찍히게)
 export default async function DemoPage({ params, searchParams }: {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -25,5 +26,5 @@ export default async function DemoPage({ params, searchParams }: {
   if (!DEMOS[slug]) notFound();
   const sp = await searchParams;
   const quick = sp.quick === 'open' ? 'open' : sp.quick ? 'tap' : undefined;
-  return <DemoBoard slug={slug} build={BUILD} quick={quick} sound={sp.sound === '1'} />;
+  return <DemoBoard slug={slug} build={BUILD} quick={quick} sound={sp.sound === '1'} shoot={sp.shoot === '1'} />;
 }
