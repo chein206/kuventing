@@ -14,12 +14,14 @@ import '../site/site.css';
  *  - 문의 표(Supabase): 일본 도쿄(AWS ap-northeast-1) — db 호스트 IPv6 를 AWS 공개 IP 대역표에 맞춰 확인
  *  - 서버(Vercel 함수): 미국(iad1) — 응답 머리 x-vercel-id
  *  - 알림 메일(Resend) · 메일함(Gmail): 미국
+ *  - 인스타그램 DM(Meta): 미국 — 10-19 계정(@kuventing) 개설, 처리방침 「7일 전 알림」 약속대로 10-26 시행으로 예고
  * 보관 기간 1년은 문의 폼 동의 문구(ContactForm)와 같아야 한다.
  */
 const display = Archivo({ subsets: ['latin'], axes: ['wdth'], variable: '--kv-display', display: 'swap' });
 const PRETENDARD = FONTS.find((f) => f.key === 'pretendard')!.css!;
 const BLACK_HAN = 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap';
 const EFFECTIVE = '2026년 10월 7일';
+const REVISED = '2026년 10월 26일'; // 인스타그램 DM 문의 추가 — 10-19 예고
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -33,6 +35,7 @@ export const viewport: Viewport = { maximumScale: 5, userScalable: true, themeCo
 const ITEMS = [
   ['도입 문의(홈페이지 문의 폼)', '필수: 이름 또는 상호, 업종, 연락처(전화번호 또는 이메일)\n선택: 문의 내용', '문의 폼에 직접 입력'],
   ['메일 문의', '보낸 메일 주소, 이름, 메일 내용', `문의 메일(${BIZ.email})로 직접 보낸 경우`],
+  ['인스타그램 DM 문의 (2026년 10월 26일부터)','인스타그램 계정 이름, 프로필에 공개된 정보, 메시지 내용과 메시지로 보내 주신 연락처', `인스타그램 ${BIZ.instagram} 로 직접 메시지를 보낸 경우`],
   ['자동 생성 정보', '접속 IP 주소, 브라우저 정보, 접속 일시, 문의를 보낸 페이지 주소', '홈페이지와 서비스를 이용하는 과정에서 자동 생성'],
 ];
 
@@ -48,6 +51,7 @@ const ABROAD = [
   ['Vercel Inc.\nvercel.com/legal/privacy-policy', '미국', '문의 항목, 자동 생성 정보', '서버 처리와 접속 기록 · 처리 후 지체 없이(접속 기록은 최대 3개월)'],
   ['Resend\nresend.com/legal/privacy-policy', '미국', '문의 항목', '알림 메일 발송 · 발송 기록 보관 기간'],
   ['Google LLC\npolicies.google.com/privacy', '미국', '문의 항목, 메일 문의 내용', '메일 수신 · 보관 · 문의일로부터 1년'],
+  ['Meta Platforms, Inc.\nprivacycenter.instagram.com', '미국', '인스타그램 DM 문의 내용(2026년 10월 26일부터)', '메시지 전달 · 보관 · 문의일로부터 1년(인스타그램 서버의 보관은 Meta 정책을 따름)'],
 ];
 
 const lines = (t: string) => t.split('\n').map((l, i) => <span key={i}>{i > 0 && <br />}{l}</span>);
@@ -71,7 +75,11 @@ export default function PrivacyPage() {
       <main className="kv-doc">
         <p className="kv-label">PRIVACY</p>
         <h1>개인정보처리방침</h1>
-        <p className="kv-doc-date">시행일 {EFFECTIVE}</p>
+        <p className="kv-doc-date">시행일 {EFFECTIVE} · 개정 {REVISED} 시행</p>
+        <p className="kv-doc-lead">
+          <b>변경 알림</b> {REVISED}부터 인스타그램({BIZ.instagram}) DM 문의를 받습니다. 이에 따라 01 처리 항목, 03 보유 기간,
+          06 국외 이전에 인스타그램 DM 문의를 더했습니다.
+        </p>
         <p className="kv-doc-lead">
           {BIZ.name}(이하 「회사」)는 「개인정보 보호법」에 따라 쿠벤팅 홈페이지(kuventing.scpadlab.com)와
           쿠벤팅 서비스(kuvt.scpadlab.com)를 이용하는 분의 개인정보를 보호하고, 관련 고충을 빠르고 원활하게 처리하기 위해
@@ -101,6 +109,7 @@ export default function PrivacyPage() {
         <ul>
           <li><b>도입 문의</b>: 문의일로부터 1년 동안 보관한 뒤 파기합니다. 상담이 계약으로 이어지면 계약 이행과 관계 법령이 정한 기간 동안 보관합니다.</li>
           <li><b>메일 문의</b>: 문의일로부터 1년</li>
+          <li><b>인스타그램 DM 문의</b>: 문의일로부터 1년이 지나면 대화를 지웁니다({REVISED}부터)</li>
           <li><b>접속 기록</b>: 최대 3개월(통신비밀보호법)</li>
         </ul>
 
@@ -133,6 +142,7 @@ export default function PrivacyPage() {
         <p>
           국외 이전을 원하지 않으시면 문의 폼 대신 전화({BIZ.phone})로 문의해 주세요.
           이 경우 문의 폼과 메일 알림을 거치지 않습니다.
+          인스타그램 DM 은 Meta 가 운영하는 서비스라 메시지는 Meta 의 개인정보처리방침에 따라서도 처리됩니다.
         </p>
 
         <h2><i>07</i>파기 절차와 방법</h2>
@@ -180,6 +190,7 @@ export default function PrivacyPage() {
         <h2><i>13</i>처리방침의 변경</h2>
         <p>
           이 개인정보처리방침은 {EFFECTIVE}부터 적용됩니다. 내용이 바뀌면 시행 7일 전부터 이 페이지에 알립니다.
+          {REVISED} 개정: 인스타그램 DM 문의 추가(2026년 10월 19일 알림).
         </p>
 
         <h2><i>14</i>사업자 정보</h2>

@@ -11,6 +11,7 @@ export const BIZ = {
   address: '경상북도 문경시 양지3길 3-1, 1층(모전동)',
   phone: '010-5090-3180',
   email: 'scpad206@gmail.com',
+  instagram: '@kuventing', // 10-19 개설 — 바닥글 · 처리방침(DM 문의)
 } as const;
 
 export default function SiteFooter({ demos = true }: { demos?: boolean }) {
@@ -24,6 +25,7 @@ export default function SiteFooter({ demos = true }: { demos?: boolean }) {
           <p>평소엔 광고판, 누르면 럭키드로우</p>
           {/* 폼 말고 메일로 바로 묻고 싶은 사람 — 폼 문의도 같은 메일로 알림이 간다(lib/notify.ts) */}
           <p className="kv-foot-mail">문의 메일 <a href={`mailto:${BIZ.email}`}>{BIZ.email}</a></p>
+          <p className="kv-foot-mail">인스타그램 <a href="https://www.instagram.com/kuventing/" target="_blank" rel="noopener">{BIZ.instagram}</a></p>
         </div>
         {demos && (
           <nav className="kv-foot-links" aria-label="데모 바로가기">
