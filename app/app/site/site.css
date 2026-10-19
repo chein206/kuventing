@@ -79,7 +79,7 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-nav-in{width:100%;max-width:var(--max);margin:0 auto;display:flex;align-items:center;gap:32px}
 .kv-logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--kv-display),sans-serif;font-weight:800;
   font-stretch:125%;font-size:15px;letter-spacing:.08em}
-.kv-logo img{width:32px;height:32px;border-radius:9px}
+.kv-logo img{width:auto;height:28px} /* 새 K표 마크(10-19) — 투명 바탕이라 둥근 모서리 없음 */
 .kv-links{margin-left:auto;display:flex;gap:26px;font-family:var(--kv-display),sans-serif;font-stretch:112%;font-weight:700;
   font-size:13px;letter-spacing:.08em;color:var(--ink-2)}
 .kv-links a{transition:color .2s}

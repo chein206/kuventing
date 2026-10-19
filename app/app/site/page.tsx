@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     title: '쿠벤팅 | 평소엔 광고판, 누르면 럭키드로우',
     description: '화면 하나로 움직이는 광고와 경품 이벤트를 함께. 디자인 · 사진은 저희가, 상품만 정하세요.',
     // 그림을 바꾸면 v 를 올린다 — 같은 주소면 메신저 · SNS 가 옛 그림을 계속 보여 준다(카톡은 공유 디버거에서 캐시도 지워야 한다)
-    images: ['/site/og.jpg?v=2'],
+    images: ['/site/og.jpg?v=3'], // v3: 새 K표 로고(10-19) — 카톡이 옛 그림을 들고 있지 않게 주소를 바꾼다
     url: '/',
     siteName: '쿠벤팅',
     type: 'website',
@@ -184,7 +184,7 @@ export default function SitePage() {
       <header className="kv-nav">
         <div className="kv-nav-in">
           <a className="kv-logo" href="#top" aria-label="쿠벤팅 처음으로">
-            <img src="/icon-192.png" alt="" width={32} height={32} />
+            <img src="/brand/mark.svg" alt="" width={45} height={28} />
             <span>KUVENTING</span>
           </a>
           <nav className="kv-links" aria-label="홈페이지 메뉴">

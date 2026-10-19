@@ -13,7 +13,7 @@ catch { pw = await import('file:///C:/Users/Nam-PC/Desktop/cld/shorts-lab/tools/
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUB = path.join(HERE, '..', '..', 'app', 'public');
 const img = (p) => 'data:image/jpeg;base64,' + fs.readFileSync(path.join(PUB, p)).toString('base64');
-const png = (p) => 'data:image/png;base64,' + fs.readFileSync(path.join(PUB, p)).toString('base64');
+const svg = (p) => 'data:image/svg+xml;base64,' + fs.readFileSync(path.join(PUB, p)).toString('base64');
 
 // 2판(10-07) — 팝업 입구 장면 사진 위에 실제 대기 화면(뷰티 팝업 판)을 원근 맞춰 얹고(홈페이지 첫 화면과 같은 변환),
 // 왼쪽은 남색으로 눌러 제목을 얹는다. 금빛 번쩍임 · 뽑기 말투는 뺐다(「사행성 느낌」)
@@ -31,7 +31,7 @@ body{width:1200px;height:630px;overflow:hidden;background:#070B16;color:#F3F1EA;
 .shade{position:absolute;inset:0;background:linear-gradient(90deg,#070B16 0%,#070B16 30%,rgba(7,11,22,.86) 46%,rgba(7,11,22,.3) 64%,rgba(7,11,22,0) 76%)}
 .copy{position:absolute;left:76px;top:62px;width:660px}
 .logo{display:flex;align-items:center;gap:14px;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:800;font-size:21px;letter-spacing:.08em}
-.logo img{width:42px;height:42px;border-radius:11px}
+.logo img{width:auto;height:40px} /* 새 K표 마크(10-19) */
 .label{margin-top:46px;font-family:Archivo,sans-serif;font-stretch:125%;font-weight:800;font-size:17px;letter-spacing:.16em;color:#FFC83D}
 h1{margin-top:16px;font-family:'Black Han Sans',sans-serif;font-weight:400;font-size:74px;line-height:1.14}
 h1 em{font-style:normal;color:#FFC83D}
@@ -43,7 +43,7 @@ p{margin-top:24px;font-size:25px;color:#C3CAD8;letter-spacing:-.02em}
 <div class="scene"><img src="${img('site/scene-popup.jpg')}"><div class="scr"></div></div>
 <div class="shade"></div>
 <div class="copy">
-  <div class="logo"><img src="${png('icon-192.png')}">KUVENTING</div>
+  <div class="logo"><img src="${svg('brand/mark.svg')}">KUVENTING</div>
   <div class="label">SIGNAGE + LUCKY DRAW</div>
   <h1>평소엔 광고판,<br><em>누르면 럭키드로우</em></h1>
   <p>팝업 스토어, 행사장, 매장 카운터의 화면 하나로</p>

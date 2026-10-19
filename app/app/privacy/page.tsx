@@ -65,7 +65,7 @@ export default function PrivacyPage() {
       <header className="kv-doc-nav">
         <div className="kv-nav-in">
           <Link className="kv-logo" href="/" aria-label="쿠벤팅 홈페이지">
-            <img src="/icon-192.png" alt="" width={32} height={32} />
+            <img src="/brand/mark.svg" alt="" width={45} height={28} />
             <span>KUVENTING</span>
           </Link>
           <Link className="kv-btn primary sm" href="/#contact" style={{ marginLeft: 'auto' }}>도입 문의</Link>

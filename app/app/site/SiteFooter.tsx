@@ -20,7 +20,7 @@ export default function SiteFooter({ demos = true }: { demos?: boolean }) {
       <div className="kv-foot-in">
         <div className="kv-foot-brand">
           <Link className="kv-logo" href="/" aria-label="쿠벤팅 홈페이지">
-            <img src="/icon-192.png" alt="" width={28} height={28} /><span>KUVENTING</span>
+            <img src="/brand/mark.svg" alt="" width={40} height={25} /><span>KUVENTING</span>
           </Link>
           <p>평소엔 광고판, 누르면 럭키드로우</p>
           {/* 폼 말고 메일로 바로 묻고 싶은 사람 — 폼 문의도 같은 메일로 알림이 간다(lib/notify.ts) */}
