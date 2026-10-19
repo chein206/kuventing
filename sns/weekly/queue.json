@@ -23,7 +23,8 @@
       "slot": "2026-10-27T12:30:00+09:00",
       "approved": false,
       "approvedNote": "",
-      "status": "ready"
+      "status": "draft",
+      "note": "모션 세션 리모델 중(요청 03)"
     },
     {
       "id": "04_done_for_you",
@@ -44,28 +45,25 @@
       "slot": "2026-10-29T12:30:00+09:00",
       "approved": false,
       "approvedNote": "",
-      "status": "ready"
+      "status": "draft",
+      "note": "모션 세션 리모델 중(요청 03)"
     },
     {
       "id": "06_five_shops",
       "title": "같은 화면, 다섯 가게",
-      "type": "carousel",
+      "type": "reel",
       "dir": "kuventing/sns/posts/06_five_shops",
       "files": [
-        "out/card-1.png",
-        "out/card-2.png",
-        "out/card-3.png",
-        "out/card-4.png",
-        "out/card-5.png",
-        "out/card-6.png",
-        "out/card-7.png"
+        "reel.mp4"
       ],
       "caption": "caption.md",
       "ai": false,
       "slot": "2026-10-31T11:00:00+09:00",
       "approved": false,
       "approvedNote": "",
-      "status": "ready"
+      "status": "draft",
+      "cover": "cover.png",
+      "note": "10-19 카드 → 릴스(모션 세션, 10-28 납품)"
     }
   ]
 }
