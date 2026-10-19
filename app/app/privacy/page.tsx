@@ -198,7 +198,8 @@ export default function PrivacyPage() {
           <p><b>상호</b> {BIZ.name}</p>
           <p><b>대표자</b> {BIZ.ceo}</p>
           <p><b>사업자등록번호</b> {BIZ.regNo}</p>
-          <p><b>주소</b> {BIZ.address}</p>
+          <p><b>소재지</b> {BIZ.seat}</p>
+          <p><b>사무소</b> {BIZ.office}</p>
           <p><b>연락처</b> {BIZ.phone} · {BIZ.email}</p>
         </div>
       </main>
