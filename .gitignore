@@ -39,3 +39,8 @@ audio/
 assets/demo/_cand/
 # 홈페이지 영상 녹화 프레임(수천 장) — 굽고 나면 필요 없다
 assets/site/_rec/
+
+# SNS 작업 중간물(녹화 프레임 · 작업 폴더 · 비교 시안 임시) — 공개 저장소에 올리지 않는다(10-19)
+sns/posts/*/rec/
+sns/posts/*/_work/
+site-review/_tmp/
