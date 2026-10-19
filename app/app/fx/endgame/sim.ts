@@ -35,7 +35,7 @@ export type DemoPreset = {
 
 // 멘야 코바야시와 같은 구성(50장). 사진은 /fx 데모 것을 쓴다
 export const FOOD_DEMO: DemoPreset = {
-  theme: 'dark-west', font: 'system', title: '오픈 기념 뽑기', drawVerb: '주문',
+  theme: 'dark-west', font: 'system', title: '오픈 기념 럭키드로우', drawVerb: '주문',
   store: { name: '데모 매장', branch: '끝물 시험', logo: null },
   prizes: [
     { grade: 'A', name: '차슈덮밥 세트 무료', qty: 2, useWhen: 'now', image: '/fx/prize-a.jpg' },

@@ -33,7 +33,7 @@ export const DEMOS: Record<string, Demo> = {
   beauty: {
     label: '뷰티성분사전 팝업',
     note: '팝업 스토어 럭키드로우 · 체험 1회 = 1장',
-    theme: 'light-beauty', font: 'pretendard', title: '오늘의 성분 뽑기', drawVerb: '체험',
+    theme: 'light-beauty', font: 'pretendard', title: '오늘의 성분 럭키드로우', drawVerb: '체험',
     store: { name: '뷰티성분사전 팝업', branch: '성수', logo: null },
     prizes: [
       { grade: 'A', name: '본품 풀세트', qty: 1, useWhen: 'now', image: '/demo/beauty/a-fullset.jpg' },
