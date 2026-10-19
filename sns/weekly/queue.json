@@ -7,10 +7,41 @@
       "title": "럭키드로우 열기 전에 확인할 7가지",
       "type": "carousel",
       "dir": "kuventing/sns/posts/02_checklist",
-      "files": ["out/card-1.png", "out/card-2.png", "out/card-3.png", "out/card-4.png", "out/card-5.png", "out/card-6.png", "out/card-7.png", "out/card-8.png", "out/card-9.png"],
+      "files": [
+        "out/card-1.png",
+        "out/card-2.png",
+        "out/card-3.png",
+        "out/card-4.png",
+        "out/card-5.png",
+        "out/card-6.png",
+        "out/card-7.png",
+        "out/card-8.png",
+        "out/card-9.png"
+      ],
       "caption": "caption.md",
       "ai": false,
       "slot": "2026-10-27T12:30:00+09:00",
+      "approved": false,
+      "approvedNote": "",
+      "status": "ready"
+    },
+    {
+      "id": "06_five_shops",
+      "title": "같은 화면, 다섯 가게",
+      "type": "carousel",
+      "dir": "kuventing/sns/posts/06_five_shops",
+      "files": [
+        "out/card-1.png",
+        "out/card-2.png",
+        "out/card-3.png",
+        "out/card-4.png",
+        "out/card-5.png",
+        "out/card-6.png",
+        "out/card-7.png"
+      ],
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-10-31T11:00:00+09:00",
       "approved": false,
       "approvedNote": "",
       "status": "ready"
