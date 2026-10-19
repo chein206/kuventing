@@ -1,0 +1,134 @@
+{
+ "dur": 22.3,
+ "fps": 30,
+ "bgm": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/music/tracks/bgm-kuventing/A_pophouse_s2701.wav",
+  "start": 33.46666666666667,
+  "gain_db": -7,
+  "duck": [],
+  "fade_out": [
+   19.5,
+   22.25
+  ]
+ },
+ "logo": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/sns/brand/logo/motion/kuventing-logo-sfx.wav",
+  "at_frame": 594,
+  "gain_db": -2
+ },
+ "clips": [
+  {
+   "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/app/public/snd/fanfare-silver.mp3",
+   "at_frame": 106,
+   "gain_db": -9,
+   "len": 1.0
+  }
+ ],
+ "events": [
+  {
+   "f": 18,
+   "k": "tap"
+  },
+  {
+   "f": 27,
+   "k": "tick"
+  },
+  {
+   "f": 51,
+   "k": "grind",
+   "len": 41
+  },
+  {
+   "f": 102,
+   "k": "reveal"
+  },
+  {
+   "f": 136,
+   "k": "tick"
+  },
+  {
+   "f": 154,
+   "k": "tap"
+  },
+  {
+   "f": 163,
+   "k": "tick"
+  },
+  {
+   "f": 178,
+   "k": "grind",
+   "len": 31
+  },
+  {
+   "f": 216,
+   "k": "reveal"
+  },
+  {
+   "f": 235,
+   "k": "tick"
+  },
+  {
+   "f": 253,
+   "k": "tap"
+  },
+  {
+   "f": 262,
+   "k": "tick"
+  },
+  {
+   "f": 277,
+   "k": "grind",
+   "len": 32
+  },
+  {
+   "f": 316,
+   "k": "reveal"
+  },
+  {
+   "f": 335,
+   "k": "tick"
+  },
+  {
+   "f": 353,
+   "k": "tap"
+  },
+  {
+   "f": 362,
+   "k": "tick"
+  },
+  {
+   "f": 377,
+   "k": "grind",
+   "len": 32
+  },
+  {
+   "f": 416,
+   "k": "reveal"
+  },
+  {
+   "f": 435,
+   "k": "tick"
+  },
+  {
+   "f": 453,
+   "k": "tap"
+  },
+  {
+   "f": 462,
+   "k": "tick"
+  },
+  {
+   "f": 477,
+   "k": "grind",
+   "len": 31
+  },
+  {
+   "f": 515,
+   "k": "reveal"
+  },
+  {
+   "f": 534,
+   "k": "swoosh"
+  }
+ ]
+}

@@ -77,9 +77,9 @@
       "slot": "2026-10-31T11:00:00+09:00",
       "approved": false,
       "approvedNote": "",
-      "status": "draft",
+      "status": "ready",
       "cover": "cover.png",
-      "note": "10-19 카드 → 릴스(모션 세션, 10-28 납품)"
+      "note": "모션 세션 릴스 1차 10-19 — 대표 피드백 대기"
     }
   ]
 }
