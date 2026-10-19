@@ -978,6 +978,12 @@
 .bd .op3hint{position:absolute;left:0;right:0;bottom:calc(100% + clamp(30px,7dvh,72px));text-align:center;pointer-events:none;
   font-size:clamp(26px,8.4vw,46px);font-weight:800;letter-spacing:.06em;line-height:1.2;color:var(--ink);animation:op3hint 1.6s ease-in-out infinite}
 @keyframes op3hint{0%,100%{opacity:.12}50%{opacity:.5}}
+/* 손가락 힌트(홈페이지 빠른 열기, 처음 한 번) — 원이 표 왼쪽에서 오른쪽으로 한 번 미끄러지고 사라진다(판이 왼쪽부터 열리는 방향) */
+.bd .op3ghost{position:absolute;top:50%;left:10%;width:clamp(44px,13vw,68px);aspect-ratio:1;margin:calc(clamp(44px,13vw,68px) / -2) 0 0 calc(clamp(44px,13vw,68px) / -2);
+  border-radius:50%;background:rgba(255,255,255,.62);box-shadow:0 0 0 10px rgba(255,255,255,.18),0 6px 18px rgba(0,0,0,.25);pointer-events:none;
+  animation:op3ghost 1.7s cubic-bezier(.45,0,.2,1) forwards}
+@keyframes op3ghost{0%{opacity:0;left:10%;transform:scale(.7)}14%{opacity:1;left:10%;transform:scale(1)}26%{left:10%;transform:scale(.88)}
+  80%{opacity:1;left:82%;transform:scale(.88)}100%{opacity:0;left:86%;transform:scale(1.05)}}
 @media (prefers-reduced-motion: reduce){.bd .op3hint{animation:none;opacity:.35}}
 .bd .op3 .opfoot{position:relative;width:100%;max-width:460px}
 .bd .op3 .rowbtn{transition:opacity .2s}

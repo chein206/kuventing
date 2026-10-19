@@ -46,8 +46,15 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-label{font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;letter-spacing:.04em;line-height:.95;
   font-size:clamp(34px,5.4vw,80px);color:transparent;-webkit-text-stroke:1.5px var(--pop)}
 .kv-hero .kv-label{font-size:clamp(13px,1.1vw,16px);letter-spacing:.16em;color:var(--pop);-webkit-text-stroke:0}
-/* 반 칸에 들어가는 장 머리(SIGNAGE · LUCKY DRAW · REVISIT)는 옆 그림을 넘보지 않게 한 단계 작게 */
-.kv-signage .kv-label,.kv-draw .kv-label,.kv-revisit .kv-label{font-size:clamp(34px,4.4vw,64px)}
+/* 큰 외곽선 장 머리는 LUCKY DRAW · CONTACT 둘만(10-19 수정 2 — 같은 모양 10번이 템플릿처럼 보였다).
+   들어올 때 왼쪽부터 노랑으로 차오른다(로고 · 판이 왼쪽부터 열리는 방향). 나머지 장은 작은 장 번호(.kv-tag) */
+.kv-label.fill{background:linear-gradient(90deg,var(--pop) 50%,transparent 50%) 100% 0/200% 100% no-repeat;-webkit-background-clip:text;background-clip:text}
+.kv-js .kv .kv-label.fill[data-reveal]{transition:opacity .9s var(--ease),transform 1s var(--ease),background-position 1.1s .35s var(--ease)}
+.kv-js .kv .kv-label.fill[data-reveal][data-in]{background-position:0 0}
+.kv-tag{display:flex;align-items:baseline;gap:10px;font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;
+  font-size:13px;letter-spacing:.2em;line-height:1;color:var(--pop)}
+.kv-tag i{font-style:normal;color:var(--dim);letter-spacing:.08em}
+.kv-tag+.kv-h2{margin-top:18px}
 .kv-h1{margin-top:20px;font-family:var(--hd);font-weight:400;font-size:clamp(40px,4.9vw,72px);line-height:1.14;letter-spacing:-.01em}
 .kv-h1 em{font-style:normal;color:var(--pop)}
 .kv-h2{margin-top:14px;font-family:var(--hd);font-weight:400;font-size:clamp(32px,4vw,58px);line-height:1.14;letter-spacing:-.01em}
@@ -133,7 +140,7 @@ html:has(.kv){scroll-behavior:smooth}
     background:var(--pop);color:var(--pop-ink);font-size:15px;font-weight:800;box-shadow:0 5px 0 #B98A10}
   .kv-quick-cover svg{transform:rotate(90deg)}
 }
-.kv-quick-hint{margin-top:10px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:14px;color:var(--dim)}
+.kv-quick-hint{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:14px;color:var(--dim)}
 /* 업종 단추 · 소리 — 틀보다 넓어도 된다(오른쪽 장면 사진 아래가 비어 있다) */
 .kv-quick-bar{margin-top:16px;width:max-content;max-width:min(560px,44vw);display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .kv-quick-tabs{display:flex;flex-wrap:wrap;gap:6px}
@@ -142,6 +149,7 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-quick-tabs button:hover,.kv-quick-snd:hover{color:var(--ink)}
 .kv-quick-tabs button.on{background:var(--pop);color:var(--pop-ink);box-shadow:none}
 .kv-quick-snd.on{color:var(--pop);box-shadow:inset 0 0 0 1px var(--pop)}
+.kv-quick-hint .kv-quick-snd{margin-left:auto;height:30px;padding:0 11px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px}
 .kv-quick-hint b{color:var(--pop);font-weight:800;font-size:15px}
 
 /* 장면 사진 + 화면 영상 — 영상 층은 사진 좌표계(1376×768)로 그려 두고 칸 폭에 맞춰 줄인다(Scene.tsx) */
@@ -174,7 +182,7 @@ html:has(.kv){scroll-behavior:smooth}
 /* ---------- 칸 공통 ---------- */
 .kv-sec{max-width:var(--max);margin:0 auto;padding:112px var(--pad)}
 .kv-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:clamp(28px,5vw,80px);align-items:end}
-.kv-head .kv-label{grid-column:1/-1}
+.kv-head .kv-label,.kv-head .kv-tag{grid-column:1/-1}
 .kv-head .kv-sub{margin:0 0 6px;max-width:44ch}
 
 /* 기기 틀 — 실제 화면(영상)을 담는다 */
@@ -184,53 +192,52 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-screen{position:relative;aspect-ratio:800/1280;border-radius:22px;overflow:hidden;background:#05070C}
 .kv-screen video,.kv-screen img,.kv-screen iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
 
-/* ---------- HOW IT WORKS — 손님 4단계(실제 판 화면) ---------- */
-.kv-how-tabs{margin-top:44px;display:flex;flex-wrap:wrap;gap:6px}
-.kv-how-tabs button{height:34px;padding:0 14px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;font-weight:700;
-  color:var(--ink-2);background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);transition:background .3s,color .3s,box-shadow .3s}
-.kv-how-tabs button:hover{color:var(--ink)}
-.kv-how-tabs button.on{background:var(--pop);color:var(--pop-ink);box-shadow:none}
-.kv-steps{list-style:none;margin-top:24px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(18px,2.6vw,36px)}
-.kv-steps li{position:relative;display:flex;flex-direction:column}
-.kv-step-dev{padding:8px;border-radius:24px;background:linear-gradient(155deg,#26304A,#0B101C 55%,#161E31);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.09),0 30px 60px -34px rgba(0,0,0,.9)}
-.kv-step-stack{position:relative;aspect-ratio:480/768;border-radius:17px;overflow:hidden;background:var(--bg-3)}
-.kv-step-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s var(--ease)}
-.kv-step-stack img.on{opacity:1}
-.kv-step-copy{margin-top:20px}
-.kv-step-n{display:inline-flex;align-items:baseline;gap:10px;font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;
-  font-size:16px;letter-spacing:.06em;color:var(--pop)}
-.kv-step-n i{font-style:normal;font-size:11.5px;letter-spacing:.18em;color:var(--dim)}
-.kv-steps h3{margin-top:8px;font-family:var(--hd);font-weight:400;font-size:clamp(24px,2.2vw,32px);line-height:1.2}
-.kv-steps li:last-child h3{color:var(--pop)}
-.kv-steps p{margin-top:8px;font-size:15px;line-height:1.65;color:var(--ink-2)}
-/* 단계 사이 꺾쇠(넓은 화면) — 기기 화면 높이 가운데쯤 */
-.kv-steps li:not(:last-child)::after{content:'';position:absolute;top:30%;right:calc(clamp(18px,2.6vw,36px) / -2 - 6px);width:12px;height:12px;
-  border-top:2px solid var(--pop);border-right:2px solid var(--pop);rotate:45deg;opacity:.85}
+/* ---------- LUCKY DRAW — 손님 4단계, 큰 기기 한 대(10-19 수정 1 · 4, DrawScene) ---------- */
+.kv-ds{position:relative;margin-top:48px}
+.kv-ds-stage{display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center}
+/* 넓은 화면 — 칸이 길고 판은 화면에 붙어 있다(스크롤하면 단계가 넘어감) */
+.kv-ds.pin .kv-ds-stage{position:sticky;top:0;height:100vh;height:100dvh;padding:78px 0 28px}
+.kv-ds-steps{list-style:none;display:grid;gap:16px}
+.kv-ds-steps button{display:grid;gap:6px;width:100%;padding:6px 0 6px 18px;border:0;border-left:3px solid var(--line-2);background:none;
+  color:inherit;font:inherit;text-align:left;cursor:pointer;opacity:.42;transition:opacity .4s var(--ease),border-color .4s var(--ease)}
+.kv-ds-steps button span{font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;font-size:12px;letter-spacing:.2em;color:var(--dim)}
+.kv-ds-steps button em{font-style:normal}
+.kv-ds-steps button b{font-family:var(--hd);font-weight:400;font-size:clamp(24px,2.2vw,32px);line-height:1.15;color:var(--ink)}
+.kv-ds-steps button:hover{opacity:.75}
+.kv-ds-steps button.on{opacity:1;border-color:var(--pop)}
+.kv-ds-steps button.on span{color:var(--pop)}
+.kv-ds-steps button:focus-visible{outline:2px solid var(--pop);outline-offset:4px;border-radius:4px}
+.kv-ds-dev{position:relative;justify-self:center;width:min(100%,460px,calc((100dvh - 250px) * .6 + 132px));padding:34px 66px}
+.kv-ds .kv-sticker{width:96px;font-size:12px}
+.kv-ds .kv-sticker img{width:80px;height:80px}
+.kv-ds .kv-sticker.s1{left:-2%;top:6%}
+.kv-ds .kv-sticker.s2{right:-3%;top:20%}
+.kv-ds .kv-sticker.s3{left:-1%;bottom:22%}
+.kv-ds .kv-sticker.s4{right:-2%;bottom:6%}
+.kv-ds-dev .kv-device{transform:rotate(-2deg)}
+.kv-ds .kv-screen img{opacity:0;transition:opacity .55s var(--ease)}
+.kv-ds .kv-screen img.on{opacity:1}
+/* 4단계는 3단계 위로 왼쪽부터 걷히며 나온다 */
+.kv-ds .kv-screen img.peel{opacity:1;clip-path:inset(0 100% 0 0);transition:clip-path .95s var(--ease)}
+.kv-ds .kv-screen img.peel.on{clip-path:inset(0 0 0 0)}
+.kv-ds-set{margin-top:16px;text-align:center;font-size:13px;color:var(--dim)}
+.kv-ds-n{font-family:var(--kv-display),sans-serif;font-stretch:125%;font-weight:900;font-size:13px;letter-spacing:.2em;color:var(--pop)}
+.kv-ds-copy h3{margin-top:12px;font-family:var(--hd);font-weight:400;font-size:clamp(32px,3.2vw,50px);line-height:1.12;text-wrap:balance;animation:kvRise .6s var(--ease) both}
+.kv-ds-d{margin-top:16px;font-size:clamp(16px,1.25vw,18px);line-height:1.75;color:var(--ink-2);max-width:30ch}
+.kv-ds-copy .kv-left{margin-top:24px}
 
 /* ---------- SIGNAGE — 올린 사진 한 장이 움직이는 광고로 ---------- */
 .kv-signage{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(32px,5vw,80px);align-items:center}
-.kv-sig-flow{display:grid;grid-template-columns:minmax(0,.86fr) auto minmax(0,1fr);align-items:center;gap:clamp(12px,2vw,28px)}
-.kv-sig-in{justify-self:end;width:100%;max-width:280px;rotate:-4deg}
-/* 업종이 바뀌면 사진이 겹쳐 바뀐다(SignageCycle.tsx) — 어둡게 누르지 않는다(사장님: 차 사진만 나와 어둡고 실감이 덜하다) */
-.kv-sig-stack{position:relative;aspect-ratio:3/4;border-radius:22px;overflow:hidden;background:var(--bg-3);
-  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 30px 60px -30px rgba(0,0,0,.8)}
-.kv-sig-stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s var(--ease)}
-.kv-sig-stack img.on{opacity:1}
+.kv-sig-flow{display:grid;justify-items:center;gap:18px}
+/* 영상 하나(signage-v2.mp4, 업종 5 × 4초) + 업종 칩 — SignageCycle.tsx */
 .kv-sig-tabs{grid-column:1/-1;justify-self:center;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px}
 .kv-sig-tabs button{height:38px;padding:0 16px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-size:14px;font-weight:700;
   color:var(--ink-2);background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);transition:background .3s,color .3s,box-shadow .3s}
 .kv-sig-tabs button:hover{color:var(--ink)}
 .kv-sig-tabs button.on{background:var(--pop);color:var(--pop-ink);box-shadow:none}
-.kv-sig-arrow{display:grid;place-items:center;font-size:44px;color:var(--pop)}
-/* 나타나기가 transform 을 쓰므로 회전은 안쪽 그림에 */
-.kv-sig-arrow svg{transform:rotate(90deg)}
-.kv-sig-out{width:100%;max-width:310px}
+.kv-sig-out{width:100%;max-width:340px}
 
-/* ---------- LUCKY DRAW ---------- */
-.kv-draw{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(40px,7vw,110px);align-items:center}
-.kv-draw-stage{position:relative;justify-self:center;width:min(100%,430px);padding:46px 34px}
-.kv-draw-stage .kv-device{width:min(100%,290px);margin:0 auto;transform:rotate(-3deg)}
+/* ---------- 경품 스티커 · 남은 수 칩(LUCKY DRAW 장의 기기 둘레) ---------- */
 .kv-sticker{position:absolute;width:112px;text-align:center;font-weight:800;font-size:13px;animation:kvBob 5s ease-in-out infinite}
 .kv-sticker img{width:96px;height:96px;margin:0 auto 8px;border-radius:50%;object-fit:cover;border:4px solid var(--ink);
   box-shadow:0 14px 30px -12px rgba(0,0,0,.7)}
@@ -240,9 +247,6 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-sticker.s3{left:-4%;bottom:16%;rotate:6deg;animation-delay:-2.8s}
 .kv-sticker.s4{right:-6%;bottom:0;rotate:-5deg;animation-delay:-4s}
 @keyframes kvBob{0%,100%{translate:0 0}50%{translate:0 -10px}}
-.kv-points{list-style:none;margin-top:30px;display:grid;gap:14px}
-.kv-points li{padding:22px 24px;border-radius:22px;background:var(--bg-2);border:1px solid var(--line);color:var(--ink-2);font-size:16px;line-height:1.7}
-.kv-points b{display:block;margin-bottom:4px;color:var(--ink);font-size:19px;font-weight:800}
 .kv-left{display:inline-flex;align-items:baseline;gap:6px;margin-top:12px;padding:6px 14px;border-radius:999px;
   background:rgba(255,200,61,.12);color:var(--pop);font-family:var(--kv-display),sans-serif;font-stretch:112%;font-weight:800;font-size:15px}
 .kv-left span{font-size:20px;font-variant-numeric:tabular-nums}
@@ -256,14 +260,13 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-vs-row .was{color:var(--dim);text-decoration:line-through;text-decoration-color:rgba(243,241,234,.28);text-decoration-thickness:1.5px}
 .kv-vs-row .now{color:var(--ink);font-weight:800;font-size:17px}
 .kv-vs-arrow{justify-self:center;font-size:20px;color:var(--pop);transform:rotate(90deg)}
-.kv-ideas{margin-top:26px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.kv-ideas article{padding:26px;border-radius:22px;background:var(--bg-2);border:1px solid var(--line)}
-.kv-idea-ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;color:var(--pop-ink);background:var(--pop)}
-.kv-ideas h4{margin-top:18px;font-size:19px;font-weight:800;letter-spacing:-.02em}
-.kv-ideas p{margin-top:8px;font-size:15px;line-height:1.65;color:var(--ink-2)}
+.kv-revisit2{margin-top:56px;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(24px,4vw,56px);align-items:center;
+  padding:clamp(22px,3vw,36px);border-radius:22px;background:var(--bg-2);border:1px solid var(--line)}
+.kv-revisit2 img{width:100%;border-radius:16px}
+.kv-revisit2 h3{font-family:var(--hd);font-weight:400;font-size:clamp(26px,2.6vw,36px);line-height:1.2}
+.kv-revisit2 p{margin-top:12px;font-size:16px;line-height:1.75;color:var(--ink-2);max-width:46ch}
 
 /* ---------- ANYWHERE — 기기 셋(모양만 다르고 화면은 같은 판) ---------- */
-.kv-any-scene{max-width:920px;margin:56px auto 0}
 .kv-lineup{margin-top:64px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:clamp(20px,4vw,60px)}
 .kv-unit{display:flex;flex-direction:column;align-items:center}
 .kv-unit-body{position:relative;padding:10px;border-radius:24px;background:linear-gradient(160deg,#222B42,#0E131F);
@@ -337,14 +340,17 @@ html:has(.kv){scroll-behavior:smooth}
 .kv-modal-x:hover{background:rgba(255,255,255,.14)}
 
 /* ---------- REVISIT ---------- */
-.kv-revisit{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:56px;align-items:center}
-.kv-revisit-img{width:100%;max-width:520px;justify-self:center;border-radius:22px;box-shadow:0 40px 80px -40px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.06)}
 .kv-chips{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
 .kv-chips li{padding:8px 14px;border-radius:999px;font-size:14px;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line-2)}
 
 /* ---------- FAQ — 말풍선 ---------- */
 .kv-chat{max-width:860px;margin-top:44px;display:grid;gap:22px}
 .kv-qa{display:grid;gap:8px}
+.kv-qa summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px}
+.kv-qa summary::-webkit-details-marker{display:none}
+.kv-qa summary::after{content:'+';flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(26,19,0,.14);font-size:17px;line-height:1}
+.kv-qa[open] summary::after{content:'\2212'}
+.kv-qa summary:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 .kv-bubble{max-width:78%;padding:16px 20px;border-radius:22px;font-size:16px;line-height:1.65}
 .kv-bubble.q{justify-self:end;background:var(--pop);color:var(--pop-ink);font-weight:800;border-bottom-right-radius:6px}
 .kv-bubble.a{justify-self:start;background:var(--bg-2);color:var(--ink-2);border:1px solid var(--line);border-bottom-left-radius:6px}
@@ -439,12 +445,18 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-quick-bar{max-width:min(560px,calc(100vw - 2 * var(--pad)));margin-left:50%;translate:-50% 0;justify-content:center}
   .kv-quick-tabs{justify-content:center}
   .kv-quick-hint{justify-content:center}
-  .kv-draw,.kv-revisit,.kv-signage{grid-template-columns:1fr}
+  .kv-signage{grid-template-columns:1fr}
   .kv-sig-flow{max-width:640px}
-  .kv-draw-stage{order:2}
-  .kv-ideas{grid-template-columns:1fr 1fr}
-  .kv-steps h3{font-size:22px}
-  .kv-steps p{font-size:14px}
+  /* LUCKY DRAW — 붙이지 않고 기기 · 단계 단추 · 글 순서로 쌓는다(단계는 자동으로 넘어감) */
+  .kv-ds-stage{grid-template-columns:1fr;justify-items:center;text-align:center;gap:26px}
+  .kv-ds-dev{order:1;width:min(84vw,400px)}
+  .kv-ds-steps{order:2;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%;max-width:520px}
+  .kv-ds-steps button{border-left:0;border-top:3px solid var(--line-2);padding:10px 2px 0;justify-items:center;text-align:center}
+  .kv-ds-steps button span{font-size:11px;letter-spacing:.12em}
+  .kv-ds-steps button em{display:none}
+  .kv-ds-steps button b{font-size:16px}
+  .kv-ds-copy{order:3}
+  .kv-ds-d{margin-left:auto;margin-right:auto}
   .kv-demos-row{flex-direction:column;height:auto}
   .kv-demo,.kv-demo.open{flex:none;height:min(118vw,520px)}
   .kv-demo>img{transform:none;filter:none}
@@ -461,34 +473,30 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-sec{padding:96px var(--pad)}
   .kv-head{grid-template-columns:1fr}
   .kv-head .kv-sub{margin-top:18px}
-  .kv-sig-flow{grid-template-columns:1fr;justify-items:center}
-  .kv-sig-in{justify-self:center;max-width:240px}
-  .kv-sig-out{max-width:270px}
-  .kv-sig-arrow svg{transform:rotate(180deg)}
+  .kv-sig-out{max-width:290px}
   .kv-vs-head{display:none}
   .kv-vs-row{grid-template-columns:1fr;gap:6px;padding:18px 20px}
   .kv-vs-arrow{justify-self:start;transform:rotate(180deg);font-size:16px}
-  .kv-ideas{grid-template-columns:1fr}
+  .kv-revisit2{grid-template-columns:1fr}
   .kv-split{grid-template-columns:1fr}
-  /* 폰 — 단계마다 한 줄: 왼쪽 화면 · 오른쪽 글 */
-  .kv-steps{grid-template-columns:1fr;row-gap:22px;margin-top:22px}
-  .kv-steps li{flex-direction:row;align-items:center;gap:18px}
-  .kv-steps li::after{display:none}
-  .kv-step-dev{flex:none;width:36%;padding:6px;border-radius:18px}
-  .kv-step-stack{border-radius:13px}
-  .kv-step-copy{margin-top:0}
-  .kv-steps h3{font-size:24px}
-  .kv-steps p{font-size:14.5px}
   .kv-you{padding:28px}
   .kv-you-big{padding-top:36px}
   .kv-we{padding:24px 22px 8px}
   .kv-lineup{grid-template-columns:1fr;gap:56px;justify-items:center}
   .kv-bubble{max-width:90%}
-  .kv-draw-stage{padding:40px 52px}
+  .kv-ds-dev{padding:0}
+  .kv-ds .kv-sticker{display:none}
   .kv-sticker{width:88px;font-size:12px}
   .kv-sticker img{width:74px;height:74px}
   .kv-sticker.s1,.kv-sticker.s3{left:0}
   .kv-sticker.s2,.kv-sticker.s4{right:0}
+  /* 업종 칩은 한 줄 가로 밀기 + 오른쪽 흐림(10-19 수정 6 — 세 줄로 접혀 외톨이 칩이 생겼다) */
+  .kv-quick-bar{display:block;width:calc(100vw - 2 * var(--pad))}
+  .kv-quick-tabs,.kv-sig-tabs{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;padding-right:32px;
+    -webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
+  .kv-quick-tabs::-webkit-scrollbar,.kv-sig-tabs::-webkit-scrollbar{display:none}
+  .kv-quick-tabs button,.kv-sig-tabs button{flex:none}
+  .kv-quick-hint{width:calc(100vw - 2 * var(--pad));margin-left:50%;translate:-50% 0;justify-content:flex-start}
   .kv-form{grid-template-columns:1fr;padding:22px}
   .kv-form .kv-btn{justify-self:stretch}
   .kv-modal-x{top:12px;right:12px}

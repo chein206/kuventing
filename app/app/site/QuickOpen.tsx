@@ -96,11 +96,19 @@ export default function QuickOpen({ items }: { items: QuickItem[] }) {
             </button>
           ))}
         </div>
-        <button type="button" className={`kv-quick-snd${sound ? ' on' : ''}`} aria-pressed={sound} onClick={toggleSound}>
-          {sound ? '소리 끄기' : '소리 켜기'}
-        </button>
       </div>
-      <p className="kv-quick-hint"><b>실제 판 그대로</b>표를 오른쪽으로 밀면 열립니다</p>
+      {/* 소리 단추는 안내 줄 끝 아이콘으로(10-19 수정 6) — 폰에서 업종 칩 줄이 접히지 않게 */}
+      <p className="kv-quick-hint">
+        <b>실제 판 그대로</b><span>표를 오른쪽으로 밀면 열립니다</span>
+        <button type="button" className={`kv-quick-snd${sound ? ' on' : ''}`} aria-pressed={sound} onClick={toggleSound}
+          aria-label={sound ? '소리 끄기' : '소리 켜기'} title={sound ? '소리 끄기' : '소리 켜기'}>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
+            {sound ? <><path d="M15.5 9a4 4 0 0 1 0 6" /><path d="M18 6.5a7.5 7.5 0 0 1 0 11" /></> : <path d="M16 9.5l5 5M21 9.5l-5 5" />}
+          </svg>
+          <span>소리</span>
+        </button>
+      </p>
     </div>
   );
 }

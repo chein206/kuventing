@@ -7,7 +7,7 @@ import SiteMotion from './SiteMotion';
 import Scene from './Scene';
 import QuickOpen, { type QuickItem } from './QuickOpen';
 import SignageCycle, { type SigItem } from './SignageCycle';
-import HowSteps, { type HowSet } from './HowSteps';
+import DrawScene, { type DrawSet, type DrawStep } from './DrawScene';
 import Demos from './Demos';
 import ContactForm from './ContactForm';
 import SiteFooter from './SiteFooter';
@@ -57,7 +57,6 @@ export const viewport: Viewport = { maximumScale: 5, userScalable: true, themeCo
 // 장면 사진 속 화면 자리 — screen_fit.py 가 구한 원근 변환(영상 540×864 → 사진 1376×768 좌표)
 const M = {
   popup: 'matrix3d(0.28433166,-0.04106174,0,-0.00010319,0.00293412,0.45052272,0,0.00000483,0,0,1,0,846.71380615,61.28153992,0,1)',
-  counter: 'matrix3d(0.11229332,-0.11316589,0,-0.00032479,-0.13827646,0.36325627,0,-0.00008351,0,0,1,0,835.90441895,248.50479126,0,1)',
 };
 
 // 첫 화면 바로 열어 보기 — 업종 단추 순서. 포스터는 assets/site/quick_poster.mjs <업종>
@@ -69,7 +68,7 @@ const QUICK_ITEMS: QuickItem[] = [
   { slug: 'food', tag: '라멘집', poster: '/site/quick-food.jpg' },
 ];
 
-// SIGNAGE — 업종 순서는 signage.mp4 를 이어 붙인 순서와 같아야 한다(build_signage.py cafe beauty chicken food arven). 밝은 카페부터
+// SIGNAGE — 업종 순서는 signage-v2.mp4 의 순서와 같아야 한다(cafe beauty chicken food arven, 업종마다 4초 — 10-19 모션 세션 KvSignage). 밝은 카페부터
 const SIG: SigItem[] = [
   { key: 'cafe', tag: '카페', photo: '/site/sig/cafe.jpg', text: '딸기 생크림 케익 6,500원' },
   { key: 'beauty', tag: '뷰티 팝업', photo: '/site/sig/beauty.jpg', text: '성분부터 보고 고르는 팝업' },
@@ -77,7 +76,7 @@ const SIG: SigItem[] = [
   { key: 'food', tag: '음식점', photo: '/site/sig/food.jpg', text: '매운 미소라멘 11,000원' },
   { key: 'arven', tag: '시승 행사', photo: '/site/sig/arven.jpg', text: '한 번 타 보면 압니다' },
 ];
-const SIG_SEG = 6;
+const SIG_SEG = 4;
 
 // 가진 화면 그대로 — 기기 모양만 다르고 화면은 같은 판(실제 대기 화면 녹화)
 const DEVICES = [
@@ -99,13 +98,6 @@ const VS = [
   ['인증샷 올리면 증정', '남은 경품이 실시간으로 보여 지금 참여'],
   ['행사가 끝나면 그걸로 끝', 'QR 쿠폰으로 온라인몰과 매장까지 이어짐'],
   ['종이 집계와 수기 정산', '남은 수와 쿠폰 사용을 폰에서 확인'],
-];
-
-const IDEAS = [
-  { icon: 'megaphone' as const, t: '대기줄을 광고 시간으로', d: '입장 줄 앞에 스탠드형 스크린 하나. 기다리는 동안 신제품 광고가 돕니다.' },
-  { icon: 'check' as const, t: '체험 미션마다 한 번', d: '체험존을 하나 끝낼 때마다 참여 한 번. 동선이 자연스럽게 길어집니다.' },
-  { icon: 'star' as const, t: '마지막 한 장엔 피날레', d: '판의 마지막 한 장에 한정 굿즈를 겁니다. 끝물에도 손님이 남습니다.' },
-  { icon: 'ticket' as const, t: '팝업 이후엔 쿠폰', d: '온라인몰 할인 쿠폰으로 팝업이 끝난 뒤까지 이어지게 합니다.' },
 ];
 
 const DEMOS = [
@@ -136,15 +128,15 @@ const DEMOS = [
   },
 ];
 
-// HOW IT WORKS — 손님 4단계(사장님 10-07: 광고 + 현황 → 남은 선물 → 픽 → 열기 → 럭키). 화면은 실제 데모 녹화(build_steps.py),
-// 업종 다섯이 4초마다 돌아간다(HowSteps). 업종 순서는 첫 화면 · SIGNAGE 단추와 같게
-const STEPS = [
-  { n: '01', tag: 'WATCH', t: '보고', d: '평소엔 광고판. 남은 선물이 몇 장인지 같이 보입니다.', alt: '광고와 남은 티켓 수가 보이는 대기 화면' },
-  { n: '02', tag: 'CHECK', t: '확인하고', d: '어떤 선물이 몇 개 남았는지 먼저 봅니다.', alt: '등급별 남은 선물 목록' },
-  { n: '03', tag: 'PICK', t: '고르고', d: '마음에 드는 표 한 장을 직접 고릅니다.', alt: '표 한 장을 고른 화면' },
-  { n: '04', tag: 'OPEN', t: '열면, 럭키!', d: '표를 밀어 열면 선물이 나옵니다. 남은 한 장까지.', alt: '맨 윗등급 선물이 나온 결과 화면' },
+// LUCKY DRAW — 손님 4단계(사장님 10-07: 광고 + 현황 → 남은 선물 → 픽 → 열기 → 럭키). 10-19 홈페이지 수정 1 · 4 로 HOW IT WORKS 와
+// LUCKY DRAW 두 장을 합쳤다 — 큰 기기 한 대가 스크롤(넓은 화면)이나 자동 넘김(폰)으로 단계를 보여 준다(DrawScene). 화면은 실제 데모 녹화
+const DRAW_STEPS: DrawStep[] = [
+  { n: '01', tag: 'WATCH', t: '보고', big: '평소엔 광고판', d: '메뉴 · 신상품 · 이벤트가 돌고, 남은 경품이 몇 장인지 같이 보입니다.', alt: '광고와 남은 티켓 수가 보이는 대기 화면' },
+  { n: '02', tag: 'CHECK', t: '확인하고', big: '남은 경품이 먼저 보여요', d: '어떤 경품이 몇 개 남았는지 봅니다. 다른 손님이 참여하면 바로 줄어듭니다.', alt: '등급별 남은 선물 목록' },
+  { n: '03', tag: 'PICK', t: '고르고', big: '마음에 드는 표 한 장', d: '결제 · 시승 · 체험 한 번마다 한 장. 남은 표 중에서 직접 고릅니다.', alt: '표 한 장을 고른 화면' },
+  { n: '04', tag: 'OPEN', t: '열면, 럭키!', big: '밀어서 열면, 럭키!', d: '손님이 표를 밀어 열고, 그 자리에서 경품이 나옵니다. 남은 한 장까지.', alt: '맨 윗등급 선물이 나온 결과 화면' },
 ];
-const HOW_SETS: HowSet[] = [
+const HOW_SETS: DrawSet[] = [
   { key: 'beauty', tag: '뷰티 팝업' },
   { key: 'cafe', tag: '카페' },
   { key: 'chicken', tag: '치킨 호프' },
@@ -164,7 +156,6 @@ const WE_DO = [
 const FAQ = [
   { q: '기기를 따로 사야 하나요?', a: '가지고 계신 태블릿, 스탠드형 터치스크린, 키오스크에서 브라우저로 엽니다. 앱 설치도 필요 없어요.' },
   { q: '비용은 얼마인가요?', a: '행사 규모와 기간에 따라 달라요. 도입 문의를 남겨 주시면 맞춰서 안내드립니다.' },
-  { q: '디자인이나 사진은 직접 해야 하나요?', a: '아니요. 판 디자인, 광고 문구, 사진까지 저희가 만들어 드려요. 사진이 없어도 됩니다.' },
   { q: '경품은 누가 정해요?', a: '매장이나 브랜드가 정합니다. 무엇을 몇 개 걸지만 알려 주시면 등급과 수량은 같이 맞춰 드려요.' },
   { q: '좋은 경품이 먼저 다 나가면요?', a: '하위 등급만 남았을 때 끝까지 갈지, 피날레를 걸고 새 판을 열지 고를 수 있어요.' },
   { q: '손님 쿠폰은 어떻게 써요?', a: '손님 폰에 QR 쿠폰으로 남고, 다시 왔을 때 사장님 폰에서 사용 처리합니다.' },
@@ -230,66 +221,35 @@ export default function SitePage() {
           </div>
         </div>
 
-        {/* ── HOW IT WORKS — 손님은 이렇게(첫 화면 바로 다음) ── */}
-        <section className="kv-sec kv-how" id="how">
+        {/* ── LUCKY DRAW — 손님 4단계, 큰 기기 한 대(첫 화면 바로 다음). 10-19 HOW IT WORKS 와 합침 ── */}
+        <section className="kv-sec kv-luck" id="draw">
           <div className="kv-head">
-            <p className="kv-label" data-reveal>HOW IT WORKS</p>
+            <p className="kv-label fill" data-reveal>LUCKY DRAW</p>
             <h2 className="kv-h2" data-reveal>보고, 확인하고, 고르고,<br />열면 럭키!</h2>
             <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
-              손님은 이렇게 참여합니다. 앱 설치도 회원 가입도 없이, 화면 앞에서 1분이면 끝납니다.
+              앱 설치도 회원 가입도 없이, 화면 앞에서 1분이면 끝납니다. 모든 표에 경품이 들어 있어요.
             </p>
           </div>
-          <HowSteps steps={STEPS} sets={HOW_SETS} />
+          <DrawScene steps={DRAW_STEPS} sets={HOW_SETS} stickers={STICKERS} />
         </section>
 
         {/* ── SIGNAGE ── */}
         <section className="kv-sec kv-signage" id="signage">
           <div className="kv-sig-copy">
-            <p className="kv-label" data-reveal>SIGNAGE</p>
+            <p className="kv-tag" data-reveal><i>02 —</i>SIGNAGE</p>
             <h2 className="kv-h2" data-reveal>줄 서는 3분,<br />광고가 일합니다</h2>
             <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
               신제품, 시승 차량, 오늘의 메뉴. 사진과 문구만 넣으면 천천히 움직이는 광고가 만들어져 화면에서 돕니다.
             </p>
           </div>
-          {/* 올린 사진 한 장 → 화면에서는 움직이는 광고. 업종이 돌아가며 바뀐다 */}
-          <SignageCycle items={SIG} video="/site/signage.mp4" poster="/site/signage.jpg" seg={SIG_SEG} />
-        </section>
-
-        {/* ── LUCKY DRAW ── */}
-        <section className="kv-sec kv-draw" id="draw">
-          <div className="kv-draw-stage" data-reveal>
-            <div className="kv-device">
-              <div className="kv-screen">
-                <video autoPlay muted loop playsInline preload="metadata" poster="/site/open.jpg" data-inview>
-                  <source src="/site/open.mp4" type="video/mp4" />
-                </video>
-              </div>
-            </div>
-            {STICKERS.map((s, i) => (
-              <div className={`kv-sticker s${i + 1}`} key={s.img}>
-                <img src={`/site/m/${s.img}.jpg`} alt="" width={480} height={480} loading="lazy" />
-                <span>{s.name}</span>
-              </div>
-            ))}
-          </div>
-          <div className="kv-draw-copy">
-            <p className="kv-label" data-reveal>LUCKY DRAW</p>
-            <h2 className="kv-h2" data-reveal>모든 참여에 경품,<br />손님이 먼저 누릅니다</h2>
-            <ul className="kv-points">
-              <li data-reveal><b>한 번 하면 한 번</b>결제, 시승, 체험 한 번마다 참여 한 번. 조건은 행사마다 정합니다.</li>
-              <li data-reveal style={{ ['--i' as string]: 1 }}><b>직접 밀어 여는 손맛</b>손님이 화면의 표를 밀어 열고, 그 자리에서 경품을 확인합니다.</li>
-              <li data-reveal style={{ ['--i' as string]: 2 }}>
-                <b>남은 경품이 실시간으로</b>다른 손님이 참여하면 바로 줄어듭니다. 줄어드는 숫자가 다음 손님을 부릅니다.
-                <span className="kv-left"><span data-count="50>36">36</span> / 50 남음</span>
-              </li>
-            </ul>
-          </div>
+          {/* 올린 사진 한 장이 화면에서 광고가 되는 4초 — 업종이 돌아가며 바뀐다(10-19 수정 5) */}
+          <SignageCycle items={SIG} video="/site/signage-v2.mp4" poster="/site/signage-v2.jpg" seg={SIG_SEG} />
         </section>
 
         {/* ── NEW PLAY — 늘 하던 팝업 이벤트 말고 ── */}
         <section className="kv-sec kv-play" id="play">
           <div className="kv-head">
-            <p className="kv-label" data-reveal>NEW PLAY</p>
+            <p className="kv-tag" data-reveal><i>03 —</i>NEW PLAY</p>
             <h2 className="kv-h2" data-reveal>스탬프, 룰렛, 인증샷.<br />이번 팝업은 다르게</h2>
             <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
               늘 보던 이벤트에는 손님도 금방 익숙해집니다. 같은 경품이라도 참여하는 방식이 바뀌면 다시 눈길이 갑니다.
@@ -305,32 +265,25 @@ export default function SitePage() {
               </div>
             ))}
           </div>
-          <h3 className="kv-h3" data-reveal>이렇게 써 보세요</h3>
-          <div className="kv-ideas">
-            {IDEAS.map((d, i) => (
-              <article key={d.t} data-reveal style={{ ['--i' as string]: i }}>
-                <span className="kv-idea-ic"><Icon name={d.icon} /></span>
-                <h4>{d.t}</h4>
-                <p>{d.d}</p>
-              </article>
-            ))}
+          {/* REVISIT 장을 흡수(10-19 수정 4) — 행사가 끝난 뒤까지 */}
+          <div className="kv-revisit2" data-reveal>
+            <img src="/site/coupon.jpg" alt="결과 화면의 QR 쿠폰" width={540} height={390} loading="lazy" />
+            <div>
+              <h3>행사가 끝나도 손님이 돌아오게</h3>
+              <p>나중에 쓰는 경품은 QR 쿠폰으로 손님 폰에 남습니다. 다시 왔을 때 사장님 폰에서 사용 처리하고, 남은 수와 경품 · 광고 사진도 같은 폰에서 바꿉니다.</p>
+            </div>
           </div>
         </section>
 
         {/* ── ANYWHERE — 가진 화면 그대로 ── */}
         <section className="kv-sec kv-any" id="anywhere">
           <div className="kv-head">
-            <p className="kv-label" data-reveal>ANYWHERE</p>
+            <p className="kv-tag" data-reveal><i>04 —</i>ANYWHERE</p>
             <h2 className="kv-h2" data-reveal>가지고 계신<br />화면이면 됩니다</h2>
             <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
               앱 설치 없이 브라우저로 열고, 세로 화면에 맞춰 뜹니다. 카운터, 입구, 체험존 어디에 세워도 됩니다.
             </p>
           </div>
-          <figure className="kv-shot kv-any-scene" data-reveal>
-            <Scene photo="/site/scene-counter.jpg" video="/site/screen-food.mp4" poster="/site/screen-food.jpg" matrix={M.counter}
-              alt="라멘집 카운터 위 태블릿" />
-            <figcaption><b>매장 카운터</b>계산대 옆 태블릿 한 대 · 장면 사진은 예시이고 화면 속 광고는 실제 쿠벤팅 화면입니다</figcaption>
-          </figure>
           <div className="kv-lineup">
             {DEVICES.map((d, i) => (
               <figure className={`kv-unit ${d.kind}`} key={d.kind} data-reveal style={{ ['--i' as string]: i }}>
@@ -351,7 +304,7 @@ export default function SitePage() {
         {/* ── DONE FOR YOU — 상품만 정하면 나머지는 저희가 ── */}
         <section className="kv-sec kv-done" id="done">
           <div className="kv-head">
-            <p className="kv-label" data-reveal>DONE FOR YOU</p>
+            <p className="kv-tag" data-reveal><i>05 —</i>DONE FOR YOU</p>
             <h2 className="kv-h2" data-reveal>상품만 정하세요,<br />나머지는 저희가</h2>
             <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
               디자인도 사진도 저희가 만듭니다. 머리 아프게 신경 쓸 것 없이, 매장 화면에 띄워 두기만 하면 됩니다.
@@ -381,7 +334,7 @@ export default function SitePage() {
         {/* ── DEMO ── */}
         <section className="kv-sec kv-demos" id="demos">
           <div className="kv-head">
-            <p className="kv-label" data-reveal>DEMO</p>
+            <p className="kv-tag" data-reveal><i>06 —</i>DEMO</p>
             <h2 className="kv-h2" data-reveal>업종마다 다른 판,<br />직접 눌러 보세요</h2>
             <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
               데모는 화면 안에서만 돌아갑니다. 마음껏 눌러도 실제 행사와는 상관이 없습니다.
@@ -391,38 +344,24 @@ export default function SitePage() {
           <p className="kv-fine">아르벤은 데모를 위해 만든 가상 브랜드입니다.</p>
         </section>
 
-        {/* ── REVISIT ── */}
-        <section className="kv-sec kv-revisit" id="revisit">
-          <div className="kv-revisit-copy">
-            <p className="kv-label" data-reveal>REVISIT</p>
-            <h2 className="kv-h2" data-reveal>행사가 끝나도<br />손님이 돌아오게</h2>
-            <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
-              나중에 쓰는 경품은 QR 쿠폰으로 손님 폰에 남습니다. 경품, 광고 사진, 쿠폰 사용까지 사장님 폰 하나로 관리합니다.
-            </p>
-            <ul className="kv-chips" aria-label="사장님 폰에서 하는 일" data-reveal style={{ ['--i' as string]: 2 }}>
-              <li>경품과 수량</li><li>광고 사진과 문구</li><li>쿠폰 사용 처리</li><li>판 테마와 글꼴</li><li>끝물 방식</li>
-            </ul>
-          </div>
-          <img className="kv-revisit-img" src="/site/coupon.jpg" alt="결과 화면의 QR 쿠폰" width={540} height={390} loading="lazy" data-reveal />
-        </section>
-
-        {/* ── FAQ — 말풍선 ── */}
+        {/* ── FAQ — 말풍선, 접어 둠 ── */}
         <section className="kv-sec kv-faq" id="faq">
-          <p className="kv-label" data-reveal>FAQ</p>
+          <p className="kv-tag" data-reveal><i>07 —</i>FAQ</p>
           <h2 className="kv-h2" data-reveal>많이 물어보세요</h2>
           <div className="kv-chat">
+            {/* 질문 다섯, 접어 둔다(10-19 수정 4) — 누르면 답 말풍선이 열린다 */}
             {FAQ.map((f, i) => (
-              <div className="kv-qa" key={f.q}>
-                <p className="kv-bubble q" data-reveal style={{ ['--i' as string]: i % 2 }}>{f.q}</p>
-                <p className="kv-bubble a" data-reveal style={{ ['--i' as string]: (i % 2) + 1 }}>{f.a}</p>
-              </div>
+              <details className="kv-qa" key={f.q} data-reveal style={{ ['--i' as string]: i % 3 }}>
+                <summary className="kv-bubble q">{f.q}</summary>
+                <p className="kv-bubble a">{f.a}</p>
+              </details>
             ))}
           </div>
         </section>
 
         {/* ── 도입 문의 ── */}
         <section className="kv-contact" id="contact">
-          <p className="kv-label" data-reveal>CONTACT</p>
+          <p className="kv-label fill" data-reveal>CONTACT</p>
           <h2 className="kv-h2" data-reveal>다음 팝업, 다음 행사,<br />화면 하나로 열어 보세요</h2>
           <p className="kv-sub" data-reveal style={{ ['--i' as string]: 1 }}>
             업종과 일정만 남겨 주세요. 맞는 광고와 경품 구성을 제안드립니다.

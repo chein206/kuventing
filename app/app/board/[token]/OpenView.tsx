@@ -91,6 +91,9 @@ function Open3D({
   const touched = useRef(false);
   // 안내(hint)는 처음 잡는 순간 걷는다
   const [held, setHeld] = useState(false);
+  // 손가락 힌트(10-19 홈페이지 수정 3) — 안내가 있는 빠른 열기에서만, 2초 가만히 있으면 원이 표를 오른쪽으로 한 번 밀어 보이고 사라진다.
+  // 페이지에서 한 번만(업종을 바꿔 판이 새로 떠도 다시 안 함), 손대면 바로 끔
+  const [ghost, setGhost] = useState(false);
 
   useEffect(() => { openedRef.current = onOpened; }, [onOpened]);
   // 카드가 멈춘 자리는 처음 뜰 때 한 번만 읽는다 — 카드가 걷혀 값이 사라져도 3D 를 다시 띄우지 않게
@@ -198,6 +201,16 @@ function Open3D({
   }, [ready, pending, auto, done, autoOpenSeconds, start]);
 
   const canPush = ready && !!pending && !auto && !done;
+
+  useEffect(() => {
+    if (!hint || !canPush || held || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // 한 번 보였으면 끝 — 홈페이지(부모 창)에 표시를 남겨 판이 새로 떠도 다시 하지 않는다(같은 출처)
+    const host = (() => { try { return window.parent as Window & { __kvGhost?: boolean }; } catch { return window as Window & { __kvGhost?: boolean }; } })();
+    if (host.__kvGhost) return;
+    const t1 = setTimeout(() => { host.__kvGhost = true; setGhost(true); }, 2000);
+    const t2 = setTimeout(() => setGhost(false), 2000 + 1700);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [hint, canPush, held]);
   const last = !!pending?.isLastOne && !!pending?.lastOneName;
 
   // 종이 판 — 밀 수 있게 되면 표 끝이 가끔 들썩인다. 버튼으로 열거나 손이 닿으면 멈춘다
@@ -242,6 +255,7 @@ function Open3D({
           ? (
             <div className={`tslot grip ${canPush ? '' : 'off'}${hint ? ' hinted' : ''}`} ref={slotRef} {...hands}>
               {hint && canPush && !held && <span className="op3hint" aria-hidden="true">{hint}</span>}
+              {ghost && !held && <span className="op3ghost" aria-hidden="true" />}
             </div>
           )
           : <div className="tslot" ref={slotRef} />}
