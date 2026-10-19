@@ -140,7 +140,7 @@ html:has(.kv){scroll-behavior:smooth}
     background:var(--pop);color:var(--pop-ink);font-size:15px;font-weight:800;box-shadow:0 5px 0 #B98A10}
   .kv-quick-cover svg{transform:rotate(90deg)}
 }
-.kv-quick-hint{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:14px;color:var(--dim)}
+.kv-quick-hint{margin-top:10px;width:max-content;max-width:min(560px,44vw);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:14px;color:var(--dim)}
 /* 업종 단추 · 소리 — 틀보다 넓어도 된다(오른쪽 장면 사진 아래가 비어 있다) */
 .kv-quick-bar{margin-top:16px;width:max-content;max-width:min(560px,44vw);display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .kv-quick-tabs{display:flex;flex-wrap:wrap;gap:6px}
@@ -444,7 +444,7 @@ html:has(.kv){scroll-behavior:smooth}
   .kv-quick{position:static;justify-self:center;width:min(300px,74vw)}
   .kv-quick-bar{max-width:min(560px,calc(100vw - 2 * var(--pad)));margin-left:50%;translate:-50% 0;justify-content:center}
   .kv-quick-tabs{justify-content:center}
-  .kv-quick-hint{justify-content:center}
+  .kv-quick-hint{justify-content:center;max-width:calc(100vw - 2 * var(--pad));margin-left:50%;translate:-50% 0}
   .kv-signage{grid-template-columns:1fr}
   .kv-sig-flow{max-width:640px}
   /* LUCKY DRAW — 붙이지 않고 기기 · 단계 단추 · 글 순서로 쌓는다(단계는 자동으로 넘어감) */
