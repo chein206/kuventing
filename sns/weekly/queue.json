@@ -38,9 +38,9 @@
       ],
       "caption": "caption.md",
       "ai": false,
-      "slot": "2026-10-27T12:30:00+09:00",
-      "approved": false,
-      "approvedNote": "",
+      "slot": "2026-10-23T12:30:00+09:00",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-19 12:58 「ㅇㅇ올려」 — 목 10-23 12:30, 고정 게시물 후보(고정은 대표 폰 앱), AI 레이블 끔",
       "status": "ready",
       "note": "모션 세션 리모델 납품 10-19"
     },
