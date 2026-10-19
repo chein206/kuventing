@@ -74,9 +74,9 @@
       ],
       "caption": "caption.md",
       "ai": false,
-      "slot": "2026-10-31T11:00:00+09:00",
-      "approved": false,
-      "approvedNote": "",
+      "slot": "2026-10-21T12:30:00+09:00",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-19 12:55 「ㅇㅇ 나도 빨리 올리면 좋을듯」 — 화 10-21 12:30 당겨 게시(1차 릴스, AI 레이블 끔)",
       "status": "ready",
       "cover": "cover.png",
       "note": "모션 세션 릴스 1차 10-19 — 대표 피드백 대기"
