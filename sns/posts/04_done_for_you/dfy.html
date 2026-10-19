@@ -1,0 +1,161 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>쿠벤팅 캐러셀 04 — 상품만 정하세요</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+/* 쿠벤팅 인스타 카드 1080×1350 — 홈페이지(kuventing.scpadlab.com) 2판 결: 밤 남색 · 노랑 하나 · 블랙한산스 · Archivo 넓게 · 종이결
+   @scpadlab(검정 · 레드 · 카드뉴스)과 다른 노선. 그림은 실제 판 화면 캡처만, 표시는 손으로 그은 듯한 노랑 선 */
+:root{
+  --bg:#070B16; --bg2:#0D1426; --bg3:#141D36; --line:rgba(190,205,255,.14);
+  --ink:#F3F1EA; --ink2:#C3CAD8; --dim:#8A93A8; --pop:#FFC83D; --pop-ink:#1A1300;
+  --hd:'Black Han Sans','Pretendard Variable',sans-serif;
+  --en:'Archivo',sans-serif;
+  --tx:'Pretendard Variable',Pretendard,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#222;padding:40px;display:flex;flex-direction:column;gap:40px;align-items:center;font-family:var(--tx);color:var(--ink);word-break:keep-all}
+.card{position:relative;width:1080px;height:1350px;background:var(--bg);overflow:hidden;padding:96px 92px 0}
+/* 종이결 — 아주 옅게 */
+.card::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.09;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+/* 머리 · 바닥 */
+.top{position:absolute;left:92px;right:92px;top:56px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{width:58px;height:58px;display:block}
+.brand b{font-family:var(--en);font-stretch:125%;font-weight:800;font-size:22px;letter-spacing:.12em;color:var(--ink)}
+.pg{font-family:var(--en);font-stretch:112%;font-weight:700;font-size:24px;letter-spacing:.06em;color:var(--dim)}
+.pg em{font-style:normal;color:var(--ink)}
+.foot{position:absolute;left:92px;right:92px;bottom:58px;display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--en);font-stretch:112%;font-weight:600;font-size:22px;letter-spacing:.08em;color:var(--dim)}
+.prog{display:flex;gap:10px}
+.prog i{display:block;width:44px;height:26px;border-radius:5px;border:2.5px solid #3A4460;position:relative}
+.prog i::before,.prog i::after{content:'';position:absolute;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--bg);border:2.5px solid #3A4460}
+.prog i::before{left:-7px;clip-path:inset(0 0 0 50%)}.prog i::after{right:-7px;clip-path:inset(0 50% 0 0)}
+.prog i.on{background:var(--pop);border-color:var(--pop)}.prog i.on::before,.prog i.on::after{border-color:var(--pop)}
+.foot .save{display:flex;align-items:center;gap:10px}
+.foot .save svg{width:24px;height:24px}
+
+/* 표지 */
+.cover{padding-top:210px}
+.chip{display:inline-flex;align-items:center;gap:12px;background:var(--pop);color:var(--pop-ink);border-radius:999px;
+  padding:12px 26px 12px 22px;font-family:var(--en);font-stretch:125%;font-weight:900;font-size:22px;letter-spacing:.1em}
+.chip i{font-style:normal;font-family:var(--tx);font-weight:700;letter-spacing:0;font-size:22px}
+.cover h1{font-family:var(--hd);font-weight:400;font-size:118px;line-height:1.08;letter-spacing:-.01em;margin-top:44px}
+.cover h1 u{text-decoration:none;position:relative;white-space:nowrap}
+.cover h1 u svg{position:absolute;left:-14px;right:-10px;bottom:-26px;width:calc(100% + 24px);height:44px;overflow:visible}
+.cover .sub{margin-top:40px;font-size:38px;line-height:1.5;color:var(--ink2);font-weight:500}
+.cover .shot{position:absolute;right:-150px;bottom:-360px;width:600px;transform:rotate(-8deg);border-radius:26px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);border:10px solid #1B2133}
+.cover .shot img{display:block;width:100%}
+
+/* 항목 */
+.num{font-family:var(--en);font-stretch:125%;font-weight:900;font-size:200px;line-height:.86;color:var(--pop);letter-spacing:-.02em;margin-top:120px}
+.num small{font-size:40px;color:var(--dim);letter-spacing:.04em;margin-left:14px;vertical-align:top;position:relative;top:16px}
+.item h2{font-family:var(--hd);font-weight:400;font-size:104px;line-height:1.12;margin-top:56px}
+.item p{margin-top:44px;font-size:43px;line-height:1.6;color:var(--ink2);font-weight:500;max-width:860px}
+.item p b{color:var(--ink);font-weight:700}
+.note{margin-top:34px;font-size:31px;line-height:1.55;color:var(--dim)}
+
+/* 실제 화면 캡처 */
+.item.tight .num{font-size:150px;margin-top:40px}
+.item.tight h2{margin-top:44px}
+.screen{position:absolute;left:92px;right:92px;bottom:128px;height:400px;border-radius:26px;overflow:hidden;border:8px solid #1B2133;background:#F6F1EE}
+.screen img{position:absolute;left:0;top:0;width:100%}
+.screen .demo{position:absolute;right:16px;bottom:16px;background:rgba(7,11,22,.86);color:var(--ink);font-size:22px;font-weight:700;
+  padding:8px 16px;border-radius:999px;letter-spacing:.02em}
+.mark{position:absolute;pointer-events:none;overflow:visible}
+
+/* 끝 */
+.end{padding-top:230px}
+.end h2{font-family:var(--hd);font-weight:400;font-size:96px;line-height:1.14}
+.end p{margin-top:40px;font-size:40px;line-height:1.6;color:var(--ink2);font-weight:500}
+.end .go{position:absolute;left:92px;right:92px;bottom:170px;display:flex;align-items:center;gap:30px;
+  border-top:2px solid var(--line);padding-top:48px}
+.end .go img{width:150px;height:150px}
+.end .go div{font-size:36px;line-height:1.5;color:var(--ink)}
+.end .go div span{display:block;font-family:var(--en);font-stretch:112%;font-weight:700;font-size:28px;color:var(--pop);letter-spacing:.04em;margin-top:6px}
+
+.trio{position:absolute;left:92px;right:92px;bottom:140px;height:430px;display:flex;gap:22px}
+.trio div{flex:1;border-radius:22px;overflow:hidden;border:7px solid #1B2133;position:relative}
+.trio img{width:100%;display:block}
+.trio span{position:absolute;left:12px;bottom:12px;background:rgba(7,11,22,.86);color:var(--ink);font-size:20px;font-weight:700;padding:6px 13px;border-radius:999px}
+.strip{position:absolute;left:92px;right:92px;bottom:130px;height:420px;border-radius:24px;overflow:hidden;border:8px solid #1B2133}
+.strip img{position:absolute;left:0;width:100%}
+.strip span{position:absolute;right:14px;top:14px;background:rgba(7,11,22,.86);color:var(--ink);font-size:20px;font-weight:700;padding:6px 13px;border-radius:999px}
+.dev{position:absolute;left:92px;right:92px;bottom:150px;height:380px;display:flex;align-items:flex-end;justify-content:space-around}
+.dev figure{display:flex;flex-direction:column;align-items:center;gap:20px;color:var(--ink2);font-size:28px;font-weight:600}
+.dev .t{width:210px;height:300px;border:7px solid var(--ink2);border-radius:22px;position:relative}
+.dev .s{width:150px;height:240px;border:7px solid var(--ink2);border-radius:14px;position:relative;margin-bottom:60px}
+.dev .s::after{content:'';position:absolute;left:50%;top:100%;width:7px;height:60px;background:var(--ink2);transform:translateX(-50%)}
+.dev .k{width:170px;height:330px;border:7px solid var(--ink2);border-radius:14px 14px 4px 4px;position:relative}
+.dev .t::before,.dev .s::before,.dev .k::before{content:'';position:absolute;inset:14px;border-radius:8px;background:var(--pop);opacity:.9}
+.dev .k::before{bottom:120px}
+.frames{position:absolute;left:92px;right:92px;bottom:150px;height:380px;display:flex;align-items:flex-end;justify-content:center;gap:34px}
+.frames figure{display:flex;flex-direction:column;align-items:center;gap:18px;color:var(--ink2);font-size:28px;font-weight:600}
+.frames .f{width:240px;height:290px;border:7px solid var(--ink2);border-radius:18px;position:relative;background:var(--bg2)}
+.frames .f::before{content:'';position:absolute;left:18px;right:18px;top:18px;height:170px;border-radius:10px;background:var(--bg3)}
+.frames .f::after{content:'';position:absolute;left:18px;width:60%;bottom:30px;height:16px;border-radius:8px;background:var(--pop)}
+.frames figure:nth-child(2){transform:translateY(-30px)}
+.cover .big{position:absolute;right:-170px;bottom:-120px;width:820px;transform:rotate(-9deg)}
+.own{margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.own div{background:var(--bg2);border:2px solid var(--line);border-radius:22px;padding:26px 28px;font-size:30px;line-height:1.4;font-weight:600}
+.own div small{display:block;font-size:24px;color:var(--dim);font-weight:500;margin-top:8px}
+.own div.me{background:var(--pop);color:var(--pop-ink);border-color:var(--pop)}
+.own div.me small{color:#5a4600}
+</style></head><body>
+<section class="card cover"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>1</em> / 7</div></div>
+<span class="chip">DONE FOR YOU <i>팝업 · 매장 럭키드로우</i></span>
+<h1 style="font-size:112px">사장님이<br>하실 일은<br><u>하나예요<svg viewBox="0 0 700 44" preserveAspectRatio="none"><path d="M4 26 C 120 14, 260 30, 420 18 S 640 22, 700 16" fill="none" stroke="#FFC83D" stroke-width="9" stroke-linecap="round"/></svg></u></h1>
+<p class="sub">상품만 정하세요.<br>나머지는 저희가 해요.</p>
+<img class="big" src="../../brand/logo/svg/mark-yellow.svg" alt="">
+<div class="foot"><span>@kuventing</span></div>
+</section>
+<section class="card item tight"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>2</em> / 7</div></div>
+<div class="num">01<small>판 디자인</small></div>
+<h2>가게 분위기에 맞춰<br>판을 만들어요</h2>
+<p>판 색, 표 모양, 글꼴까지.<br><b>같은 화면이 가게마다 다르게</b> 보여요.</p>
+<div class="trio"><div><img src="../_shots/beauty-grid.png" alt=""><span>뷰티 팝업</span></div><div><img src="../_shots/chicken-grid.png" alt=""><span>치킨 호프</span></div><div><img src="../_shots/arven-grid.png" alt=""><span>시승 행사</span></div></div>
+<div class="foot"><span>@kuventing</span><span class="prog"><i class="on"></i><i></i><i></i><i></i><i></i></span></div>
+</section>
+<section class="card item tight"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>3</em> / 7</div></div>
+<div class="num">02<small>사진</small></div>
+<h2>사진이 없으면<br>만들어 드려요</h2>
+<p>광고판에 띄울 메뉴 · 상품 사진,<br>경품 사진까지.<br><b>휴대폰 사진 한 장이면 시작할 수 있어요.</b></p>
+<div class="frames"><figure><div class="f"></div>메뉴 · 상품</figure><figure><div class="f"></div>경품</figure><figure><div class="f"></div>광고 문구</figure></div>
+
+<div class="foot"><span>@kuventing</span><span class="prog"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></div>
+</section>
+<section class="card item tight"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>4</em> / 7</div></div>
+<div class="num">03<small>광고판</small></div>
+<h2>평소엔<br>광고판으로 돌아가요</h2>
+<p>손님이 누르기 전까지는<br>메뉴 · 신상품 · 이벤트를 띄워 둬요.<br><b>아래엔 남은 표가 늘 보여요.</b></p>
+<div class="strip"><img src="../_shots/cafe-attract.png" alt="" style="top:-1000px"><span>실제 판 화면 · 데모</span></div>
+<div class="foot"><span>@kuventing</span><span class="prog"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span></div>
+</section>
+<section class="card item tight"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>5</em> / 7</div></div>
+<div class="num">04<small>설치</small></div>
+<h2>기기에 두기만 하면<br>끝이에요</h2>
+<p>태블릿, 스탠드형 화면, 키오스크.<br>주소 하나 열면 바로 시작해요.</p>
+<div class="dev"><figure><div class="t"></div>태블릿</figure><figure><div class="s"></div>스탠드형</figure><figure><div class="k"></div>키오스크</figure></div>
+<div class="foot"><span>@kuventing</span><span class="prog"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></div>
+</section>
+<section class="card item tight"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>6</em> / 7</div></div>
+<div class="num">05<small>사장님 몫</small></div>
+<h2>상품만 정하세요</h2>
+<div class="own">
+  <div class="me">어떤 경품을 몇 개<small>본품 · 음료 · 할인 쿠폰</small></div>
+  <div class="me">한 장을 주는 기준<small>구매 1회 · 체험 1회 · 1테이블</small></div>
+  <div>판 디자인<small>저희가</small></div>
+  <div>사진 · 광고 문구<small>저희가</small></div>
+  <div>남은 수 · 쿠폰 확인<small>사장님 폰에서 바로</small></div>
+  <div>기기 설정<small>주소 하나로</small></div>
+</div>
+<div class="foot"><span>@kuventing</span><span class="prog"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</section>
+<section class="card end"><div class="top"><div class="brand"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><b>KUVENTING</b></div><div class="pg"><em>7</em> / 7</div></div>
+<span class="chip">KUVENTING</span>
+<h2 style="margin-top:44px">남은 한 장까지,<br>럭키드로우</h2>
+<p>평소엔 광고판, 누르면 럭키드로우.<br>팝업 · 행사 · 매장 화면 하나로.</p>
+<div class="go"><img src="../../brand/logo/svg/mark-yellow.svg" alt=""><div>도입 문의는 프로필 링크나 DM으로<br>데모도 거기서 직접 열어 보세요<span>kuventing.scpadlab.com</span></div></div>
+<div class="foot"><span>@kuventing</span><span>남은 한 장까지, 럭키드로우</span></div>
+</section></body></html>

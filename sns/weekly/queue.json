@@ -26,6 +26,27 @@
       "status": "ready"
     },
     {
+      "id": "04_done_for_you",
+      "title": "상품만 정하세요, 나머지는 저희가",
+      "type": "carousel",
+      "dir": "kuventing/sns/posts/04_done_for_you",
+      "files": [
+        "out/card-1.png",
+        "out/card-2.png",
+        "out/card-3.png",
+        "out/card-4.png",
+        "out/card-5.png",
+        "out/card-6.png",
+        "out/card-7.png"
+      ],
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-10-29T12:30:00+09:00",
+      "approved": false,
+      "approvedNote": "",
+      "status": "ready"
+    },
+    {
       "id": "06_five_shops",
       "title": "같은 화면, 다섯 가게",
       "type": "carousel",
