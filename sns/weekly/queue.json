@@ -21,6 +21,23 @@
       "postedAt": "2026-10-19T12:04:00+09:00"
     },
     {
+      "id": "06_five_shops",
+      "title": "같은 화면, 다섯 가게",
+      "type": "reel",
+      "dir": "kuventing/sns/posts/06_five_shops",
+      "files": [
+        "reel.mp4"
+      ],
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-10-21T12:30:00+09:00",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-19 12:55 「ㅇㅇ 나도 빨리 올리면 좋을듯」 — 화 10-21 12:30 당겨 게시(1차 릴스, AI 레이블 끔)",
+      "status": "ready",
+      "cover": "cover.png",
+      "note": "모션 세션 릴스 1차 10-19 — 대표 피드백 대기"
+    },
+    {
       "id": "02_checklist",
       "title": "럭키드로우 열기 전에 확인할 7가지",
       "type": "carousel",
@@ -45,6 +62,22 @@
       "note": "모션 세션 리모델 납품 10-19"
     },
     {
+      "id": "07_endgame",
+      "title": "1등이 아직 안 나왔어요(기사 인용 훅)",
+      "type": "reel",
+      "dir": "kuventing/sns/posts/07_endgame",
+      "files": [
+        "reel.mp4"
+      ],
+      "cover": "cover.png",
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-10-25T11:00:00+09:00",
+      "approved": false,
+      "approvedNote": "",
+      "status": "ready"
+    },
+    {
       "id": "04_done_for_you",
       "title": "상품만 정하세요, 나머지는 저희가",
       "type": "carousel",
@@ -63,23 +96,6 @@
       "approvedNote": "",
       "status": "draft",
       "note": "모션 세션 리모델 5장(10-19). 3장 사진 = 대표 주말 촬영 S8 → remodel/img/s8.jpg 넣고 make.py 다시(10-26)"
-    },
-    {
-      "id": "06_five_shops",
-      "title": "같은 화면, 다섯 가게",
-      "type": "reel",
-      "dir": "kuventing/sns/posts/06_five_shops",
-      "files": [
-        "reel.mp4"
-      ],
-      "caption": "caption.md",
-      "ai": false,
-      "slot": "2026-10-21T12:30:00+09:00",
-      "approved": true,
-      "approvedNote": "대표 채팅 10-19 12:55 「ㅇㅇ 나도 빨리 올리면 좋을듯」 — 화 10-21 12:30 당겨 게시(1차 릴스, AI 레이블 끔)",
-      "status": "ready",
-      "cover": "cover.png",
-      "note": "모션 세션 릴스 1차 10-19 — 대표 피드백 대기"
     }
   ]
 }

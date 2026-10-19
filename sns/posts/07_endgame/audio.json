@@ -1,0 +1,74 @@
+{
+ "dur": 19.567,
+ "fps": 30,
+ "bgm": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/music/tracks/bgm-kuventing/C_techpop_s2703.wav",
+  "start": 23.5,
+  "gain_db": -7,
+  "duck": [],
+  "fade_out": [
+   16.766666666666666,
+   19.516666666666666
+  ]
+ },
+ "logo": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/sns/brand/logo/motion/kuventing-logo-sfx.wav",
+  "at_frame": 512,
+  "gain_db": -2
+ },
+ "clips": [
+  {
+   "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/app/public/snd/fanfare-silver.mp3",
+   "at_frame": 353,
+   "gain_db": -11,
+   "len": 0.9
+  }
+ ],
+ "events": [
+  {
+   "f": 2,
+   "k": "tick"
+  },
+  {
+   "f": 65,
+   "k": "swoosh"
+  },
+  {
+   "f": 153,
+   "k": "tap"
+  },
+  {
+   "f": 168,
+   "k": "tick"
+  },
+  {
+   "f": 216,
+   "k": "tick"
+  },
+  {
+   "f": 236,
+   "k": "tap"
+  },
+  {
+   "f": 269,
+   "k": "grind",
+   "len": 68
+  },
+  {
+   "f": 351,
+   "k": "reveal"
+  },
+  {
+   "f": 383,
+   "k": "tick"
+  },
+  {
+   "f": 414,
+   "k": "thump"
+  },
+  {
+   "f": 462,
+   "k": "thump"
+  }
+ ]
+}
