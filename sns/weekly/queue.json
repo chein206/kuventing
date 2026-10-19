@@ -54,9 +54,7 @@
         "out/card-2.png",
         "out/card-3.png",
         "out/card-4.png",
-        "out/card-5.png",
-        "out/card-6.png",
-        "out/card-7.png"
+        "out/card-5.png"
       ],
       "caption": "caption.md",
       "ai": false,
@@ -64,7 +62,7 @@
       "approved": false,
       "approvedNote": "",
       "status": "draft",
-      "note": "모션 세션 리모델 중(요청 03)"
+      "note": "모션 세션 리모델 5장(10-19). 3장 사진 = 대표 주말 촬영 S8 → remodel/img/s8.jpg 넣고 make.py 다시(10-26)"
     },
     {
       "id": "06_five_shops",
