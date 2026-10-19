@@ -137,7 +137,7 @@ function Keys() {
       </div>
       <button className="big cd">티켓 고르기<i className="cdbar" style={{ width: '62%' }} /><em className="cdnum">19</em></button>
       <div className="rowbtn"><button className="big ghost">취소</button><button className="big" disabled>뽑는 중</button></div>
-      <div className="foot" style={{ padding: '0' }}><button className="touch">화면을 눌러 뽑기 시작</button></div>
+      <div className="foot" style={{ padding: '0' }}><button className="touch">화면을 눌러 럭키드로우 시작</button></div>
     </div>
   );
 }

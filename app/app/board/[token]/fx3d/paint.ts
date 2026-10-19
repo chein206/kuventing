@@ -135,7 +135,7 @@ function slipPaper(H: number, p: SlipPaper = KRAFT) {
   g.strokeStyle = ink(0.42); g.lineWidth = 2.2; g.strokeRect(62, 62, W - 124, H - 124);
 
   g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  g.fillStyle = ink(0.92); g.font = '900 110px ' + KO; g.fillText('축 당첨', 104, 320);
+  g.fillStyle = ink(0.92); g.font = '900 110px ' + KO; g.fillText('LUCKY', 104, 320); // 10-19 「축 당첨」 → LUCKY(대표: 판 말투도 럭키드로우로)
   g.fillStyle = ink(0.3); g.fillRect(112, 456, 600, 2);
   g.fillStyle = ink(0.5); g.font = '600 28px ' + KO; g.fillText('모든 표에 상품이 들어 있습니다', 112, 648);
   g.fillStyle = ink(0.26);

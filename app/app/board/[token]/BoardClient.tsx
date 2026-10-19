@@ -378,7 +378,7 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
           setSel(null); refresh(); setStep('grid');
         } else if (m.includes('PASS_')) {
           setMsg('시간이 지났습니다. 다시 시작해주세요'); goAttract();
-        } else { pullTok.current++; setPull(null); setMsg('뽑기에 실패했습니다'); setStep('grid'); }
+        } else { pullTok.current++; setPull(null); setMsg('표를 열지 못했습니다. 다시 눌러 주세요'); setStep('grid'); }
       }
     })();
     return () => { alive = false; };
@@ -571,7 +571,7 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
               )}
               <Mini board={board} art={art} pops={pops} />
             </div>
-            <button className="touch" onClick={start}>화면을 눌러 뽑기 시작</button>
+            <button className="touch" onClick={start}>화면을 눌러 럭키드로우 시작</button>
             {msg && <p style={{ textAlign: 'center', color: 'var(--accent)', fontWeight: 700, marginTop: 10 }}>{msg}</p>}
           </div>
         </>
@@ -693,7 +693,7 @@ export default function BoardClient({ token, build, quick }: { token: string; bu
             }}>랜덤</button>
             <button className="big cd" style={{ flex: 2 }} disabled={sel === null || !!pull}
                     onClick={pullOut}>
-              이 티켓으로 뽑기
+              이 티켓으로 열기
               <Cooldown seconds={cfg.idleSeconds ?? DEF.idle} lastTouch={lastTouch} />
             </button>
           </div>

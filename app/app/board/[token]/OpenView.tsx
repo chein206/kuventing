@@ -253,7 +253,7 @@ function Open3D({
           </div>
           {done && pending && (
             <div className="cap3">
-              <b>{pending.grade} 등급 당첨</b>
+              <b>{pending.grade} 등급</b>
               <span>{last ? `${lastOneLabel}까지 함께 나옵니다` : '다음 화면에서 상품이 나옵니다'}</span>
             </div>
           )}
