@@ -1,0 +1,64 @@
+{
+ "dur": 15.967,
+ "fps": 30,
+ "bgm": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/music/tracks/bgm-kuventing/B_futurebounce_s2702.wav",
+  "start": 16.6,
+  "gain_db": -7,
+  "duck": [
+   [
+    10.966666666666667,
+    13.466666666666667,
+    -7
+   ]
+  ],
+  "fade_out": [
+   13.166666666666666,
+   15.916666666666666
+  ]
+ },
+ "logo": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/sns/brand/logo/motion/kuventing-logo-sfx.wav",
+  "at_frame": 404,
+  "gain_db": -2
+ },
+ "clips": [
+  {
+   "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/app/public/snd/fanfare-finale.mp3",
+   "at_frame": 329,
+   "gain_db": -8,
+   "len": 2.4
+  }
+ ],
+ "events": [
+  {
+   "f": 78,
+   "k": "tap"
+  },
+  {
+   "f": 93,
+   "k": "tick"
+  },
+  {
+   "f": 138,
+   "k": "tick"
+  },
+  {
+   "f": 183,
+   "k": "tap"
+  },
+  {
+   "f": 207,
+   "k": "grind",
+   "len": 64
+  },
+  {
+   "f": 284,
+   "k": "reveal"
+  },
+  {
+   "f": 314,
+   "k": "thump"
+  }
+ ]
+}

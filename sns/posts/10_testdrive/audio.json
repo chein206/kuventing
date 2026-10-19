@@ -1,0 +1,64 @@
+{
+ "dur": 15.567,
+ "fps": 30,
+ "bgm": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/music/tracks/bgm-kuventing/A_pophouse_s2701.wav",
+  "start": 38.6,
+  "gain_db": -7,
+  "duck": [
+   [
+    9.566666666666666,
+    11.066666666666666,
+    -5
+   ]
+  ],
+  "fade_out": [
+   12.766666666666666,
+   15.516666666666666
+  ]
+ },
+ "logo": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/sns/brand/logo/motion/kuventing-logo-sfx.wav",
+  "at_frame": 392,
+  "gain_db": -2
+ },
+ "clips": [
+  {
+   "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/app/public/snd/fanfare-copper.mp3",
+   "at_frame": 287,
+   "gain_db": -9,
+   "len": 1.4
+  }
+ ],
+ "events": [
+  {
+   "f": 78,
+   "k": "tap"
+  },
+  {
+   "f": 93,
+   "k": "tick"
+  },
+  {
+   "f": 141,
+   "k": "tick"
+  },
+  {
+   "f": 182,
+   "k": "tap"
+  },
+  {
+   "f": 204,
+   "k": "grind",
+   "len": 66
+  },
+  {
+   "f": 285,
+   "k": "reveal"
+  },
+  {
+   "f": 332,
+   "k": "swoosh"
+  }
+ ]
+}

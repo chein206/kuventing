@@ -78,6 +78,22 @@
       "status": "ready"
     },
     {
+      "id": "10_testdrive",
+      "title": "시승 끝나고 태블릿 한 번",
+      "type": "reel",
+      "dir": "kuventing/sns/posts/10_testdrive",
+      "files": [
+        "reel.mp4"
+      ],
+      "cover": "cover.png",
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-10-28T12:30:00+09:00",
+      "approved": false,
+      "approvedNote": "",
+      "status": "ready"
+    },
+    {
       "id": "04_done_for_you",
       "title": "상품만 정하세요, 나머지는 저희가",
       "type": "carousel",
@@ -96,6 +112,22 @@
       "approvedNote": "",
       "status": "draft",
       "note": "모션 세션 리모델 5장(10-19). 3장 사진 = 대표 주말 촬영 S8 → remodel/img/s8.jpg 넣고 make.py 다시(10-26)"
+    },
+    {
+      "id": "09_finale",
+      "title": "마지막 한 장엔 피날레 보너스",
+      "type": "reel",
+      "dir": "kuventing/sns/posts/09_finale",
+      "files": [
+        "reel.mp4"
+      ],
+      "cover": "cover.png",
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-11-01T11:00:00+09:00",
+      "approved": false,
+      "approvedNote": "",
+      "status": "ready"
     }
   ]
 }
