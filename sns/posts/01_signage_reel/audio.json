@@ -1,0 +1,85 @@
+{
+ "dur": 18.033,
+ "fps": 30,
+ "fx_db": 0,
+ "bgm": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/music/tracks/bgm-kuventing/B_futurebounce_s2702.wav",
+  "start": 14.0,
+  "gain_db": -7,
+  "duck": [
+   [
+    11.933333333333334,
+    13.533333333333333,
+    -7
+   ]
+  ],
+  "fade_out": [
+   15.233333333333333,
+   17.983333333333334
+  ]
+ },
+ "logo": {
+  "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/sns/brand/logo/motion/kuventing-logo-sfx.wav",
+  "at_frame": 466,
+  "gain_db": -2
+ },
+ "events": [
+  {
+   "f": 60,
+   "k": "tick"
+  },
+  {
+   "f": 90,
+   "k": "tick"
+  },
+  {
+   "f": 114,
+   "k": "tick"
+  },
+  {
+   "f": 147,
+   "k": "tap"
+  },
+  {
+   "f": 155,
+   "k": "tick"
+  },
+  {
+   "f": 176,
+   "k": "tick"
+  },
+  {
+   "f": 205,
+   "k": "tap"
+  },
+  {
+   "f": 233,
+   "k": "tick"
+  },
+  {
+   "f": 266,
+   "k": "grind",
+   "len": 44
+  },
+  {
+   "f": 322,
+   "k": "reveal"
+  },
+  {
+   "f": 344,
+   "k": "tick"
+  },
+  {
+   "f": 406,
+   "k": "swoosh"
+  }
+ ],
+ "clips": [
+  {
+   "file": "C:/Users/Nam-PC/Desktop/cld/kuventing/app/public/snd/fanfare-gold.mp3",
+   "at_frame": 358,
+   "gain_db": -8,
+   "len": 1.6
+  }
+ ]
+}

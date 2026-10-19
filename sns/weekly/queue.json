@@ -3,6 +3,24 @@
   "note": "approved 는 대표가 채팅으로 OK 한 칸에만 kuventing 세션이 true 로 적는다. 올리기는 tools/post_due.mjs",
   "items": [
     {
+      "id": "01_signage_reel",
+      "title": "평소엔 광고판, 누르면 럭키드로우",
+      "type": "reel",
+      "dir": "kuventing/sns/posts/01_signage_reel",
+      "files": [
+        "reel.mp4"
+      ],
+      "cover": "cover.png",
+      "caption": "caption.md",
+      "ai": false,
+      "slot": "2026-10-19T12:10:00+09:00",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-19 11:52 「ㄱㄱ」(v3, AI 레이블 끔) — 런칭 당겨 첫 게시",
+      "status": "posted",
+      "url": "https://www.instagram.com/kuventing/reel/DeqP44MpPq4/",
+      "postedAt": "2026-10-19T12:04:00+09:00"
+    },
+    {
       "id": "02_checklist",
       "title": "럭키드로우 열기 전에 확인할 7가지",
       "type": "carousel",
