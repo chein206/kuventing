@@ -28,6 +28,14 @@ const q = JSON.parse(fs.readFileSync(Q, 'utf8'));
 const now = Date.now();
 const save = () => fs.writeFileSync(Q, JSON.stringify(q, null, 2) + '\n');
 
+// 예약 작업이 도는 칸(화 · 목 12:30, 토 11:00 — 한국 시각)에 slot 이 맞는지 — 요일을 손으로 세다 하루 밀린 일이 있었다(10-19)
+const RUNS = { 2: '12:30', 4: '12:30', 6: '11:00' };
+for (const it of q.items.filter((x) => x.status !== 'posted' && x.status !== 'missed')) {
+  const d = new Date(Date.parse(it.slot) + 9 * 3600e3);   // 한국 시각
+  const wd = d.getUTCDay(), hm = d.toISOString().slice(11, 16);
+  if (RUNS[wd] !== hm) console.log(`주의 ${it.id}: slot ${it.slot} 는 예약 게시 시각(화 · 목 12:30, 토 11:00)이 아님 — 올라가지 않는다`);
+}
+
 const ready = q.items.filter((it) => it.approved === true && it.status === 'ready');
 const due = [], missed = [];
 for (const it of ready) {
