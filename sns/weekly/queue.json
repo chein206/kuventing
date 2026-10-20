@@ -30,12 +30,14 @@
       ],
       "caption": "caption.md",
       "ai": false,
-      "slot": "2026-10-21T12:30:00+09:00",
+      "slot": "2026-10-20T15:30:00+09:00",
       "approved": true,
-      "approvedNote": "대표 채팅 10-19 12:55 「ㅇㅇ 나도 빨리 올리면 좋을듯」 — 화 10-21 12:30 당겨 게시(1차 릴스, AI 레이블 끔)",
-      "status": "ready",
+      "approvedNote": "대표 채팅 10-19 12:55 「ㅇㅇ 나도 빨리 올리면 좋을듯」 — 화 10-21 12:30 당겨 게시(1차 릴스, AI 레이블 끔) / 10-20 화요일 자리 놓쳐 그 자리에서 바로 게시",
+      "status": "posted",
       "cover": "cover.png",
-      "note": "모션 세션 릴스 1차 10-19 — 대표 피드백 대기"
+      "note": "모션 세션 릴스 1차 10-19 — 대표 피드백 대기",
+      "url": "https://www.instagram.com/kuventing/reel/DetMDDuhj89/",
+      "postedAt": "2026-10-20T15:30:00+09:00"
     },
     {
       "id": "02_checklist",
@@ -55,9 +57,9 @@
       ],
       "caption": "caption.md",
       "ai": false,
-      "slot": "2026-10-23T12:30:00+09:00",
+      "slot": "2026-10-22T12:30:00+09:00",
       "approved": true,
-      "approvedNote": "대표 채팅 10-19 12:58 「ㅇㅇ올려」 — 목 10-23 12:30, 고정 게시물 후보(고정은 대표 폰 앱), AI 레이블 끔",
+      "approvedNote": "대표 채팅 10-19 12:58 「ㅇㅇ올려」 — 목 10-23 12:30, 고정 게시물 후보(고정은 대표 폰 앱), AI 레이블 끔 / 날짜 10-23(금)→10-22(목) 바로잡음(요일 계산 실수)",
       "status": "ready",
       "note": "모션 세션 리모델 납품 10-19"
     },
@@ -72,9 +74,9 @@
       "cover": "cover.png",
       "caption": "caption.md",
       "ai": false,
-      "slot": "2026-10-25T11:00:00+09:00",
-      "approved": false,
-      "approvedNote": "",
+      "slot": "2026-10-24T11:00:00+09:00",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-20 15:26 「ㅇㅇ 지금올려」(일정 OK 질문에 대한 답) — AI 레이블 끔",
       "status": "ready"
     },
     {
@@ -89,8 +91,8 @@
       "caption": "caption.md",
       "ai": false,
       "slot": "2026-10-27T12:30:00+09:00",
-      "approved": false,
-      "approvedNote": "",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-20 15:26 「ㅇㅇ 지금올려」(일정 OK 질문에 대한 답) — AI 레이블 끔",
       "status": "ready"
     },
     {
@@ -125,8 +127,8 @@
       "caption": "caption.md",
       "ai": false,
       "slot": "2026-10-31T11:00:00+09:00",
-      "approved": false,
-      "approvedNote": "",
+      "approved": true,
+      "approvedNote": "대표 채팅 10-20 15:26 「ㅇㅇ 지금올려」(일정 OK 질문에 대한 답) — AI 레이블 끔",
       "status": "ready"
     }
   ]
