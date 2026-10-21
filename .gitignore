@@ -44,3 +44,8 @@ assets/site/_rec/
 sns/posts/*/rec/
 sns/posts/*/_work/
 site-review/_tmp/
+# 인스타 받은 댓글 · DM 기록(남의 아이디 · 글) · 게시 화면 캡처 · 활동 기록 — 공개 저장소에 올리지 않는다(10-21)
+sns/inbox/
+sns/outreach/*.jsonl
+sns/outreach/*.png
+sns/posts/*/_post*.png
