@@ -102,3 +102,4 @@ sns/
 - 10-21 예열 시작(`outreach/2026-10-21_팔로우_댓글.md`): 대표가 폰으로 **릴스 스토리 + 링크 스티커** 공유 · 팔로우 20곳 OK(하루 10곳, `tools/ig_follow.mjs`) · 좋아요 5개(`tools/ig_like.mjs`) · **남의 글 댓글은 보류**(대표 「누가 봐도 이벤트 업체」, 피드 쌓인 뒤) · 엣지 「전환」이 로그아웃 → 쿠벤팅 비밀번호 다시 물음 → 대표 로그인
 - 10-21 11:49 **카드 02 게시** https://www.instagram.com/kuventing/p/DevXpkxlKrA/ (대표 「카드 게시 오늘하자」, 10-22 예약 칸에서 당김) · 같은 날 SCPAD cop 이 @scpadlab 전용 엣지 9335 를 따로 띄움 → 9333 인스타는 @kuventing 전용, 전환 조율 필요 없음
 - 10-21 12:01 릴스 10 시승을 10-27 → **10-22(목) 12:30** 으로 당김(대표 「ㅇㅇ 그러자」) — 10-27 칸 빔
+- 10-21 저장소 정리 — 안 올린 34커밋에서 녹화 프레임(rec · _work 2.9GB) · sns/inbox 를 빼고 다시 쌓음(main-clean, 자동 모드가 filter-branch 막아 사본 방식) → 대표가 checkout -B · push → GitHub main = 73bedd7b. 백업 브랜치 backup/pre-cleanup-1021 은 며칠 두고 지우면 디스크 ~3GB 회수
