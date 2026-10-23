@@ -103,3 +103,6 @@ sns/
 - 10-21 11:49 **카드 02 게시** https://www.instagram.com/kuventing/p/DevXpkxlKrA/ (대표 「카드 게시 오늘하자」, 10-22 예약 칸에서 당김) · 같은 날 SCPAD cop 이 @scpadlab 전용 엣지 9335 를 따로 띄움 → 9333 인스타는 @kuventing 전용, 전환 조율 필요 없음
 - 10-21 12:01 릴스 10 시승을 10-27 → **10-22(목) 12:30** 으로 당김(대표 「ㅇㅇ 그러자」) — 10-27 칸 빔
 - 10-21 저장소 정리 — 안 올린 34커밋에서 녹화 프레임(rec · _work 2.9GB) · sns/inbox 를 빼고 다시 쌓음(main-clean, 자동 모드가 filter-branch 막아 사본 방식) → 대표가 checkout -B · push → GitHub main = 73bedd7b. 백업 브랜치 backup/pre-cleanup-1021 은 며칠 두고 지우면 디스크 ~3GB 회수
+- 10-22 12:42 릴스 10 시승 자동 게시 https://www.instagram.com/kuventing/reel/DeyCt9EB8uz/ (post_due 가 /kuventing/reel/ 주소를 못 적던 것 고침)
+- 10-23 15:3x **릴스 09 피날레 게시** https://www.instagram.com/kuventing/reel/De05wbvvN24/ (대표 「09 올려」, 10-31 칸에서 당김) → 10-27 · 10-31 칸 빔(주말 촬영본으로)
+- 10-23 팔로우 나머지 10곳 끝(롬앤 · 트렌드하이 · 팝업을즐기다 · 데이오프 · 당니 · 으농띠 · 플레이팝 · 이나스픽 · 스페이서 · SSPU) → 팔로우 20

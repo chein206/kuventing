@@ -74,7 +74,8 @@ for (const it of due.slice(0, 2)) {
     const s = execFileSync('node', ['ig_post.mjs', 'share', '--as=kuventing'], { cwd: PW, env, encoding: 'utf8', timeout: 6 * 60e3 });
     console.log(s.trim().split('\n').slice(-4).join('\n'));
     const ok = /공유됨 true/.test(s);
-    const url = (s.match(/첫 게시물 (\/(?:p|reel)\/[^\s/]+\/?)/) || [])[1];
+    // 프로필 링크는 /kuventing/reel/… 처럼 아이디가 앞에 붙는다(10-22 릴스 10 주소를 못 적었음)
+    const url = (s.match(/첫 게시물 (\/(?:[^\s/]+\/)?(?:p|reel)\/[^\s/]+\/?)/) || [])[1];
     it.status = ok ? 'posted' : 'failed';
     it.postedAt = new Date().toISOString();
     if (url) it.url = 'https://www.instagram.com' + url;
